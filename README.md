@@ -26,3 +26,8 @@
 
 4 - Run `preprocessing/run_measurePhenotype_sofia.sh`. Output: Trait measurements
 
+
+
+## Some possible errors:
+
+LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle'

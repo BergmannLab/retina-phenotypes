@@ -48,15 +48,18 @@ max_QCthreshold_2=250
 #   ---------------------------------------------------------------- 
 # TO DO!: change the directories in a more automated fashion!
 
-dir_images='/Users/sortinve/develop/retina/input/'$data_set'_images/'$data_set'/'
-dir_images2='/Users/sortinve/develop/retina/input/'$data_set'_images/'
-lwnet_dir=/Users/sortinve/develop/Codigos_github/lwnet/
-classification_output_dir='/Users/sortinve/develop/retina/input/'$data_set'_AV_maps/'
-dir_ARIA_output='/Users/sortinve/develop/retina/output/ARIA_output_'$data_set'/'
-ARIA_dir='/Users/sortinve/develop/retina/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/'
-MeasureVessels_dir='/Users/sortinve/develop/retina/output/VesselMeasurements/'$data_set'/'
-phenotypes_dir='/Users/sortinve/develop/retina/output/phenotypes_'$data_set'_'$TYPE_OF_VESSEL_OF_INTEREST'/'
-OD_output_dir='/Users/sortinve/develop/retina/output/'$data_set'_OD/'
+code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' #Needed to change
+
+
+dir_images=$code_dir'/input/'$data_set'_images/'$data_set'/'
+dir_images2=$code_dir'/input/'$data_set'_images/'
+lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
+classification_output_dir=$code_dir'/input/'$data_set'_AV_maps/'
+dir_ARIA_output=$code_dir'/output/ARIA_output_'$data_set'/'
+ARIA_dir=$code_dir'/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/'
+MeasureVessels_dir=$code_dir'/output/VesselMeasurements/'$data_set'/'
+phenotypes_dir=$code_dir'/output/phenotypes_'$data_set'_'$TYPE_OF_VESSEL_OF_INTEREST'/'
+OD_output_dir=$code_dir'/output/'$data_set'_OD/'
 
 #### QUALITY THRESHOLDS OF ARTERY/VEIN CLASSIFICATION: 
 AV_threshold=0.0 # Consider all classified vessels

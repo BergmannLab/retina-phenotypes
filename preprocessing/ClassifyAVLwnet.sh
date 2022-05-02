@@ -15,6 +15,7 @@
 source ../configs/config_local.sh
 begin=$(date +%s)
 
+
 #### Create the folder where the after preprocessing images are going to be located (for the dataset selected):
 mkdir $dir_images
 
@@ -30,6 +31,7 @@ cd $lwnet_dir
 raw_imgs=( "$dir_images"* )
 for i in $(eval echo "{1..$num_images}"); do
     image="${raw_imgs[i]}"
+
     python predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
 done
 

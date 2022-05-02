@@ -18,7 +18,7 @@
 source ../configs/config_local.sh
 begin=$(date +%s)
 
-mkdir $dir_ARIA_output
+mkdir -p $dir_ARIA_output
 ### Run vessels measurements with ARIA (Matlab):
 
 script_dir=$PWD/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/

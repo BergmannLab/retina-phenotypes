@@ -10,11 +10,11 @@ def remove_spaces(images_input_dir, all_files):
 
 # Convert all images to '.png' and create file with all the images names
 def covert_to_png(images_input_dir, images_output_dir, all_files):
-    with open(f"{images_input_dir}NoQC.txt", "w") as outfile:
+    with open(images_input_dir + "NoQC.txt", "w") as outfile:
         for filename in all_files:
             im1 = Image.open(os.path.join(images_input_dir, filename))
             prefix = filename.split('.')[0]
-            png_filename = f'{prefix}.png'
+            png_filename = prefix + '.png'
             im1.save(os.path.join(images_output_dir, png_filename))
             # Create file with all the images names
             outfile.writelines(png_filename)
@@ -34,4 +34,5 @@ remove_spaces(images_input_dir, all_files)
 
 all_files2 = [f for f in os.listdir(images_input_dir) if f.endswith(filetype[1:])]
 print(all_files2)
+print(images_input_dir)
 covert_to_png(images_input_dir, images_output_dir, all_files2)

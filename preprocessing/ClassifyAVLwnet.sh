@@ -20,7 +20,7 @@ begin=$(date +%s)
 mkdir $dir_images
 
 #### Preprocessing: .png format, avoid spaces in names, and create file with images names:
-python basic_preprocessing.py $dir_images2 $dir_images $image_type
+python3 basic_preprocessing.py $dir_images2 $dir_images $image_type
 
 #### Create the folder where the AV maps are going to be located (for the dataset selected):
 mkdir $classification_output_dir
@@ -32,10 +32,10 @@ raw_imgs=( "$dir_images"* )
 for i in $(eval echo "{1..$num_images}"); do
     image="${raw_imgs[i]}"
 
-    python predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
+    python3.8 predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
 done
 
-python /Users/sortinve/develop/retina/preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir # TO DO: specify the LWNET location
+python3 /Users/sortinve/develop/retina/preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir # TO DO: specify the LWNET location
 
 echo FINISHED: Images have been classified, and written to $classification_output_dir
 end=$(date +%s) # calculate execution time

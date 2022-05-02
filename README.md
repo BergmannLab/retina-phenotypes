@@ -31,3 +31,7 @@
 ## Some possible errors:
 
 LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle'
+
+# Optic disc prediction using training weights from UK Biobank
+1 - Generate the test dataset in required square 256x256px format: `preprocessing/optic-nerve-cnn/scripts/Organize test dataset.ipynb` : Point to your dataset of choice, define output path, and modify the number of cores, and then run all the cells.
+2 - Predict using the generated dataset : TO-DO

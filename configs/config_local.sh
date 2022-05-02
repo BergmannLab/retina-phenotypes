@@ -48,12 +48,14 @@ max_QCthreshold_2=250
 #   ---------------------------------------------------------------- 
 # TO DO!: change the directories in a more automated fashion!
 
-code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' #Needed to change
+#Needed to change########
+code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' 
+lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
+##############
 
-
+dir_preprocessing=$code_dir'/preprocessing/'
 dir_images=$code_dir'/input/'$data_set'_images/'$data_set'/'
 dir_images2=$code_dir'/input/'$data_set'_images/'
-lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
 classification_output_dir=$code_dir'/input/'$data_set'_AV_maps/'
 dir_ARIA_output=$code_dir'/output/ARIA_output_'$data_set'/'
 ARIA_dir=$code_dir'/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/'

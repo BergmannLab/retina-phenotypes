@@ -10,7 +10,7 @@ image_type=*.tif #opttions: *.jpg, *.tif
 TYPE_OF_VESSEL_OF_INTEREST="all" # [artery|vein|all] 
 
 #### PHENOTYPE_OF_INTEREST:
-PHENOTYPE_OF_INTEREST='green_segments' #posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios'
+PHENOTYPE_OF_INTEREST='vascular_density' #posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'vascular_density', 'ratios'
 # TO DO: Add option to select all
 
 ###############################################################################

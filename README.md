@@ -36,7 +36,7 @@ Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh'
 
 
 ## Some possible errors:
-* LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "pip install scikit-image==0.16.2" and python3
+* LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "your_python_dir/python -m pip install scikit-image==0.16.2" and python3
 # python3 -m pip install --upgrade Pillow
 
 ## Reminders:

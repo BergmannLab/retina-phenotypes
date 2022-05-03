@@ -30,4 +30,8 @@
 
 ## Some possible errors:
 
-LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle'
+LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "pip install scikit-image==0.16.2" and python3
+# python3 -m pip install --upgrade Pillow
+
+## Reminders:
+If you are not familiar with bash scripts and you want to change the code, the spaces are very imports!(Avoid when define variables, as use when conditions)

@@ -48,7 +48,7 @@ max_QCthreshold_2=250
 #   ---------------------------------------------------------------- 
 # TO DO!: change the directories in a more automated fashion!
 
-code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' #Needed to change
+code_dir='/SSD/home/michael/retina-phenotypes/retina-phenotypes/' #Needed to change
 
 
 dir_images=$code_dir'/input/'$data_set'_images/'$data_set'/'

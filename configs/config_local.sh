@@ -26,14 +26,17 @@ step=2 # You can change it
 #   Remark: Remember that you have to include the images and the matlab code with you run the matlab code: addpath(genpath('$genpath_dir'))
 #   ---------------------------------------------------------------- 
 
+
 #### Needed to be changed:
 code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' 
 lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
 python_dir=/Users/sortinve/PycharmProjects/pythonProject/venv/bin/python
+code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' #Needed to change
 
-dir_preprocessing=$code_dir'/preprocessing/'
+
 dir_images=$code_dir'/input/'$data_set'_images/'$data_set'/'
 dir_images2=$code_dir'/input/'$data_set'_images/'
+lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
 classification_output_dir=$code_dir'/input/'$data_set'_AV_maps/'
 dir_ARIA_output=$code_dir'/output/ARIA_output_'$data_set'/'
 ARIA_dir=$code_dir'/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/'

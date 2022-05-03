@@ -29,7 +29,7 @@ else
     echo "You only can run with bash or sbatch, specify what you want to use on config."
 fi
 
-mkdir $dir_ARIA_output
+mkdir -p $dir_ARIA_output
 
 ### Run vessels measurements with ARIA (Matlab):
 script_dir=$PWD/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/

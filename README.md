@@ -9,7 +9,8 @@
 * Main Temporal Venular Angle ('tva')
 * Main Temporal Arteriolar Angle ('taa') 
 * TO DO: define N_green or others 
-* Fractal Dimensionality 
+* Fractal Dimensionality ()
+* Vascular Density () 
 
 
 ## Requirements:
@@ -18,19 +19,28 @@
 * Matlab licence (if you have not acess there are still some traits you can measure)
 
 ## Pipeline:
-1- Modify `configs/config_sofia.sh`
+1- Modify `configs/config_local.sh`
 
-2 - Run `preprocessing/ClassifyAVLwnet_sofia.sh`. Output: AV maps for your images 
+2 - Run `preprocessing/ClassifyAVLwnet.sh`. 
+Output: AV maps for your images.  In the folder: ....
+Code: `bash ClassifyAVLwnet.sh' or `sbatch ClassifyAVLwnet.sh' 
 
-3 - Run `preprocessing/MeasureVessels_Sofia.sh`. Output: Matlab output
+3 - Run `preprocessing/MeasureVessels.sh`. 
+Output: Matlab output.  In the folder: ....
+Code: `bash MeasureVessels.sh' or  `sbatch MeasureVessels.sh' 
 
-4 - Run `preprocessing/run_measurePhenotype_sofia.sh`. Output: Trait measurements
+4 - Run `preprocessing/run_measurePhenotype.sh`. 
+Output: Trait measurements 
+Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh' 
 
 
 
 ## Some possible errors:
+* LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "your_python_dir/python -m pip install scikit-image==0.16.2" and python3
+# python3 -m pip install --upgrade Pillow
 
-LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle'
+## Reminders:
+If you are not familiar with bash scripts and you want to change the code, the spaces are very imports!(Avoid when define variables, as use when conditions)
 
 # Optic disc prediction using training weights from UK Biobank
 1 - Generate the test dataset in required square 256x256px format: `preprocessing/optic-nerve-cnn/scripts/TEST_organize_datasets.ipynb` : Point to your dataset of choice, define output path, and modify the number of cores, and then run all the cells.

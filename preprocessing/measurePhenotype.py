@@ -214,7 +214,7 @@ def main_aria_phenotypes(imgname):    # still need to modify it
         print("ARIA didn't have stats for img", imageID)
         return [np.nan for _ in range(84)]
 
-def mask_image(img, to_gray=False):
+def mask_image(img, to_gray=False, mask_radius=mask_radius):
     hh,ww = img.shape[:2]
     #print(hh//2,ww//2)
 
@@ -223,12 +223,10 @@ def mask_image(img, to_gray=False):
     mask = np.zeros_like(gray)
     mask = cv2.circle(mask, (ww//2,hh//2), mask_radius, (255,255,255), -1)
     #mask = np.invert(mask.astype(bool))
-
     #result = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
     #result[:, :] = mask[:,:]
     #  result[:, :, 3] = mask[:,:,0]
     #plt.imshow(result)
-
     mask_1d = mask.astype(bool)    
     mask_3d = np.stack((mask_1d,mask_1d,mask_1d), axis=2) # axis=2 to make color channels 3rd dimension
     
@@ -244,33 +242,48 @@ def main_vascular_density(imgname: str) -> dict:
     :return:
     """
 
-    small_size = 200 # with of circle of downsampled image
+    scale_factor = 100/660 # fraction smaller compared to original
 
     imageID = imgname.split(".")[0]
-    print(imageID)
+    #print(imageID)
     try:
         img = cv2.imread(imageID + ".png")
-        img_mskd = mask_image(img)
-        img_200px = cv2.resize(img_mskd, [round(i * small_size/2 / mask_radius) for i in img_mskd.shape[0:2]])
+        gray=np.maximum(img[:,:,0], img[:,:,2])
+        gray=np.stack((gray,gray,gray),axis=2)
+        #print(gray.shape)
+        img_mskd = mask_image(img, to_gray=False)
+        img_mskd_gray = mask_image(gray, to_gray=False)
+        
+        #print([round(i * scale_factor) for i in img_mskd.shape[0:2]])
+        img_small = cv2.resize(img, [round(i * scale_factor) for i in img_mskd.shape[1::-1]])
+        gray_small = cv2.resize(gray, [round(i * scale_factor) for i in img_mskd.shape[1::-1]])
+        #plt.imsave("/SSD/home/michael/gray_small_"+imageID+".png", gray_small)
+        #plt.imsave("/SSD/home/michael/gray_"+imageID+".png", gray)
+        #plt.imsave("/SSD/home/michael/orig_"+imageID+".png", img)
+        #plt.imsave("/SSD/home/michael/small_"+imageID+".png", img_small)
+        #gray_small = np.maximum(img_small[:,:,0],img_small[:,:,2])
+        #gray_small = np.stack((gray_small,gray_small,gray_small),axis=2)
+        img_mskd_small = mask_image(img_small, to_gray=False, mask_radius=round(mask_radius*scale_factor))
+        img_mskd_gray_small = mask_image(gray_small, to_gray=False, mask_radius=round(mask_radius*scale_factor))
 
         area = mask_radius**2 * np.pi
-        area_small = (small_size/2)**2 * np.pi
+        area_small = (mask_radius * scale_factor)**2 * np.pi
 
-        vd_orig_all = np.sum(cv2.cvtColor(img_mskd, cv2.COLOR_BGR2GRAY)!=0) / area
-        vd_orig_artery = np.sum(img_mskd[:,:,2] != 0) / area
-        vd_orig_vein = np.sum(img_mskd[:,:,0] != 0) / area
+        vd_orig_all = np.mean(img_mskd_gray) / 255
+        vd_orig_artery = np.mean(img_mskd[:,:,2]) / 255
+        vd_orig_vein = np.mean(img_mskd[:,:,0]) / 255
         
-        vd_200px_all = np.sum(cv2.cvtColor(img_200px, cv2.COLOR_BGR2GRAY)!=0) / area_small
-        vd_200px_artery = np.sum(img_200px[:,:,2] != 0) / area_small
-        vd_200px_vein = np.sum(img_200px[:,:,0] != 0) / area_small
+        vd_small_all = np.mean(img_mskd_gray_small) / 255
+        vd_small_artery = np.mean(img_mskd_small[:,:,2]) / 255
+        vd_small_vein = np.mean(img_mskd_small[:,:,0]) / 255
 
         return { 'VD_orig_all': vd_orig_all, 'VD_orig_artery': vd_orig_artery, 'VD_orig_vein': vd_orig_vein,
-                 'VD_200px_all': vd_200px_all, 'VD_200px_artery': vd_200px_artery, 'VD_200px_vein': vd_200px_vein }
+                 'VD_small_all': vd_small_all, 'VD_small_artery': vd_small_artery, 'VD_small_vein': vd_small_vein }
 
     except Exception as e:
         print(e)
         return { 'VD_orig_all': np.nan, 'VD_orig_artery': np.nan, 'VD_orig_vein': np.nan,
-                 'VD_200px_all': np.nan, 'VD_200px_artery': np.nan, 'VD_200px_vein': np.nan }
+                 'VD_small_all': np.nan, 'VD_small_artery': np.nan, 'VD_small_vein': np.nan }
 
 
 def main_fractal_dimension(imgname: str) -> dict:
@@ -279,7 +292,7 @@ def main_fractal_dimension(imgname: str) -> dict:
     :return:
     """
     imageID = imgname.split(".")[0]
-    print(imageID)
+    #print(imageID)
     try:
         img = Image.open(imageID + "_bin_seg.png")
         img_artery = replaceRGB(img, (255, 0, 0), (0, 0, 0))
@@ -685,9 +698,8 @@ def create_output_(out, imgfiles, function_to_execute, imgfiles_length):
         phenotype_dir,
         f'{datetime.now().strftime("%Y-%m-%d")}_{function_to_execute}.csv',
     )
-
     df.to_csv(output_path)
-
+    df.to_pickle(output_path.replace('.csv','.pkl'))
 
 if __name__ == '__main__':
     # command line arguments
@@ -702,7 +714,7 @@ if __name__ == '__main__':
     imgfiles = imgfiles[0].values
 
     # development param
-    imgfiles_length = 10;len(imgfiles)  # len(imgfiles) is default
+    imgfiles_length = 10#len(imgfiles)  # len(imgfiles) is default
 
     # computing the phenotype as a parallel process
     os.chdir(lwnet_dir)

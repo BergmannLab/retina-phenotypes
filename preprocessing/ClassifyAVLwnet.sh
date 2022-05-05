@@ -61,7 +61,7 @@ else
 fi
 
 ### Rename the LWnet output (for ARIA you need the raw_image and the AV_image to have the same name):
-$python_dir $dir_preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 
+$python_dir $code_dir/preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 
 
 echo FINISHED: Images have been classified, and written to $classification_output_dir
 end=$(date +%s) # calculate execution time

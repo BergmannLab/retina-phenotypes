@@ -38,7 +38,7 @@ script_parmeters="0 REVIEW $dir_images2 $classification_output_dir $TYPE_OF_VESS
 
 ## OPTION 1: (Recomended!) TO DO: there are many 'warning' errors when running Matlab
 #cd $script_dir && /Applications/MATLAB_R2020b.app/bin/matlab -nodisplay -nosplash -nodesktop -r "addpath(genpath('/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/'));ARIA_run_tests $script_parmeters ;quit;"
-cd $script_dir && /Applications/MATLAB_R2020b.app/bin/matlab -nodisplay -nosplash -nodesktop -r "addpath(genpath('$genpath_dir'));ARIA_run_tests $script_parmeters ;quit;"
+cd $script_dir && /Applications/MATLAB_R2020b.app/bin/matlab -nodisplay -nosplash -nodesktop -r "addpath(genpath('$code_dir'));ARIA_run_tests $script_parmeters ;quit;"
 
 ## OPTION 2: if only INTERPRETER IS AVAILABLE
 # TO DO: Complete explanation: First you have to run: ... (after compiling using the compileMAT.sh in the ARIA_tests folder)

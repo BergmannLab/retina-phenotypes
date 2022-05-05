@@ -15,15 +15,12 @@ from scipy import stats
 import math
 import cv2
 
-
-plot_phenotype = True
 aria_measurements_dir = sys.argv[3] #'/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/ARIA_MEASUREMENTS_DIR' 
 qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
 phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR'  
 OD_output_dir = sys.argv[5]
 df_OD = pd.read_csv(OD_output_dir+"OD_position.csv", sep=',')
-print(df_OD)
 
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
@@ -34,21 +31,12 @@ def main_bifurcations(imgname: str) -> dict:
     """
     try:
         imageID = imgname.split(".")[0]
-
         df_pintar = read_data(imageID)
-        if plot_phenotype:
-             img = mpimg.imread(imageID + ".png")
-             plt.imshow(img)
-             plt.scatter(x=df_pintar['X'], y=df_pintar['Y'], c=df_pintar['type'], cmap="jet", marker="d",
-                         alpha=0.5, s=0.2)
-             plt.savefig(phenotype_dir + '/'+imageID + '_bif.jpg')
-             plt.close()
         aux = df_pintar.groupby('index')
         df_results = pd.concat([aux.head(1), aux.tail(1)]).drop_duplicates().sort_values('index').reset_index(drop=True)
         df_results['type'] = np.sign(df_results['type'])
         df_results.sort_values(by=['X'], inplace=True, ascending=False)
-
-        return {'bifurcations': float(bifurcation_counter(df_results))}
+        return {'bifurcations': float(bifurcation_counter(df_results, imageID))}
 
     except Exception as e:
         print(e)
@@ -171,7 +159,7 @@ def main_num_green_segment_and_pixels(imgname: str) -> dict:
 
     except Exception as e:
         print(e)
-        return {'segments': np.nan, 'pixels': np.nan}
+        return {'N_green_segments': np.nan, 'N_green_pixels': np.nan}
 
 
 def main_aria_phenotypes(imgname):    # still need to modify it
@@ -439,7 +427,7 @@ def replaceRGB(img, old, new):
     return out
 
 
-def bifurcation_counter(df_results):
+def bifurcation_counter(df_results, imageID):
     """
     :param df_results:
     :return:
@@ -447,6 +435,8 @@ def bifurcation_counter(df_results):
     X_1_aux = X_2_aux = 0.0
     bif_counter = 0
     cte = 3.5
+    aux = []
+    df_bif_positions = pd.DataFrame([])
     number_rows = df_results.shape[0]
     x = df_results['X'].values
     y = df_results['Y'].values
@@ -471,11 +461,24 @@ def bifurcation_counter(df_results):
                     and x[s] != X_1_aux
                     and x[j] != X_2_aux
                     and x[s] != X_2_aux
-                )
-            ):
+                    )):
                 bif_counter = bif_counter + 1
                 X_1_aux = x[s]
                 X_2_aux = x[j]
+                data = {
+                    'X': x[j],
+                    'Y': y[j],
+                    'type': dis_type[j],
+                    'i': index_v[j]}
+                aux.append(data)
+
+    # Save the position of the bifurcations per image
+    df_bif_positions = pd.DataFrame(aux)
+    dir_bif_position=phenotype_dir + 'bifurcations_position/'
+    if not os.path.exists(dir_bif_position):
+        os.mkdir(dir_bif_position)
+    df_bif_positions.to_csv(dir_bif_position +'/' + imageID +'_bifurcations_position.csv', index=False)
+
     return bif_counter
 
 
@@ -714,7 +717,7 @@ if __name__ == '__main__':
     imgfiles = imgfiles[0].values
 
     # development param
-    imgfiles_length = 10#len(imgfiles)  # len(imgfiles) is default
+    imgfiles_length = len(imgfiles)  # len(imgfiles) is default
 
     # computing the phenotype as a parallel process
     os.chdir(lwnet_dir)

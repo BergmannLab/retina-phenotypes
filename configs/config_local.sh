@@ -8,7 +8,22 @@ image_type=*.tif #options: *.jpg, *.tif, ...
 TYPE_OF_VESSEL_OF_INTEREST="all" # [artery|vein|all] 
 
 #### PHENOTYPE_OF_INTEREST:
-PHENOTYPE_OF_INTEREST='green_segments' #posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios' , etc # TO DO: Add option to select all
+    num_images=30 #30
+else
+    num_images=0 # TO DO: Add error!
+fi
+
+echo Number of images equal to $num_images	
+
+
+
+# quality thresholds for ARIA
+min_QCthreshold_1=1100
+max_QCthreshold_1=20000
+min_QCthreshold_2=50
+max_QCthreshold_2=250
+
+PHENOTYPE_OF_INTEREST='green_segments' #posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios' , 'vascular_density', etc # TO DO: Add option to select all
 type_run="bash" # ["bash", "sbatch"]
 step=2 # You can change it
 

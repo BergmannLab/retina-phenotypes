@@ -12,7 +12,7 @@
 #SBATCH --array=1-582
 
 #### Read the vairables requiered from config.sh:
-source ../configs/config_local.sh
+source ../configs/config_.sh
 begin=$(date +%s)
 
 #### Create the folder where the after preprocessing images are going to be located (for the dataset selected):
@@ -25,7 +25,7 @@ $python_dir basic_preprocessing.py $dir_images2 $dir_images $image_type
 #### Create the folder where the AV maps are going to be located (for the dataset selected):
 mkdir $classification_output_dir
 
-if [ $type_run = "bash" ]; then
+if [ $type_run = "one_by_one" ]; then
     #### Artery Vein segementation using WNET:
     cd $lwnet_dir
     raw_imgs=( "$dir_images"* )
@@ -34,7 +34,7 @@ if [ $type_run = "bash" ]; then
         $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
     done
 
-elif [ $type_run = "sbatch" ]; then
+elif [ $type_run = "parallel" ]; then
     max=$((num_images-step))
     for i in $(eval echo "{1..$max}");
     do
@@ -53,7 +53,7 @@ elif [ $type_run = "sbatch" ]; then
     # Code if you want to anaylze the images one by one: for i in $(eval echo "{1..$num_images}"); do 
     for i in $(seq $chunk_start $(($chunk_start+$chunk_size-1))); do
         image="${raw_imgs[i]}"
-        $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
+        $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir &
     done
 
 else

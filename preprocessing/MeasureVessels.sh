@@ -13,20 +13,20 @@
 ####### --array=1-582 #UKBB
 #SBATCH --array=1-26 #CoLaus is_color=False
 
-source ../configs/config_local.sh
+source ../configs/config_.sh
 begin=$(date +%s)
 
-if [ $type_run = "bash" ]; then
+if [ $type_run = "one_by_one" ]; then
     chunk_start=1 
     chunk_size=$num_images 
-elif [ $type_run = "sbatch" ]; then
+elif [ $type_run = "parallel" ]; then
     # job array
     j_array_params=$PWD/helpers/MeasureVessels/j_array_params.txt
     PARAM=$(sed "${SLURM_ARRAY_TASK_ID}q;d" $j_array_params)
     chunk_start=$(echo $PARAM | cut -d" " -f1)
     chunk_size=$(echo $PARAM | cut -d" " -f2)
 else
-    echo "You only can run with bash or sbatch, specify what you want to use on config."
+    echo "You only can run it one ba one or in parallel, specify what you want to use on config_."
 fi
 
 mkdir -p $dir_ARIA_output

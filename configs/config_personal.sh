@@ -2,14 +2,13 @@
 # REMEMBER!: Do not use spaces: "dir = x", this will lead to errors, instead use "dir=x"
 
 #### SELECT THE DATA SET YOU WANT TO USE:
-data_set=DRIVE #options: DRIVE, IOSTAR, CHASEDB1
-image_type=*.tif #options: *.jpg, *.tif, ...
-#### TYPE_OF_VESSEL_OF_INTERE ST:
+data_set=DRIVE #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
+image_type=*.tif #options: *.jpg, *.tif, *.png, ...
+
+#### TYPE OF VESSEL OF INTEREST:
 TYPE_OF_VESSEL_OF_INTEREST="all" # [artery|vein|all] 
 
 PHENOTYPE_OF_INTEREST='bifurcations' #posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios' , 'vascular_density', etc # TO DO: Add option to select all
-type_run="parallel" # ["one_by_one", "parallel"]
-step=2 # You can change it
 
 #### BASE DIRS:
 #   You have to define:
@@ -25,34 +24,37 @@ step=2 # You can change it
 #   Remark: Remember that you have to include the images and the matlab code with you run the matlab code: addpath(genpath('$genpath_dir'))
 #   ---------------------------------------------------------------- 
 
+#### BASE DIRECTORY
+code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/'
 
-#### Needed to be changed:
-code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' 
-lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
-python_dir=/Users/sortinve/PycharmProjects/pythonProject/venv/bin/python
-code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/' #Needed to change
-
-
-dir_images=$code_dir'/input/'$data_set'_images/'$data_set'/'
+#### INPUT
 dir_images2=$code_dir'/input/'$data_set'_images/'
-lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
-classification_output_dir=$code_dir'/input/'$data_set'_AV_maps/'
+if [[ "$image_type" == *.png ]]; then
+	ln -s $dir_images2 $dir_images2/$data_set
+else
+	dir_images=$dir_images2/$data_set'/'
+fi
+ALL_IMAGES=$dir_images2/noQC.txt
+
+n_img=$(ls $dir_images2 | wc -l)
+echo Number of images equal to $n_img
+
+#### OUTPUT
 dir_ARIA_output=$code_dir'/output/ARIA_output_'$data_set'/'
-ARIA_dir=$code_dir'/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/'
 MeasureVessels_dir=$code_dir'/output/VesselMeasurements/'$data_set'/'
 phenotypes_dir=$code_dir'/output/phenotypes_'$data_set'_'$TYPE_OF_VESSEL_OF_INTEREST'/'
-ALL_IMAGES=$dir_images2/noQC.txt
 genpath_dir=$code_dir
+classification_output_dir=$code_dir'/input/'$data_set'_AV_maps/'
 
-#### SELECT NUMBER OF RAW IMAGES DEPENDING ON THE DATA SET SELECTED:
-# TO DO: INSTEAD OF DEFINE IT COUNT THE NUMBER OF IMAGES IN THE FOLDER!  using: ls | wc -l
-if [ "$data_set" = "CHASEDB1" ]; then
-    num_images=28 #28
-elif [ "$data_set" = "DRIVE" ]; then
-    num_images=20 #20
-elif [ "$data_set" = "IOSTAR" ]; then
-    num_images=30 #30
-else
-    num_images=0 # TO DO: Add error!
-fi
-echo Number of images equal to $num_images	
+# SOFTWARE
+ARIA_dir=$code_dir'/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/'
+lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
+lwnet_gpu=False
+python_dir=/Users/sortinve/PycharmProjects/pythonProject/venv/bin/python
+
+#### PARALLEL COMPUTING
+type_run="one_by_one" # ["one_by_one", "parallel"]
+n_cpu=4
+step_size=$((n_img/n_cpu))
+batch_max=$((n_cpu * step_size))
+remainder=$(( n_img - step_size * n_cpu ))

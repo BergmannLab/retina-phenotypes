@@ -1,4 +1,4 @@
-#!/bin/bash  ##TO DO, can we delete???
+#!/bin/bash
 #SBATCH --account=sbergman_retina
 #SBATCH --job-name=⚡lwnet⚡
 #SBATCH --output=helpers/ClassifyAVUncertain/slurm_runs/slurm-%x_%j.out
@@ -28,18 +28,23 @@ mkdir $classification_output_dir
 if [ $type_run = "one_by_one" ]; then
     #### Artery Vein segementation using WNET:
     cd $lwnet_dir
-    raw_imgs=( "$dir_images"* )
-    for i in $(eval echo "{1..$num_images}"); do 
-        image="${raw_imgs[i]}"
-        $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
+    for i in $(ls $dir_images); do
+        image=$i
+	if [ $lwnet_gpu = "False" ]; then
+            $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $dir_images/$image --result_path $classification_output_dir
+        else
+	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $dir_images/$image --result_path $classification_output_dir --device cuda:0
+        fi
     done
 
 elif [ $type_run = "parallel" ]; then
-    max=$((num_images-step))
+    max=$((n_img-step_size))
+    echo hi $n_img $step_size
+    echo $max
     for i in $(eval echo "{1..$max}");
     do
-    echo "$i $((i+step))"
-    i=$((i+step))
+    echo "$i $((i+step_size))"
+    i=$((i+step_size))
     done > $PWD/helpers/ClassifyAVUncertain/j_array_params.txt
 
     j_array_params=$PWD/helpers/ClassifyAVUncertain/j_array_params.txt 
@@ -50,10 +55,14 @@ elif [ $type_run = "parallel" ]; then
     #### Artery Vein segementation using WNET: (Analyze many image at the same time)
     cd $lwnet_dir
     raw_imgs=( "$dir_images"* )
-    # Code if you want to anaylze the images one by one: for i in $(eval echo "{1..$num_images}"); do 
+    # Code if you want to anaylze the images one by one: for i in $(eval echo "{1..$n_img}"); do 
     for i in $(seq $chunk_start $(($chunk_start+$chunk_size-1))); do
         image="${raw_imgs[i]}"
-        $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir &
+        if [ $lwnet_gpu = "False" ]; then
+	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir &
+        else
+	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0 &
+        fi
     done
 
 else

@@ -124,7 +124,6 @@ for ii = chunk_end:-1:chunk_start  %mattia: updating for loop accordingly
     AV_file_name = [path_to_AV_classified, fn_im(ii).name]; % raw AV uncertain map image
 	try
         disp(strcat("processing: ", fn_im(ii).name))
-        disp(file_name)
     	[vd_algorithm, processing_time(ii)] = Vessel_Data_IO.load_from_file(file_name, AV_file_name, processor, settings, AV_option, AV_thr, minQCthr1, maxQCthr1, minQCthr2, maxQCthr2, path_to_output);
 	catch ME
         % mattia: skipping on exception

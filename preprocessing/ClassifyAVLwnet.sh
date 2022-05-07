@@ -16,28 +16,31 @@ source ../configs/config_.sh
 begin=$(date +%s)
 
 #### Create the folder where the after preprocessing images are going to be located (for the dataset selected):
-mkdir $dir_images
+if [[ "$image_type" != *.png ]]; then
+	mkdir $dir_images
+fi
 # TO DO: Add a step to can avoid this step if needed:
 #### Preprocessing: .png format, avoid spaces in names, and create file with images names:
 
 $python_dir basic_preprocessing.py $dir_images2 $dir_images $image_type
 
 #### Create the folder where the AV maps are going to be located (for the dataset selected):
+echo $classification_output_dir
 mkdir $classification_output_dir
 
-if [ $type_run = "one_by_one" ]; then
+if [[ $type_run = one_by_one ]]; then
     #### Artery Vein segementation using WNET:
     cd $lwnet_dir
-    for i in $(ls $dir_images); do
+    for i in $(ls $dir_images/*.png); do
         image=$i
-	if [ $lwnet_gpu = "False" ]; then
-            $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $dir_images/$image --result_path $classification_output_dir
+	if [[ $lwnet_gpu = False ]]; then
+            $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
         else
-	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $dir_images/$image --result_path $classification_output_dir --device cuda:0
+	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0
         fi
     done
 
-elif [ $type_run = "parallel" ]; then
+elif [[ $type_run = parallel ]]; then
     max=$((n_img-step_size))
     echo hi $n_img $step_size
     echo $max

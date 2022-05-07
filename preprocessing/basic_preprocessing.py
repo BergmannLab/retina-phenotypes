@@ -9,13 +9,15 @@ def remove_spaces(images_input_dir, all_files):
 
 
 # Convert all images to '.png' and create file with all the images names
-def covert_to_png(images_input_dir, images_output_dir, all_files):
+def covert_to_png(images_input_dir, images_output_dir, all_files, filetype):
     with open(images_input_dir + "NoQC.txt", "w") as outfile:
         for filename in all_files:
-            im1 = Image.open(os.path.join(images_input_dir, filename))
             prefix = filename.split('.')[0]
             png_filename = prefix + '.png'
-            im1.save(os.path.join(images_output_dir, png_filename))
+            if filetype != '*.png':
+                im1 = Image.open(os.path.join(images_input_dir, filename))
+                im1.save(os.path.join(images_output_dir, png_filename))
+    
             # Create file with all the images names
             outfile.writelines(png_filename)
             outfile.writelines("\n")
@@ -28,11 +30,10 @@ images_output_dir = sys.argv[2] # dir_images
 filetype = sys.argv[3] # image_type
 
 all_files = [f for f in os.listdir(images_input_dir) if f.endswith(filetype[1:])]
-print(all_files)
 
 remove_spaces(images_input_dir, all_files)
 
 all_files2 = [f for f in os.listdir(images_input_dir) if f.endswith(filetype[1:])]
 print(all_files2)
 print(images_input_dir)
-covert_to_png(images_input_dir, images_output_dir, all_files2)
+covert_to_png(images_input_dir, images_output_dir, all_files2, filetype)

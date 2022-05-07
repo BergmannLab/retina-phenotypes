@@ -13,12 +13,12 @@ PHENOTYPE_OF_INTEREST='bifurcations' #posibilities: 'tva', 'taa', 'bifurcations'
 #### BASE DIRS:
 #   You have to define:
 #           - Your code directory: 'code_dir'
-#           - Where did you installed the lwnet code: 'lwnet_dir'
+#           - Where did you install the lwnet code: 'lwnet_dir'
 #           - The python venv that you want to use: 'python_dir' # This is to try to avoid packages problems :)
 #   ----------------------------------------------------------------
-#   If you do not change the pipeline you do not need to worry about this. 
+#   If you do not change the pipeline, you do not need to worry about this. 
 #	Otherwise, you will need to specify the directory of: 
-#       	- Raw images: 'dir_images' and 'dir_images2' 
+#       	- Raw images: 'dir_images2' 
 #       	- LWnet images output: 'classification_output_dir'
 #   Remark: ARIA is programed to read the raw images from a folfer like: '$data_set'_images/'$data_set'/' If you do not want to change ARIA you should stick to this format
 #   Remark: Remember that you have to include the images and the matlab code with you run the matlab code: addpath(genpath('$genpath_dir'))
@@ -29,14 +29,15 @@ code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIG
 
 #### INPUT
 dir_images2=$code_dir'/input/'$data_set'_images/'
-if [[ "$image_type" == *.png ]]; then
+dir_images=$dir_images2/$data_set'/'
+# If raw images are already in PNG format, dir_images is a symbolic link pointing to the raw images
+if [[ "$image_type" = *.png ]]; then
+	rm $dir_images2/$data_set # clean if pipeline was run before
 	ln -s $dir_images2 $dir_images2/$data_set
-else
-	dir_images=$dir_images2/$data_set'/'
 fi
 ALL_IMAGES=$dir_images2/noQC.txt
 
-n_img=$(ls $dir_images2 | wc -l)
+n_img=$(ls $dir_images2/$image_type | wc -l)
 echo Number of images equal to $n_img
 
 #### OUTPUT

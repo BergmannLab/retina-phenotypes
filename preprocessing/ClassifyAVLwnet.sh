@@ -28,49 +28,32 @@ $python_dir basic_preprocessing.py $dir_images2 $dir_images $image_type
 echo $classification_output_dir
 mkdir $classification_output_dir
 
-if [[ $type_run = one_by_one ]]; then
-    #### Artery Vein segementation using WNET:
-    cd $lwnet_dir
-    for i in $(ls $dir_images/*.png); do
-        image=$i
-	if [[ $lwnet_gpu = False ]]; then
-            $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
+#### Artery Vein segementation using WNET: (Analyze many image at the same time)
+parallel_lwnet () {
+for j in $(seq $1 $2 ); do
+	image="${raw_imgs[ $(( j - 1 )) ]}"
+	if [ $lwnet_gpu = "False" ]; then
+            $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cpu
         else
-	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0
+        	$python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0
         fi
     done
+}
 
-elif [[ $type_run = parallel ]]; then
-    max=$((n_img-step_size))
-    echo hi $n_img $step_size
-    echo $max
-    for i in $(eval echo "{1..$max}");
-    do
-    echo "$i $((i+step_size))"
-    i=$((i+step_size))
-    done > $PWD/helpers/ClassifyAVUncertain/j_array_params.txt
-
-    j_array_params=$PWD/helpers/ClassifyAVUncertain/j_array_params.txt 
-    PARAM=$(sed "${SLURM_ARRAY_TASK_ID}q;d" $j_array_params)
-    chunk_start=$(echo $PARAM | cut -d" " -f1)
-    chunk_size=$(echo $PARAM | cut -d" " -f2)
-
-    #### Artery Vein segementation using WNET: (Analyze many image at the same time)
-    cd $lwnet_dir
-    raw_imgs=( "$dir_images"* )
-    # Code if you want to anaylze the images one by one: for i in $(eval echo "{1..$n_img}"); do 
-    for i in $(seq $chunk_start $(($chunk_start+$chunk_size-1))); do
-        image="${raw_imgs[i]}"
-        if [ $lwnet_gpu = "False" ]; then
-	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir &
-        else
-	    $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0 &
-        fi
-    done
-
-else
-    echo "You only can run with bash or sbatch, specify what you want to use on config"
-fi
+cd $lwnet_dir
+raw_imgs=($dir_images*.png )
+for i in $(seq 1 20); do echo ${raw_imgs[i]}; done
+echo lwnet input $dir_images
+echo $raw_imgs
+for i in $(seq 1 $(( $n_cpu + 1 )) ); do #n_cpu + 1 to force a remainder iteration
+    a=$(( i * step_size ))
+    b=$n_img
+    lower_lim=$(( 1 + $(( $(( i - 1 )) * step_size )) ))
+    upper_lim=$(( a < b ? a : b )) # minimum operation
+    
+    echo Batch $i: from $lower_lim to $upper_lim
+    parallel_lwnet $lower_lim $upper_lim &
+done
 
 ### Rename the LWnet output (for ARIA you need the raw_image and the AV_image to have the same name):
 $python_dir $code_dir/preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 

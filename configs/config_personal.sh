@@ -60,7 +60,7 @@ genpath_dir=$code_dir
 classification_output_dir=$code_dir'/input/'$data_set'_AV_maps/'
 
 #### PARALLEL COMPUTING
-type_run="one_by_one" # ["one_by_one", "parallel"]
+#to run one by one, set n_cpu=1
 n_cpu=4
 step_size=$((n_img/n_cpu))
 batch_max=$((n_cpu * step_size))

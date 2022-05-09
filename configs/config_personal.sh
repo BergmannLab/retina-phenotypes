@@ -2,8 +2,8 @@
 # REMEMBER!: Do not use spaces: "dir = x", this will lead to errors, instead use "dir=x"
 
 #### SELECT THE DATA SET YOU WANT TO USE:
-data_set=UK_BIOBANK #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
-image_type=*.png #options: *.jpg, *.tif, *.png, ...
+data_set=DRIVE #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
+image_type=*.tif #options: *.jpg, *.tif, *.png, ...
 
 #### TYPE OF VESSEL OF INTEREST:
 TYPE_OF_VESSEL_OF_INTEREST="all" # [artery|vein|all] 

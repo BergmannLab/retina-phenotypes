@@ -25,7 +25,7 @@ script_dir=$PWD/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests
 #for i in $(seq 1 $step_size $batch_max); do echo "ARIA_run_tests 0 REVIEW $dir_images2 $classification_output_dir $TYPE_OF_VESSEL_OF_INTEREST 0.79 $script_dir ${i} $step_size -1 999999 -1 999999 $dir_ARIA_output HAAVA"; done
 
 # OPTION 0
-rm $dir_input/$aria_processor/* # clean old ARIA output
+rm $dir_ARIA_output/* # clear old ARIA output
 cd $script_dir
 if (( $batch_max > 0 )); then
     for i in $(seq 1 $step_size $batch_max); do (nohup nice matlab -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW $dir_input $classification_output_dir $TYPE_OF_VESSEL_OF_INTEREST 0.79 $script_dir $i $step_size -1 999999 -1 999999 $dir_ARIA_output $aria_processor" > $base_dir/batch$i.txt &); done

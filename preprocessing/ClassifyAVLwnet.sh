@@ -55,6 +55,8 @@ for i in $(seq 1 $(( $n_cpu + 1 )) ); do #n_cpu + 1 to force a remainder iterati
     parallel_lwnet $lower_lim $upper_lim &
 done
 
+wait
+
 ### Rename the LWnet output (for ARIA you need the raw_image and the AV_image to have the same name):
 $python_dir $code_dir/preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 
 

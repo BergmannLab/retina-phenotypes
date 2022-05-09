@@ -91,6 +91,12 @@ else
     end
     % Remove small objects and fill holes
     vessel_data.bw = clean_segmented_image(vessel_data.bw, args.iuwt_px_remove * scale, args.iuwt_px_fill * scale);
+    %imwrite(vessel_data.im_orig, "/tmp/"+vessel_data.file_name+"_orig.png")
+    %imwrite(vessel_data.bw, "/tmp/"+vessel_data.file_name+"_aria_segmentation.png")
+    vessel_data.bw = rgb2gray(vessel_data.artery_vein_map)
+    vessel_data.bw(vessel_data.bw>0)=255
+    %imwrite(vessel_data.bw, "/tmp/"+vessel_data.file_name+"_lwnet_segmentation_bw.png")
+    %imwrite(vessel_data.artery_vein_map, "/tmp/"+vessel_data.file_name+"_lwnet_segmentation_col.png");
 end
 
 % Set DARK property of vessel_data

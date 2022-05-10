@@ -9,6 +9,8 @@ def remove_bin_seg(images_input_dir, all_files):
         prefix = filename.split('_bin_seg.')[0]
         png_filename = f'{prefix}.png'
         im1.save(os.path.join(images_input_dir, png_filename))
+        # remove the images repeated with _bin_seg
+        os.remove(os.path.join(images_input_dir, filename))
 
 images_input_dir = sys.argv[1] 
 filetype = '_bin_seg.png' 
@@ -18,4 +20,3 @@ print(all_files)
 
 remove_bin_seg(images_input_dir, all_files)
 
-#TO DO remove the images repeated with _bin_seg!!!!

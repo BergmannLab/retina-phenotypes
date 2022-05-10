@@ -24,10 +24,10 @@ PHENOTYPE_OF_INTEREST='bifurcations' #posibilities: 'tva', 'taa', 'bifurcations'
 #   Remark: Remember that you have to include the images and the matlab code with you run the matlab code: addpath(genpath('$genpath_dir'))
 #   ---------------------------------------------------------------- 
 
-#### BASE DIRECTORY
+#### PROJECT ROOT
 code_dir='/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/'
 
-# SOFTWARE
+#### SOFTWARE
 ARIA_dir=$code_dir'/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/'
 # aria_processor needs to be specified because we process UK Biobank images with the CLRIS processor:
 if [[ $data_set == UK_BIOBANK ]]; then
@@ -40,24 +40,25 @@ lwnet_gpu=False
 python_dir=/Users/sortinve/PycharmProjects/pythonProject/venv/bin/python
 
 #### INPUT
-dir_images2=$code_dir'/input/'$data_set'_images/'
-dir_images=$dir_images2/$aria_processor'/'
+dir_input=$code_dir/input/$data_set/
+dir_images2=$dir_input/raw/
+dir_images=$dir_input/$aria_processor/
 # If raw images are already in PNG format, dir_images is a symbolic link pointing to the raw images
 if [[ "$image_type" = *.png ]]; then
-	rm $dir_images2/$aria_processor # clean if pipeline was run before
-	ln -s $dir_images2 $dir_images2/$aria_processor
+	rm $dir_input/$aria_processor # clean if pipeline was run before
+	ln -s $dir_images2 $dir_input/$aria_processor
 fi
-ALL_IMAGES=$dir_images2/noQC.txt
-
+ALL_IMAGES=$dir_input/noQC.txt
 n_img=$(ls $dir_images2/$image_type | wc -l)
 echo Number of images equal to $n_img
 
+classification_output_dir=$dir_input/AV_maps/
+
 #### OUTPUT
-dir_ARIA_output=$code_dir'/output/ARIA_output_'$data_set'/'
-MeasureVessels_dir=$code_dir'/output/VesselMeasurements/'$data_set'/'
-phenotypes_dir=$code_dir'/output/phenotypes_'$data_set'_'$TYPE_OF_VESSEL_OF_INTEREST'/'
+dir_ARIA_output=$code_dir/output/$data_set/ARIA_output/
+MeasureVessels_dir=$code_dir/output/$data_set/VesselMeasurements/
+phenotypes_dir=$code_dir/output/$data_set/phenotypes_$TYPE_OF_VESSEL_OF_INTEREST/
 genpath_dir=$code_dir
-classification_output_dir=$code_dir'/input/'$data_set'_AV_maps/'
 
 #### PARALLEL COMPUTING
 #to run one by one, set n_cpu=1

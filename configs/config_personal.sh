@@ -49,11 +49,7 @@ if [[ "$image_type" = *.png ]]; then
 	ln -s $dir_images2 $dir_input/$aria_processor
 fi
 ALL_IMAGES=$dir_input/noQC.txt
-<<<<<<< HEAD
-n_img=$(ls $dir_images2/$image_type | wc -l)
-=======
 n_img=$(ls $dir_images2 | wc -l)
->>>>>>> folder_structure
 echo Number of images equal to $n_img
 
 classification_output_dir=$dir_input/AV_maps/

@@ -22,7 +22,7 @@ fi
 # TO DO: Add a step to can avoid this step if needed:
 #### Preprocessing: .png format, avoid spaces in names, and create file with images names:
 
-$python_dir basic_preprocessing.py $dir_images2 $dir_images $image_type
+$python_dir basic_preprocessing.py $dir_images2 $dir_images $dir_input $image_type
 
 #### Create the folder where the AV maps are going to be located (for the dataset selected):
 echo $classification_output_dir

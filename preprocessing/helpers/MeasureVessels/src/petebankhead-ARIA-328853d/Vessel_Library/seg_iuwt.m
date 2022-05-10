@@ -72,29 +72,36 @@ if prompt
         vessel_data.bw = bw;
     end
 else
+    
+    % ORIGINAL ARIA segmentation
+        
     % Use default values
     % Use distance transform for basic inpainting to improve wavelet transform
     % calculation if using a mask
-    if ~isempty(vessel_data.bw_mask) && args.iuwt_inpainting
-        im = dist_inpainting(vessel_data.im, vessel_data.bw_mask);
-    else
-        im = vessel_data.im;
-    end
+    %if ~isempty(vessel_data.bw_mask) && args.iuwt_inpainting
+    %    im = dist_inpainting(vessel_data.im, vessel_data.bw_mask);
+    %else
+    %    im = vessel_data.im;
+    %end
     % Compute IUWT and do segmentation
-    w = iuwt_vessels(im, args.iuwt_w_levels);
-    vessel_data.bw = percentage_segment(w, args.iuwt_w_thresh, args.iuwt_dark, vessel_data.bw_mask);
+    %w = iuwt_vessels(im, args.iuwt_w_levels);
+    %vessel_data.bw = percentage_segment(w, args.iuwt_w_thresh, args.iuwt_dark, vessel_data.bw_mask);
     % Get total number of pixels to convert percentages
-    if ~isempty(vessel_data.bw_mask)
-        scale = nnz(vessel_data.bw_mask) / 100;
-    else
-        scale = numel(vessel_data.bw) / 100;
-    end
+    %if ~isempty(vessel_data.bw_mask)
+    %    scale = nnz(vessel_data.bw_mask) / 100;
+    %else
+    %    scale = numel(vessel_data.bw) / 100;
+    %end
     % Remove small objects and fill holes
-    vessel_data.bw = clean_segmented_image(vessel_data.bw, args.iuwt_px_remove * scale, args.iuwt_px_fill * scale);
+    %vessel_data.bw = clean_segmented_image(vessel_data.bw, args.iuwt_px_remove * scale, args.iuwt_px_fill * scale);
+    
+    
+    % LWNET segmentation
+
     %imwrite(vessel_data.im_orig, "/tmp/"+vessel_data.file_name+"_orig.png")
     %imwrite(vessel_data.bw, "/tmp/"+vessel_data.file_name+"_aria_segmentation.png")
-    vessel_data.bw = rgb2gray(vessel_data.artery_vein_map)
-    vessel_data.bw(vessel_data.bw>0)=255
+    vessel_data.bw = rgb2gray(vessel_data.artery_vein_map);
+    vessel_data.bw(vessel_data.bw>0)=255;
     %imwrite(vessel_data.bw, "/tmp/"+vessel_data.file_name+"_lwnet_segmentation_bw.png")
     %imwrite(vessel_data.artery_vein_map, "/tmp/"+vessel_data.file_name+"_lwnet_segmentation_col.png");
 end

@@ -38,6 +38,7 @@ fi
 lwnet_dir='/Users/sortinve/develop/Codigos_github/lwnet/'
 lwnet_gpu=False
 python_dir=/Users/sortinve/PycharmProjects/pythonProject/venv/bin/python
+matlab_dir=/Applications/MATLAB_R2020b.app/bin/matlab
 
 #### INPUT
 dir_input=$code_dir/input/$data_set/

@@ -67,6 +67,59 @@ def main_tva_or_taa(imgname_and_filter: str and int) -> dict:
         return {'mean_angle': np.nan}
 
 
+def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
+    """
+    :param imgname_and_filter:
+    :return:
+    """
+    try:
+        imgname = imgname_and_filter[0]
+        filter_type = imgname_and_filter[1]
+        imageID = imgname.split(".")[0]
+        df_pintar = read_data(imageID, diameter=True)
+        df_pintar['type'] = np.sign(df_pintar['type'])
+        OD_position = df_OD[df_OD['image'] == imgname]
+        OD_position.dropna(subset=['center_x_y'], inplace=True)
+        return {
+            'median_CRE': None
+            if OD_position.empty
+            else compute_CRE(df_pintar, OD_position, filter_type)
+        }
+
+    except Exception as e:
+        print(e)
+        return {'median_CRE': np.nan}
+
+def compute_CRE(df_pintar, OD_position, filter_type=-1):
+    """
+    :param df_pintar:
+    :param OD_position:
+    :param filter_type:
+    :return:
+    """
+    df_veins_arter = get_intersections(df_pintar, OD_position, filter_type)
+    return df_veins_arter['Diameter'].median()
+
+def get_intersections(df_pintar, OD_position, filter_type):
+    """
+    :param df_pintar:
+    :param OD_position:
+    :param filter_type:
+    :return:
+    """
+    angle = np.arange(0, 360, 0.01)
+    df_pintar['X'] = df_pintar['X'].round(0)
+    df_pintar['Y'] = df_pintar['Y'].round(0)
+    radius = [240, 280] # TO DO: Read diameter OD
+    for p in radius: 
+        new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
+        df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
+        df_veins_arter.sort_values(by=['Diameter'], ascending=False, inplace=True)
+        # TO DO: Select only those with less than a certain value
+    return df_veins_arter
+
+
+
 def diameter_variability(imgname_and_filter: str and int) -> dict:
     """
     :param imgname_and_filter:

@@ -29,7 +29,11 @@ Code: `bash ClassifyAVLwnet.sh' or `sbatch ClassifyAVLwnet.sh'
 Output: Matlab output.  In the folder: ....
 Code: `bash MeasureVessels.sh' or  `sbatch MeasureVessels.sh' 
 
-4 - Run `preprocessing/run_measurePhenotype.sh`. 
+4 - Run `preprocessing/predict_optic_disc.sh`.
+Output: Optic disc positions in `output/*dataset*/optic_disc/`
+Code: `./predict_optic_disc.sh`
+
+5 - Run `preprocessing/run_measurePhenotype.sh`. 
 Output: Trait measurements 
 Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh' 
 
@@ -41,8 +45,3 @@ Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh'
 
 ## Reminders:
 If you are not familiar with bash scripts and you want to change the code, the spaces are very imports!(Avoid when define variables, as use when conditions)
-
-# Optic disc prediction using training weights from UK Biobank
-1 - Generate the test dataset in required square 256x256px format: `preprocessing/optic-nerve-cnn/scripts/TEST_organize_datasets.ipynb` : Point to your dataset of choice, define output path, and modify the number of cores, and then run all the cells.
-
-2 - Predict using the generated dataset : `preprocessing/optic-nerve-cnn/scripts/TEST_unet_od_on_ukbiobank.ipynb` : Change indir,outdir and no_batches accordingly, then run sequentially.

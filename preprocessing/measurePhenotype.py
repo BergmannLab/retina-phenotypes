@@ -20,7 +20,7 @@ qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/
 phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR'  
 OD_output_dir = sys.argv[5]
-df_OD = pd.read_csv(OD_output_dir+"OD_position.csv", sep=',')
+df_OD = pd.read_csv(OD_output_dir+"od_all.csv", sep=',')
 
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 

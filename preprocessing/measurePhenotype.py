@@ -735,7 +735,6 @@ def compute_neo_vascularization_od(df_pintar, OD_position):
     df_vessel_pixels_OD = compute_vessel_radius_pixels(df_pintar, radius, OD_position)
     return compute_od_green_pixels_fraction(df_vessel_pixels_OD, n_rows)
 
-
 def create_output_(out, imgfiles, function_to_execute, imgfiles_length):
     """
     :param out:
@@ -744,18 +743,30 @@ def create_output_(out, imgfiles, function_to_execute, imgfiles_length):
     :param imgfiles_length:
     :return:
     """
-    df = pd.DataFrame(out)
-    df = df.set_index(imgfiles[:imgfiles_length])
 
-    print(len(df), "image measurements taken")
-    print("NAs per phenotype")
-    print(df.isna().sum())
     output_path = os.path.join(
         phenotype_dir,
         f'{datetime.now().strftime("%Y-%m-%d")}_{function_to_execute}.csv',
     )
+
+    if function_to_execute == "aria_phenotypes":
+        first_statsfile = pd.read_csv(aria_measurements_dir + "1027180_21015_0_0_all_segmentStats.tsv", sep='\t')
+        cols = first_statsfile.columns
+        cols_full = [i + "_all" for i in cols] + [i + "_artery" for i in cols] + [i + "_vein" for i in cols]\
+        +  [i + "_longestFifth_all" for i in cols] + [i + "_longestFifth_artery" for i in cols] + [i + "_longestFifth_vein" for i in cols]\
+        +  ["nVessels"]
+
+        df = pd.DataFrame(out, columns=cols_full)
+    else:
+        df = pd.DataFrame(out)
+
+    df = df.set_index(imgfiles[:imgfiles_length])
     df.to_csv(output_path)
     df.to_pickle(output_path.replace('.csv','.pkl'))
+
+    print(len(df), "image measurements taken")
+    print("NAs per phenotype")
+    print(df.isna().sum())
 
 if __name__ == '__main__':
     # command line arguments

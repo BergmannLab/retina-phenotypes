@@ -142,8 +142,9 @@ def generate_batch(variables):
 # ukb generation in parallel
 
 from multiprocessing import Pool
+if __name__ == "__main__":   
 
-pool = Pool(n_cpus)
-print(batches)
-times = pool.map(generate_batch, batches)
-pool.close()
+    pool = Pool(n_cpus)
+    print(batches)
+    times = pool.map(generate_batch, batches)
+    pool.close()

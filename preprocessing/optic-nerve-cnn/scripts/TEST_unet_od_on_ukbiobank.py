@@ -21,16 +21,9 @@ outdir = indir
 no_batches = int(sys.argv[2])
 dataset = sys.argv[3]
 
-# In[3]:
-
-
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'#"1",""
-
-
 # In[4]:
 
-
+import os
 import glob
 from datetime import datetime
 #import warnings
@@ -71,7 +64,7 @@ from keras import backend as K
 
 
 # # running on CPU instead of GPU
-# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'

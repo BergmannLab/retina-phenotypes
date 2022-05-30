@@ -399,8 +399,8 @@ def read_data(imageID, diameter=False):
 
     :return:
     """
-    x = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center1Coordinates.tsv")
-    y = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center2Coordinates.tsv")
+    x = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center2Coordinates.tsv")
+    y = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center1Coordinates.tsv")
     df_all_seg = pd.read_csv(f"{aria_measurements_dir}/{imageID}_all_segmentStats.tsv", sep='\t')
     df_all_seg.reset_index(inplace=True)
     if diameter:

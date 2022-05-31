@@ -21,7 +21,7 @@ qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/
 phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR'  
 OD_output_dir = sys.argv[5]
-df_OD = pd.read_csv(OD_output_dir+"OD_position.csv", sep=',')
+df_OD = pd.read_csv(OD_output_dir+"od_all.csv", sep=',')
 
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
@@ -111,12 +111,16 @@ def get_intersections(df_pintar, OD_position, filter_type):
     angle = np.arange(0, 360, 0.01)
     df_pintar['X'] = df_pintar['X'].round(0)
     df_pintar['Y'] = df_pintar['Y'].round(0)
-    radius = [240, 280] # TO DO: Read diameter OD
+    r1 = (OD_position['width'] + OD_position['height'])/2
+    radius = [1.5*r1.iloc[0], 2*r1.iloc[0]]
     for p in radius: 
         new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
         df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
         df_veins_arter.sort_values(by=['Diameter'], ascending=False, inplace=True)
-        # TO DO: Select only those with less than a certain value
+        # Two options: Select only those with less than a certain diameter value, or select the N first 
+        #df_veins_arter = df_veins_arter.head(n=5) 
+        limit_diameter = 2 # Select it better 
+        df_veins_arter = df_veins_arter[df_veins_arter['Diameter']>limit_diameter]
     return df_veins_arter
 
 
@@ -400,8 +404,8 @@ def read_data(imageID, diameter=False):
 
     :return:
     """
-    x = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center1Coordinates.tsv")
-    y = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center2Coordinates.tsv")
+    x = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center2Coordinates.tsv")
+    y = get_data_unpivot(f"{aria_measurements_dir}/{imageID}_all_center1Coordinates.tsv")
     df_all_seg = pd.read_csv(f"{aria_measurements_dir}/{imageID}_all_segmentStats.tsv", sep='\t')
     df_all_seg.reset_index(inplace=True)
     if diameter:
@@ -800,6 +804,7 @@ if __name__ == '__main__':
     # fuction_to_execute posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios'
     fuction_to_execute = sys.argv[6]  # 'tva' 
     filter_tva_taa = 1 if fuction_to_execute == 'taa' else (-1 if fuction_to_execute == 'tva' else None)
+    filter_CRAE_CRVE = 1 if fuction_to_execute == 'CRAE' else (-1 if fuction_to_execute == 'CRVE' else None)
     # all the images
     imgfiles = pd.read_csv(qcFile, header=None)
     imgfiles = imgfiles[0].values
@@ -815,6 +820,9 @@ if __name__ == '__main__':
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_tva_taa]))
         out = pool.map(main_tva_or_taa, imgages_and_filter)
         # create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print( "you didn't chosee any fuction")
+    if fuction_to_execute in {'CRAE', 'CRVE'}:
+        imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_CRAE_CRVE]))
+        out = pool.map(main_CRAE_CRVE, imgages_and_filter)
     elif fuction_to_execute == 'bifurcations':
         out = pool.map(main_bifurcations, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'green_segments':

@@ -1,6 +1,7 @@
 import itertools
 import os, sys
 from datetime import datetime
+from scipy.spatial import distance_matrix
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -441,7 +442,7 @@ def ang(lineA, lineB):
     :param lineB:
     :return:
     """
-    # Get nicer vector form
+    # Get nicer vector formå
     vA = [(lineA[0][0] - lineA[1][0]), (lineA[0][1] - lineA[1][1])]
     vB = [(lineB[0][0] - lineB[1][0]), (lineB[0][1] - lineB[1][1])]
     # Get dot prod
@@ -485,6 +486,7 @@ def bifurcation_counter(df_results, imageID):
     :param df_results:
     :return:
     """
+    norm_acceptance=7.5
     X_1_aux = X_2_aux = 0.0
     bif_counter = 0
     cte = 3.5
@@ -508,14 +510,13 @@ def bifurcation_counter(df_results, imageID):
                 and (y[j] <= y[s] + cte)
                 and index_v[j] != index_v[s]
                 and (dis_type[j] == dis_type[s])
-                and (dis_type[j] != 0 or dis_type[s] != 0)
-                and (
+                and (dis_type[j] != 0 and dis_type[s] != 0)
+                and ( # With this condition we avoid having most of the repetitions 
                     x[j] != X_1_aux
                     and x[s] != X_1_aux
                     and x[j] != X_2_aux
                     and x[s] != X_2_aux
                     )):
-                bif_counter = bif_counter + 1
                 X_1_aux = x[s]
                 X_2_aux = x[j]
                 data = {
@@ -525,8 +526,12 @@ def bifurcation_counter(df_results, imageID):
                     'i': index_v[j]}
                 aux.append(data)
 
-    # Save the position of the bifurcations per image
+    ## Correct for the few repetitions remained
     df_bif_positions = pd.DataFrame(aux)
+    df_bif_positions = delete_points_very_close(df_bif_positions, norm_acceptance)
+    bif_counter=len(df_bif_positions)
+
+    # Save the position of the bifurcations per image
     dir_bif_position=phenotype_dir + 'bifurcations_position/'
     if not os.path.exists(dir_bif_position):
         os.mkdir(dir_bif_position)
@@ -534,6 +539,25 @@ def bifurcation_counter(df_results, imageID):
 
     return bif_counter
 
+def delete_points_very_close(df_bif_positions, norm_acceptance):
+    #compute distance 
+    df_bif_aux= pd.DataFrame([])
+    df_bif_aux['X']=df_bif_positions['X']
+    df_bif_aux['Y']=df_bif_positions['Y']
+
+    distance=pd.DataFrame(distance_matrix(df_bif_aux.values, df_bif_aux.values), index=df_bif_aux.index, columns=df_bif_aux.index)
+    distance = pd.DataFrame(np.tril(distance))
+    distance = distance.replace(0, np.nan)
+    auxiliar=distance[distance < norm_acceptance]
+    auxiliar=auxiliar.unstack().reset_index()
+    auxiliar.columns=['row','column','Norm']
+    cols = auxiliar.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    auxiliar = auxiliar[cols]
+    auxiliar = auxiliar.dropna()
+    df_bif_positions = df_bif_positions.drop(auxiliar['row'].to_list())
+
+    return df_bif_positions
 
 def circular_df_filter(radio, angle, od_position, df_pintar):
     """

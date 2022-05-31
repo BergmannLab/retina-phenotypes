@@ -354,7 +354,6 @@ def batch_od_detection(batchno):
     # | | | |
     #  - - -
     
-#     print('aloha')
     
     top_limit = 256/3
     bottom_limit = 256/3*2
@@ -370,7 +369,7 @@ def batch_od_detection(batchno):
         left_limit = 999999
         right_limit = 0
 
-    print(top_limit, bottom_limit, left_limit, right_limit)
+    #print(top_limit, bottom_limit, left_limit, right_limit)
 
     for batch_i in range(0,len(files)):
 
@@ -397,7 +396,7 @@ def batch_od_detection(batchno):
 
         # computations
         num_labels, labels_im, stats, d = cv2.connectedComponentsWithStats(out_cv2)
-        print(num_labels)
+        #print(num_labels)
         if len(labels_im) > 0:
             labeled_img = imshow_components(labels_im)
             # ax4.imshow(labeled_img)
@@ -510,10 +509,10 @@ for i in range(1,no_batches+1):
     
     if i==1:
         df_out = df
-        print(df_out.shape)
+        #print(df_out.shape)
     else:
         df_out = pd.concat([df_out,df])
-        print(df_out.shape)
+        #print(df_out.shape)
 
 
 # In[17]:

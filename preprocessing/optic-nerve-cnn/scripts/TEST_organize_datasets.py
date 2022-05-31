@@ -90,7 +90,6 @@ def generate_batch(variables):
         h5f.create_dataset("filenames", data=np.array(batch_files, dtype='S'))
         img_ds = h5f.create_dataset('raw_256px',shape=(stop-start_b, 256, 256,3), dtype=int)
         for cnt, ifile in enumerate(batch_files) :
-            print('hiii')
             # if cnt % 1000 == 0:
             #     print(cnt)
 
@@ -145,6 +144,6 @@ from multiprocessing import Pool
 if __name__ == "__main__":   
 
     pool = Pool(n_cpus)
-    print(batches)
+    #print(batches)
     times = pool.map(generate_batch, batches)
     pool.close()

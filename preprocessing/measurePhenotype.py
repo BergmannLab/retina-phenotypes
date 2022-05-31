@@ -111,8 +111,8 @@ def get_intersections(df_pintar, OD_position, filter_type):
     angle = np.arange(0, 360, 0.01)
     df_pintar['X'] = df_pintar['X'].round(0)
     df_pintar['Y'] = df_pintar['Y'].round(0)
-    r1 = (OD_position['width'] + OD_position['height'])/2
-    radius = [1.5*r1.iloc[0], 2*r1.iloc[0]]
+    r1 = (OD_position['width'] + OD_position['height'])/4
+    radius = [2*r1.iloc[0], 2.5*r1.iloc[0]]
     for p in radius: 
         new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
         df_veins_arter = new_df_2[new_df_2["type"] == filter_type]

@@ -1,24 +1,34 @@
+# Bryhnild directories to avoid duplications:
+* All the files with the phenotypes measurement (with images names) can be found in: '/NVME/decrypted/ukbb/fundus/phenotypes/'
+* All the phenofiles and the phenofiles_qqnorm can be found in: ' '
+* All the coordinates values (with centerlines) and the ARIA diameters for different QC can be found in: '/NVME/decrypted/ukbb/fundus/2021_10_rawMeasurements/'
+* All the UKBB data can be found in: '/NVME/decrypted/ukbb/labels/'
+
 # Retina images traits: 
 
-## Traits measured:
+## Main traits measured:
 * Median diameter of: all the vessels, only arteries, only veins (' ')
-* Median tortuosity of: all the vessels, only arteries, only veins (' ')
+* Median tortuosity (DF) of: all the vessels, only arteries, only veins (' ')
 * Ratio between the diameters of the arteies and the diameters of the veins (' ')
 * Ratio between the tortuosity of the arteies and the tortuosity of the veins (' ')
 * Number of bifurcations and branching ('bifurcations')
-* Main Temporal Venular Angle ('tva')
-* Main Temporal Arteriolar Angle ('taa') 
-* TO DO: define N_green or others 
+* Main Temporal Venular Angle ('tva') and Main Temporal Arteriolar Angle ('taa') 
+* CRAE and CRVE 
+* Variability on the diameter and on the tortuosity
 * Fractal Dimensionality ()
 * Vascular Density () 
+* Vascular Density () 
 
+## Baseline traits measured:
+* Intensity variability
+* others?
+* The follow are probably to delete:  N_green_pixels, N_green_segments, OD_segments, etc
 
-## Requirements:
-
+# Requirements:
 * You will need to download WNET 
 * Matlab licence (if you have not acess there are still some traits you can measure)
 
-## Pipeline:
+# Pipeline:
 1- Modify `configs/config_local.sh`
 
 2 - Run `preprocessing/ClassifyAVLwnet.sh`. 

@@ -21,7 +21,7 @@ qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/
 phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR'  
 OD_output_dir = sys.argv[5]
-df_OD = pd.read_csv(OD_output_dir+"od_all.csv", sep=',')
+df_OD = pd.read_csv(OD_output_dir+"/od_all.csv", sep=',')
 
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
@@ -125,18 +125,16 @@ def get_intersections(df_pintar, OD_position, filter_type):
 
 
 
-def diameter_variability(imgname_and_filter: str and int) -> dict:
+def diameter_variability(imgname: str) -> dict:
     """
     :param imgname_and_filter:
     :return:
     """
     try:
-        imgname = imgname_and_filter[0]
-        filter_type = imgname_and_filter[1]
         imageID = imgname.split(".")[0]
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
-        std_values=df_pintar.groupby(['i'])['Diameter'].std()
+        std_values=df_pintar.groupby(['index'])['Diameter'].std()
 
         median_values_vessels = df_pintar.groupby(['type'])['Diameter'].median()
         mean_values_vessels = df_pintar.groupby(['type'])['Diameter'].mean()

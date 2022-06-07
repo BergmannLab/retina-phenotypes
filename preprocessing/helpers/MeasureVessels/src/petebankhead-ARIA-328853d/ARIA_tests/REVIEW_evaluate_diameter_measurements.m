@@ -66,11 +66,12 @@ switch image_set_name
         scale_value = 4;
     case {'HRIS_DOWNSAMPLE'}
         image_set_name = 'HRIS';
-    case {'CLRIS'}
-        image_ext = '.png'; % mattia: changing file extension to match UKBiobank format
     case {'KPIS'}
         % There are two files for KPIS observer markings - we want the second
         observer_set_ext = ' 2.txt';
+    otherwise
+        image_ext = '.png';
+
 end
 
 % Get the directory containing the images of interest

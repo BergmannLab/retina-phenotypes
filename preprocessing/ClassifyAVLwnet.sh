@@ -11,33 +11,54 @@
 #SBATCH --time 01:30:00
 #SBATCH --array=1-582
 
-source $HOME/retina/configs/config.sh
+#### Read the vairables requiered from config.sh:
+source ../configs/config_.sh
 begin=$(date +%s)
 
-# job array
-j_array_params=$PWD/helpers/ClassifyAVUncertain/j_array_params.txt
-PARAM=$(sed "${SLURM_ARRAY_TASK_ID}q;d" $j_array_params)
-chunk_start=$(echo $PARAM | cut -d" " -f1)
-chunk_size=$(echo $PARAM | cut -d" " -f2)
+#### Create the folder where the after preprocessing images are going to be located (for the dataset selected):
+if [[ "$image_type" != *.png ]]; then
+	mkdir $dir_images
+fi
+# TO DO: Add a step to can avoid this step if needed:
+#### Preprocessing: .png format, avoid spaces in names, and create file with images names:
 
-# cleaning previous runs
-classification_output_dir=$scratch/retina/preprocessing/output/ClassifyAVLwnet/
-rm -rf $classification_output_dir/*
+$python_dir basic_preprocessing.py $dir_images2 $dir_images $dir_input $image_type
 
-# classifying vessels into arteries and veins
-source $conda_dir/etc/profile.d/conda.sh
-conda activate lwnet
-conda init bash
-# checking that lwnet is active environment:
-conda info --envs
+#### Create the folder where the AV maps are going to be located (for the dataset selected):
+echo $classification_output_dir
+mkdir $classification_output_dir
+
+#### Artery Vein segementation using WNET: (Analyze many image at the same time)
+parallel_lwnet () {
+for j in $(seq $1 $2 ); do
+	image="${raw_imgs[ $(( j - 1 )) ]}"
+	if [ $lwnet_gpu = "False" ]; then
+            $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cpu
+        else
+        	$python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0
+        fi
+    done
+}
 
 cd $lwnet_dir
-raw_imgs=( "$raw_data_dir"* )
-for i in $(seq $chunk_start $(($chunk_start+$chunk_size-1))); do
-    image="${raw_imgs[i]}"
-    python predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir
+raw_imgs=($dir_images*.png )
+for i in $(seq 1 20); do echo ${raw_imgs[i]}; done
+echo lwnet input $dir_images
+echo $raw_imgs
+for i in $(seq 1 $(( $n_cpu + 1 )) ); do #n_cpu + 1 to force a remainder iteration
+    a=$(( i * step_size ))
+    b=$n_img
+    lower_lim=$(( 1 + $(( $(( i - 1 )) * step_size )) ))
+    upper_lim=$(( a < b ? a : b )) # minimum operation
+    
+    echo Batch $i: from $lower_lim to $upper_lim
+    parallel_lwnet $lower_lim $upper_lim &
 done
 
+wait
+
+### Rename the LWnet output (for ARIA you need the raw_image and the AV_image to have the same name):
+$python_dir $code_dir/preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 
 
 echo FINISHED: Images have been classified, and written to $classification_output_dir
 end=$(date +%s) # calculate execution time

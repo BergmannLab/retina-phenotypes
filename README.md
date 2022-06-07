@@ -1,52 +1,58 @@
-# How-to for the new multi-trait analysis
-For the new analysis, we decoupled image measurements from quality control. Also, running GWAS is faster and includes the option of running a minimalistic Affymetrix GWAS for exploration.
+# Bryhnild directories to avoid duplications:
+* All the files with the phenotypes measurement (with images names) can be found in: '/NVME/decrypted/ukbb/fundus/phenotypes/'
+* All the phenofiles and the phenofiles_qqnorm can be found in: ' '
+* All the coordinates values (with centerlines) and the ARIA diameters for different QC can be found in: '/NVME/decrypted/ukbb/fundus/2021_10_rawMeasurements/'
+* All the UKBB data can be found in: '/NVME/decrypted/ukbb/labels/'
 
-## Phenotype measurements
-The new script `measurePhenotype.py` contains the functions for measuring all the non-basic phenotypes. Measurements can be taken on ARIA and LWNET output, or on the raw images directly.
+# Retina images traits: 
 
-The existing functions so far:
-* fractal dimension
-* bifurcations
-* AV crossings
+## Main traits measured:
+* Median diameter of: all the vessels, only arteries, only veins (' ')
+* Median tortuosity (DF) of: all the vessels, only arteries, only veins (' ')
+* Ratio between the diameters of the arteies and the diameters of the veins (' ')
+* Ratio between the tortuosity of the arteies and the tortuosity of the veins (' ')
+* Number of bifurcations and branching ('bifurcations')
+* Main Temporal Venular Angle ('tva') and Main Temporal Arteriolar Angle ('taa') 
+* CRAE and CRVE 
+* Variability on the diameter and on the tortuosity
+* Fractal Dimensionality ()
+* Vascular Density () 
+* Vascular Density () 
 
-To measure a specific phenotype, add a function to `measurePhenotype.py`, modify `__MAIN__` accordingly to use this function, and then run the measurements using `sbatch run_measurePhenotype.sh`.
+## Baseline traits measured:
+* Intensity variability
+* others?
+* The follow are probably to delete:  N_green_pixels, N_green_segments, OD_segments, etc
 
-All phenotype measurements are stored in `/data/FAC/FBM/DBC/sbergman/retina/UKBiob/fundus/fundus_phenotypes/`.
+# Requirements:
+* You will need to download WNET 
+* Matlab licence (if you have not acess there are still some traits you can measure)
 
-## From image measurements to phenofile
-Using a defined QC file to be decided, the script `tbd` combines image measurements into participant-wise single-number statistics, which will be used in the GWAS.
+# Pipeline:
+1- Modify `configs/config_local.sh`
 
-Here, all phenotypes we decide to use will be combined into a single phenofile `multiTrait_phenofile_qqnorm.csv`, which we will use as the basis for all downstream analyses.
+2 - Run `preprocessing/ClassifyAVLwnet.sh`. 
+Output: AV maps for your images.  In the folder: ....
+Code: `bash ClassifyAVLwnet.sh' or `sbatch ClassifyAVLwnet.sh' 
 
-# How-to for running the new, faster GWAS
-## Running GWAS
-0) Generate your phenofile, and put it in the appropriate *EXPERIMENT_ID* folder
-1) Run your GWAS:
+3 - Run `preprocessing/MeasureVessels.sh`. 
+Output: Matlab output.  In the folder: ....
+Code: `bash MeasureVessels.sh' or  `sbatch MeasureVessels.sh' 
 
-`sbatch RunGWAS.sh *EXPERIMENT_ID* [mini/affymetrix/*empty for full gwas*]`
+4 - Run `preprocessing/run_measurePhenotype.sh`. 
+Output: Trait measurements 
+Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh' 
 
-(For exploration, I recommend using the `affymetrix` option instead of `mini`)
 
-**Example:**
 
-`sbatch RunGWAS.sh 2021_10_11_myAwesomeTrait affymetrix`
+## Some possible errors:
+* LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "your_python_dir/python -m pip install scikit-image==0.16.2" and python3
+# python3 -m pip install --upgrade Pillow
 
-## Plotting GWAS results
-If the GWAS has run successfully, this command stores QQ and Manhattan plots in the appropriate folder:
+## Reminders:
+If you are not familiar with bash scripts and you want to change the code, the spaces are very imports!(Avoid when define variables, as use when conditions)
 
-`sbatch plotGWAS.sh *EXPERIMENT_ID*`
+# Optic disc prediction using training weights from UK Biobank
+1 - Generate the test dataset in required square 256x256px format: `preprocessing/optic-nerve-cnn/scripts/TEST_organize_datasets.ipynb` : Point to your dataset of choice, define output path, and modify the number of cores, and then run all the cells.
 
-(The script is located in retina/postprocessing.)
-
-## Further processing GWAS results
-
-# Initializing the repository on Jura
-
-Run retina/configs/dir_structure/init.sh
-  Assumes the following are configured as in Jura
-  - a data location
-  - an archive location
-  - a scratch location
-
-Mattia: The following documentation explains how to run a GWAS and how to perform DL on the UK Biobank retinal data:
-https://docs.google.com/document/d/1XQ1e4czEvItjRv_7yC3ze0YxGwv7dGSvUdnubkT27BA/edit#heading=h.91fo54mukcmt
+2 - Predict using the generated dataset : `preprocessing/optic-nerve-cnn/scripts/TEST_unet_od_on_ukbiobank.ipynb` : Change indir,outdir and no_batches accordingly, then run sequentially.

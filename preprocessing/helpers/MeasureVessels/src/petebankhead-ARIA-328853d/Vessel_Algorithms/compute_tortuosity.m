@@ -1,4 +1,4 @@
-function [tau, r, centers] = compute_tortuosity(points, method, plot_curve, smooth_curve)
+function [tau, r, centers] = compute_tortuosity(points, method)
     
     %disp('Computing tortuosity ...');
     
@@ -10,11 +10,9 @@ function [tau, r, centers] = compute_tortuosity(points, method, plot_curve, smoo
     %   curve is used instead.
     %
     %   'method' is an integer defining the method type:
-    %   (0) or no argument given: t = "tortuosity density" (as in
-    %   https://sci-hub.tw/https://ieeexplore.ieee.org/document/1279902)
-    %   (1) tau = (total arc-length over total chord-length) - 1
-    %   (2) tau = the integral over the curvature along the entire curve
-    %   (3) tau = the integral over the curvature squared along the entire curve
+    %   (1) tau1 = DistanceFactor = (total arc-length over total chord-length) - 1
+    %   (2) tau2 = the integral over the curvature along the entire curve
+    %   (3) tau3 = the integral over the curvature squared along the entire curve
     %   (4)
     %   (5)
     %   (6)
@@ -31,32 +29,16 @@ function [tau, r, centers] = compute_tortuosity(points, method, plot_curve, smoo
     %
     % Author: Sven Bergmann.
     % Version: v1.4 (11 September 2020)
-    points = transpose(points); % SOFIA solve emply arrays
+
+    points = transpose(points); 
+
     if(nargin < 1)
-        N = 201;
-        t = linspace(0, 4*pi, N);
-        points = [t; 1.0*sin(t)] + 0.001*rand(2,N);
-        
-        % rotation
-        alpha = pi/4;
-        R = [cos(alpha) sin(alpha); -sin(alpha) cos(alpha)];
-        points = R * points;
+        disp('ERROR: Fatal error in compute_tortuosity. No input'); 
     end
     
     if(nargin < 2)
-        method = 0;
-    end
-    
-    if(nargin < 3)
-        plot_curve = true;
-    end
-    
-    if(nargin < 4)
-        smooth_curve = false;
-    end
-    
-    if(smooth_curve)
-        points(2,:) = smooth(points(1,:),points(2,:),0.3,'rloess');
+        disp('Warning: no method selected in compute_tortuosity. Method=1 selected by default'); 
+        method = 1;
     end
     
     points1 = points(:,1:end-2);
@@ -76,88 +58,10 @@ function [tau, r, centers] = compute_tortuosity(points, method, plot_curve, smoo
     r = r .* curvature_sign;
     r(isnan(r))=0; %SOFIA, solve NaN problem
 
-    
-    hysteresis_threshold = 2.0 * std(abs(1 ./ r));
-    
-    if(plot_curve)
-        figure(1)
-        
-        subplot(2,1,1) % curve visualisation
-        
-        x_min = min(points(1,:));
-        x_max = max(points(1,:));
-        
-        y_min = min(points(2,:));
-        y_max = max(points(2,:));
-        
-        hold off
-        plot(points(1,:), points(2,:), '.-k') % plot curve
-        hold on
-        
-        % indicate absolute curvature using color
-        scatter(points(1,2:end-1), points(2,2:end-1), 15, abs(1 ./ r))
-        scatter(centers(1,:), centers(2,:), 15, abs(1 ./ r))
-        
-        % connect points of curve to centers of tangent circles
-        plot([points(1,2:end-1);centers(1,:)], [points(2,2:end-1); centers(2,:)], 'k')
-        
-        margin = 0.1;
-        margin_x = (x_max-x_min) * margin;
-        margin_y = (y_max-y_min) * margin;
-        
-        xlim([x_min-margin_x x_max+margin_x])
-        ylim([y_min-margin_y y_max+margin_y])
-        
-        subplot(2,1,2) % curvature analysis
-        
-        hold off
-        plot(t(1,2:end-1), 1 ./ r); % plot signed curvature
-        xlim([t(1) t(end)])
-    end
-    
     switch(method)
-        case 0    % SOFIA tau 0 is not used!
-            tic
-            tau_forward = TD3(points,r,hysteresis_threshold);
-            subplot(2,1,2) % curvature analysis
-            if(plot_curve)
-                hold on
-                plot(t(1,2:end-1), hysteresis_threshold * curvature_sign,'r') % plot sign of curvature
-            end % if(plot_curve)
-            
-            tau_backward = TD3(points(:,end:-1:1),r(end:-1:1),hysteresis_threshold);
-            subplot(2,1,2) % curvature analysis
-            if(plot_curve)
-                hold on
-                plot(t(1,2:end-1), hysteresis_threshold * curvature_sign(end:-1:1),'b') % plot sign of curvature
-            end % if(plot_curve)
-            
-            tau_fb = (tau_forward + tau_backward) / 2
-            toc
-            
-            tic
-            [tau,forward_segment_starts, backward_segment_starts, segment_boundaries] =  TD3(points,r,hysteresis_threshold)
-            toc
-            
-            tic
-            [tau3, significant_sign_change_starts, significant_sign_change_ends, segment_boundaries3] = TD3(points,r,hysteresis_threshold)
-            toc
-            
-            if(plot_curve)
-                hold on
-                plot(t(forward_segment_starts), 0,'>r') 
-                plot(t(backward_segment_starts), 0,'<b') 
-                plot(t(segment_boundaries), 0,'ok') 
-                
-                plot(t(significant_sign_change_starts),0,'vk')
-                plot(t(significant_sign_change_ends),0,'^k')
-                plot(t(segment_boundaries3), 0,'xk')    
-            end % if(plot_curve)
-           
         case 1
             L_arc = sum(sqrt(Deltas(1,:) .^2 + Deltas(2,:) .^2));
             L_chord = norm(points(:,end) - points(:,1));
-            
             tau = L_arc / L_chord - 1;
             
         case 2
@@ -187,167 +91,6 @@ function [tau, r, centers] = compute_tortuosity(points, method, plot_curve, smoo
             
 
     end % switch(method)
-    
-
-    
-    function tau = TD(points,r,hysteresis_threshold)
-        
-        N_segments = 0;
-        
-        % recompute curbature sign using hysteresis
-        curvature_sign = zeros(1,length(r));
-        curvature_sign(1) = sign(r(1));
-        segment_start = 1;
-        L_arcs = [];
-        L_chords = [];
-        
-        for index = 2:length(r)
-            if(1/r(index)*curvature_sign(index-1) > -hysteresis_threshold)
-                curvature_sign(index) = curvature_sign(index-1);
-            else
-                curvature_sign(index) = -curvature_sign(index-1);
-                N_segments = N_segments + 1;
-                
-                L_arcs(N_segments) = sum(sqrt(Deltas(1,segment_start:index) .^2 + Deltas(2,segment_start:index) .^2));
-                L_chords(N_segments) = norm(points(:,segment_start) - points(:,index));
-                
-                segment_start = index;
-                taus(N_segments) = L_arcs(N_segments) / L_chords(N_segments) - 1;
-            end
-        end
-        
-        if(segment_start < length(r)) % process last segment
-            L_arcs(end+1) = sum(sqrt(Deltas(1,segment_start:end) .^2 + Deltas(2,segment_start:end) .^2));
-            L_chords(end+1) = norm(points(:,segment_start) - points(:,end));
-            taus(end+1) = L_arcs(end) / L_chords(end) - 1;
-            N_segments = N_segments + 1;
-        end
-        
-        tau = (N_segments-1)/N_segments * sum(taus);
-        
-    end % function TD
-    
-    
-    function [tau,forward_segment_starts, backward_segment_starts, segment_boundaries] = TD2(points,r,hysteresis_threshold) % improved version
-        
-        % recompute curbature sign using hysteresis
-        forward_curvature_sign = zeros(1,length(r));
-        forward_curvature_sign(1) = curvature_sign(1);
-        
-        backward_curvature_sign = zeros(1,length(r));
-        backward_curvature_sign(end) = curvature_sign(end);
-        
-        segment_start = 1;
-        L_arcs = [];
-        L_chords = [];
-        forward_segment_starts = [];
-        backward_segment_starts = [];
-        
-        % forward scan
-        for index = 2:length(r)
-            if(1/r(index)*forward_curvature_sign(index-1) > -hysteresis_threshold)
-                forward_curvature_sign(index) = forward_curvature_sign(index-1);
-            else
-                forward_curvature_sign(index) = -forward_curvature_sign(index-1);
-                forward_segment_starts(end+1) = index;
-            end
-        end
-        
-        % backward scan
-        for index = (length(r)-1):-1:1
-            if(1/r(index)*backward_curvature_sign(index+1) > -hysteresis_threshold)
-                backward_curvature_sign(index) = backward_curvature_sign(index+1);
-            else
-                backward_curvature_sign(index) = -backward_curvature_sign(index+1);
-                backward_segment_starts(end+1) = index+1;
-            end
-        end
-        
-        % remove inconsistant starts:
-        if(forward_curvature_sign(forward_segment_starts(1)) ~= backward_curvature_sign(backward_segment_starts(end)))
-            disp(sprintf('Removing from forward scan: %d',forward_segment_starts(1)))
-            forward_segment_starts = forward_segment_starts(2:end);
-        end
-        
-        if(backward_curvature_sign(backward_segment_starts(1) ~= forward_curvature_sign(forward_segment_starts(end))))
-            disp(sprintf('Removing from backward scan: %d',backward_segment_starts(1)))
-            backward_segment_starts = backward_segment_starts(2:end);
-        end
-        
-        
-        % take midpoints as segment boundaries:
-        if(length(forward_segment_starts) == length(backward_segment_starts))
-            segment_boundaries = round( (forward_segment_starts + backward_segment_starts(end:-1:1)) / 2);
-        else
-            disp('forward segmentation is inconsistant with backward segmentation')
-            tau = NaN;
-            segment_boundaries = 1;
-            return
-        end
-        
-        segment_start = 1;
-        for N_segments = 1:length(segment_boundaries)
-            index = segment_boundaries(N_segments);
-            L_arcs(N_segments) = sum(sqrt(Deltas(1,segment_start:index) .^2 + Deltas(2,segment_start:index) .^2));
-            L_chords(N_segments) = norm(points(:,segment_start) - points(:,index));
-            
-            segment_start = index;
-            taus(N_segments) = L_arcs(N_segments) / L_chords(N_segments) - 1;
-        end
-        
-        
-        if(segment_start < length(r)) % process last segment
-            L_arcs(end+1) = sum(sqrt(Deltas(1,segment_start:end) .^2 + Deltas(2,segment_start:end) .^2));
-            L_chords(end+1) = norm(points(:,segment_start) - points(:,end));
-            taus(end+1) = L_arcs(end) / L_chords(end) - 1;
-            N_segments = N_segments + 1;
-        end
-                
-        tau = (N_segments-1)/N_segments * sum(taus);
-    end % function TD2
-    
-    
-    function [tau, significant_sign_change_starts, significant_sign_change_ends, segment_boundaries] = TD3(points,r,hysteresis_threshold) % further improved version
-        curvature_sign = sign(1 ./ r) .* (abs(1 ./ r) > hysteresis_threshold);
-        sign_changes = (curvature_sign(1:end-1) ~= curvature_sign(2:end));
-        segment_ends = find(sign_changes);
-        segment_starts = segment_ends+1;
-        
-        non_zero_ends = segment_ends(curvature_sign(segment_ends) ~= 0);
-        non_zero_starts = segment_starts(curvature_sign(segment_starts) ~= 0);
-        
-        valid_non_zero_ends = non_zero_ends(1:end-1);
-        valid_non_zero_starts = non_zero_starts(2:end);
- 
-        significant_sign_end_changes = (curvature_sign(non_zero_ends(1:end-1)) ~= curvature_sign(non_zero_ends(2:end)));
-        significant_sign_change_ends = valid_non_zero_ends(significant_sign_end_changes) + 1;
-        
-        significant_sign_start_changes = (curvature_sign(non_zero_starts(1:end-1)) ~= curvature_sign(non_zero_starts(2:end)));
-        significant_sign_change_starts = valid_non_zero_starts(significant_sign_start_changes);
-        
-        segment_boundaries = round((significant_sign_change_ends +  significant_sign_change_starts) / 2);
-        
-        segment_start = 1;
-        N_segments = 1;
-        for N_segments = 1:length(segment_boundaries)
-            index = segment_boundaries(N_segments);
-            L_arcs(N_segments) = sum(sqrt(Deltas(1,segment_start:index) .^2 + Deltas(2,segment_start:index) .^2));
-            L_chords(N_segments) = norm(points(:,segment_start) - points(:,index));
-            
-            segment_start = index;
-            taus(N_segments) = L_arcs(N_segments) / L_chords(N_segments) - 1;
-        end
-        
-        
-        if(segment_start < length(r)) % process last segment
-            L_arcs(end+1) = sum(sqrt(Deltas(1,segment_start:end) .^2 + Deltas(2,segment_start:end) .^2));
-            L_chords(end+1) = norm(points(:,segment_start) - points(:,end));
-            taus(end+1) = L_arcs(end) / L_chords(end) - 1;
-            N_segments = N_segments + 1;
-        end
-                
-        tau = (N_segments-1)/N_segments * sum(taus);
-    end
     
     
     function [R,xcyc] = find_circle_through_3_points(ABC)

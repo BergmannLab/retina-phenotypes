@@ -1,6 +1,30 @@
-% ARIA_run_tests 0 REVIEW ../../fundus_UKBB/REVIEW/ ../../AV_maps/ [artery|vein|all] 0.79 ./ 1 3 11000 20000 100 250 ../../output
-% ARIA_run_tests 0 REVIEW /data/soin/retina/OphtalmoLaus/fundus/REVIEW/ /data/soin/retina/OphtalmoLaus/AV_maps/ all 0.0 /home/ch_mattiatomasoni/retina/preprocessing/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests/ 1 10 11000 20000 100 250 /data/soin/_scratch/retina/preprocessing/output/MeasureVessels_all/
-function ARIA_run_tests(f_name, test_name, path_to_raw, path_to_AV_classified, AV_option, AV_thr, script_dir, chunk_start, chunk_size, minQCthr1, maxQCthr1, minQCthr2, maxQCthr2, path_to_output)
+% How to run on brynhild
+% for i in $(seq 1 2414 173808); do (nohup nice matlab -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW /HDD/data/UKBB/fundus/raw /HDD/data/UKBB/fundus/lwnet/  all 0.79 ./ ${i} 2414 -1 999999 -1 999999 ~/2021_10_06_rawMeasurements_withoutQC" > batch${i}.txt &); done
+
+% Let's take that apart:
+% Each iteration of the for loop calls this (nohup (doesn't kill when logged out) and nice (low priority so that others can compute as well) modes are used):
+% nohup nice matlab -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW /HDD/data/UKBB/fundus/raw /HDD/data/UKBB/fundus/lwnet/  all 0.79 ./ ${i} 2414 -1 999999 -1 999999 ~/2021_10_06_rawMeasurements_withoutQC
+
+% Brynhild has 72 cores, and there are 173814 raw fundus images
+% To have all CPUs busy and 1 process per CPU, that makes 2414 images per process
+
+% 72 * 2414 = 173808 -> we process the last 6 images via:
+% nohup nice matlab -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW /HDD/data/UKBB/fundus/raw /HDD/data/UKBB/fundus/lwnet/  all 0.79 ./ 173809 173814 -1 999999 -1 999999 ~/2021_10_06_rawMeasurements_withoutQC
+
+% And that's all, we now did all the raw measurements without any QC! Check if everything got computed well via the following command:
+% In the output folder, type:
+% ls | cut -f1 -d_ | uniq -c | grep -v "9 " | grep -v "18 " | grep -v "27 " | grep -v "36 " | grep -v "45 " | grep -v "54 " | grep -v "63 " | grep -v "72 "
+
+% This checks that for all measured images there is a multiple of 9 files, up to 72 files
+% If some are not multiples of 9, it means something went wrong during the measurement process.
+
+% Also check if all images were scored, via
+% ls | awk -F "_all_" '{print $1}' | uniq | wc -l
+
+% This should equal the number of raw images. If that's the case, we are really done!
+
+% ARIA_run_tests 0 REVIEW /home/mbeyele5/ARIA_test /data/FAC/FBM/DBC/sbergman/retina/UKBiob/fundus/AV_maps all 0.79 ./ 1 1 -1 999999 -1 999999 /home/mbeyele5
+function ARIA_run_tests(f_name, test_name, path_to_raw, path_to_AV_classified, AV_option, AV_thr, script_dir, chunk_start, chunk_size, minQCthr1, maxQCthr1, minQCthr2, maxQCthr2, path_to_output, set_name)
 % Run all the tests using ARIA to create the results reported in the paper
 % 'Fast retinal vessel detection and measurement using wavelets and edge
 % location refinement'.
@@ -20,7 +44,6 @@ function ARIA_run_tests(f_name, test_name, path_to_raw, path_to_AV_classified, A
 % See the file : Copyright.m for further details.
 
 % process inputs: 
-
 function path = fix_trailing_slash(path)
     last_letter = path(end);
     if not(strcmp(last_letter,"/"))
@@ -78,6 +101,7 @@ end
 % Make sure we have the ARIA files somewhere on the search path, at least
 % for this MATLAB session - or give a warning if the functions can't be
 % found
+addpath("..")
 if exist('ARIA_setup', 'file')
     ARIA_setup(true);
 else
@@ -212,9 +236,8 @@ if any(strcmp({'review', 'all'}, test_name))
         %disp('Running REVIEW vessel measurement test...'); % mattia
         disp('Running vessel measurements...');
     end
-
     % Run the processing for all image sets
-    sets = {'CLRIS'};
+    sets = {set_name};
     % mattia: we are simulating a REVIEW CLRIS test
     % sets = {'KPIS', 'CLRIS', 'VDIS', 'HRIS_downsample', 'HRIS'};
     

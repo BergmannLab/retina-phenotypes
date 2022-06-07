@@ -1,23 +1,21 @@
 import itertools
 import os, sys
-from datetime import datetime
-from scipy.spatial import distance_matrix
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
-from matplotlib import cm
-import seaborn
 import csv
-from multiprocessing import Pool
-from PIL import Image
 import PIL
-from scipy import stats
 import math
 import cv2
-import statistics
 from skimage import data, io, filters
-import skimage
+from datetime import datetime
+from scipy.spatial import distance_matrix
+from matplotlib import pyplot as plt
+from scipy import stats
+from multiprocessing import Pool
+from PIL import Image
+from matplotlib import cm
+
 
 aria_measurements_dir = sys.argv[3] #'/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/ARIA_MEASUREMENTS_DIR' 
 qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
@@ -174,25 +172,29 @@ def diameter_variability(imgname: str) -> dict:
     """
     try:
         imageID = imgname.split(".")[0]
+        print('imageID', imageID)
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
         std_values=df_pintar.groupby(['index'])['Diameter'].std()
-
+        print('std_values.median()', std_values.median())
         median_values_vessels = df_pintar.groupby(['type'])['Diameter'].median()
+        print('median_values_vessels', median_values_vessels)
         mean_values_vessels = df_pintar.groupby(['type'])['Diameter'].mean()
+        print('mean_values_vessels', mean_values_vessels)
         std_values_vessels = df_pintar.groupby(['type'])['Diameter'].std()
+        print('std_values_vessels', std_values_vessels)
 
         return {'D_median_std': std_values.median(), 'D_mean_std': std_values.mean(), 'D_std_std': std_values.std(),
         'D_A_median_std': median_values_vessels[1], 'D_A_mean_std': mean_values_vessels[1], 'D_A_std_std': std_values_vessels[1],
-        'D_V_median_std': median_values_vessels[-1], 'D_V_mean_std': mean_values_vessels[-1], 'D_V_std_std': std_values_vessels[-1],
-        'D_G_median_std': median_values_vessels[0], 'D_G_mean_std': mean_values_vessels[0], 'D_G_std_std': std_values_vessels[0]}
+        'D_V_median_std': median_values_vessels[-1], 'D_V_mean_std': mean_values_vessels[-1], 'D_V_std_std': std_values_vessels[-1]}
+        #'D_G_median_std': median_values_vessels[0], 'D_G_mean_std': mean_values_vessels[0], 'D_G_std_std': std_values_vessels[0]} ## only for green segments
 
     except Exception as e:
         print(e)
         return {'D_median_std': np.nan, 'D_mean_std': np.nan, 'D_std_std': np.nan, 
         'D_A_median_std': np.nan, 'D_A_mean_std': np.nan, 'D_A_std_std': np.nan,
-        'D_V_median_std': np.nan, 'D_V_mean_std': np.nan, 'D_V_std_std': np.nan,
-        'D_G_median_std': np.nan, 'D_G_mean_std': np.nan, 'D_G_std_std': np.nan}
+        'D_V_median_std': np.nan, 'D_V_mean_std': np.nan, 'D_V_std_std': np.nan}
+        #'D_G_median_std': np.nan, 'D_G_mean_std': np.nan, 'D_G_std_std': np.nan} ## only for green segments
 
 
 def baseline_traits(imgname: str) -> dict:
@@ -378,7 +380,7 @@ def main_fractal_dimension(imgname: str) -> dict:
     imageID = imgname.split(".")[0]
     #print(imageID)
     try:
-        img = Image.open(imageID + "_bin_seg.png")
+        img = Image.open(imageID + ".png")#"_bin_seg.png") Modified
         img_artery = replaceRGB(img, (255, 0, 0), (0, 0, 0))
         img_vein = replaceRGB(img, (0, 0, 255), (0, 0, 0))
         w, h = img.size
@@ -464,13 +466,13 @@ def read_data(imageID, diameter=False):
         df_merge['Diameter'] = pd.to_numeric(df_merge['Diameter'])
 
         return df_merge
-
-    df_merge = pd.merge(
-        x, y, how='outer', on=['index', 'level_0']).merge(
-        df_all_seg[['index', "AVScore"]],
-        how='outer',
-        on='index',
-        indicator=True).rename(columns={'value_x': 'X', 'value_y': 'Y', 'AVScore': 'type'})
+    else:
+        df_merge = pd.merge(
+            x, y, how='outer', on=['index', 'level_0']).merge(
+            df_all_seg[['index', "AVScore"]],
+            how='outer',
+            on='index',
+            indicator=True).rename(columns={'value_x': 'X', 'value_y': 'Y', 'AVScore': 'type'})
 
     df_merge['X'] = pd.to_numeric(df_merge['X'])
     df_merge['Y'] = pd.to_numeric(df_merge['Y'])
@@ -846,7 +848,7 @@ if __name__ == '__main__':
     # all the images
     imgfiles = pd.read_csv(qcFile, header=None)
     imgfiles = imgfiles[0].values
-
+    DATE = datetime.now().strftime("%Y-%m-%d")
     # development param
     imgfiles_length = len(imgfiles)  # len(imgfiles) is default
 
@@ -858,7 +860,7 @@ if __name__ == '__main__':
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_tva_taa]))
         out = pool.map(main_tva_or_taa, imgages_and_filter)
         # create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print( "you didn't chosee any fuction")
-    if fuction_to_execute in {'CRAE', 'CRVE'}:
+    elif fuction_to_execute in {'CRAE', 'CRVE'}:
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_CRAE_CRVE]))
         out = pool.map(main_CRAE_CRVE, imgages_and_filter)
     elif fuction_to_execute == 'bifurcations':
@@ -867,16 +869,35 @@ if __name__ == '__main__':
         out = pool.map(diameter_variability, imgfiles[:imgfiles_length]) 
     elif fuction_to_execute == 'aria_phenotypes':
         out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'ratios':
-        out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
-    ## ADD CRAE CRVE ratio_ elif fuction_to_execute == 'ratios_CRAE_CRVE':
-        #out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'fractal_dimension':
         out = pool.map(main_fractal_dimension, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'vascular_density':
         out = pool.map(main_vascular_density, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'baseline':
         out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
+    elif fuction_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
+        df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
+        df_data = df_data[['Unnamed: 0', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_artery', 'DF_vein']]
+        df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
+        df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
+        df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
+        df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
+        df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
+    elif fuction_to_execute == 'ratios_CRAE_CRVE':
+        df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
+        df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
+
+        df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
+        df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+
+        df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
+        df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+
+        df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
+
+        df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
+        df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
+        df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
 
     #elif fuction_to_execute == 'green_segments': #NOT ANYMORE SINCE WE USE LWNET
     #    out = pool.map(main_num_green_segment_and_pixels, imgfiles[:imgfiles_length])
@@ -885,20 +906,8 @@ if __name__ == '__main__':
 
     else:
         out = None
+
     pool.close()
     create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print(
         "You didn't chose any possible function. Options: tva, taa, bifurcations, green_segments,"
         " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")
-
-    if fuction_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
-        # To modify!
-        DATE = datetime.now().strftime("%Y-%m-%d")
-
-        df_data = pd.read_csv(phenotype_dir+DATE+"_ARIA_phenotypes.csv", sep=',')
-        df_data = df_data[['Unnamed: 0', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_artery', 'DF_vein']]
-        df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
-        df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
-        df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
-        df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
-
-        df_data.to_csv(phenotype_dir + DATE + "_ratios_ARIA_phenotypes.csv", sep=',', index=False)

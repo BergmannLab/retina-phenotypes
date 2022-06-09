@@ -9,47 +9,53 @@ output_dir <- '/SSD/home/sofia/retina/tratis_association_with_diseases/'
 diseases_file_dir <- '/NVME/decrypted/ukbb/labels/2022_06_08_Diseases_and_phenotypes_MLR_21015.csv'
 
 
-list_diseases<- c('SBP1', 'DBP1', 'SBP2', 'DBP2', 'PR1', 'PR2', 'birth_weight', 'age_current_smoker', 
-    'alcohol_intake_frequency', 'pulse_wave_arterial_stiffness_index', 'medication_cholesterol_BP_diabetes',
-    'date_death', 'BMI', 'N_cigarettes_curr_daily', 'Pack_year_smok', 'HDL_cholesterol',
-    'LDL_direct', 'Triglycerides',  'HbA1c', 'vascular_heart_problems', '6152', 'mothers_Age', 'fathers_Age',
-    'age_diabetes', 'age_angina', 'age_heartattack', 'age_DVT', 'age_stroke', 'age_pulmonary_embolism', 
-    'age_cataract', 'age_other_serious_eye_condition','date_AD', 'age_death')
-
-list_diseases_logit <- c('hypertension','myopia', 
-                 'age_diabetes', 'age_angina', 'age_heartattack', 'age_DVT', 'age_stroke', 'age_pulmonary_embolism', 
-                 'age_cataract', 'age_other_serious_eye_condition','date_AD', 'age_death', 
-                 'eye_amblyopia', 'eye_presbyopia', 'eye_hypermetropia', 'eye_myopia', 'eye_astigmatism', 'eye_diabetes')
-
-list_diseases_cat <- c('skin_colour','hair_colour')
-
 ### Read data:
 
 ## Option 1: If you want to create the diseases file ########################################
 ### Read disease data:
-source("~/retina-phenotypes/complementary/traits_association_with_diseases/auxiliar_survival_MLR.R") # Modify location
-data_aux = read_disease_data(ukbb_files_dir) ## You can change the diseases on it
+#source("~/retina-phenotypes/complementary/traits_association_with_diseases/auxiliar_survival_MLR.R") # Modify location
+#data_aux = read_disease_data(ukbb_files_dir) ## You can change the diseases on it
 
 ### Read phenofile data and create data set:
-data_all = create_dataset(data_aux, phenofiles_dir) ## You can change the phenofiles on it
-colnames(data_all)
-data_all["age2"]= data_all["age"]^2
+#data_all = create_dataset(data_aux, phenofiles_dir) ## You can change the phenofiles on it
+#colnames(data_all)
+#data_all["age2"]= data_all["age"]^2
 
-write.csv(data_all, paste(diseases_file_dir, sep="") , row.names = FALSE)
+#write.csv(data_all, paste(diseases_file_dir, sep="") , row.names = FALSE)
 ##################################################
 
 ## Option 2: If you want already have the diseases file ####################################
-#data_all <- read.csv(file= paste(diseases_file_dir, sep=""), header = TRUE, sep=",",check.names=FALSE)
+data_all <- read.csv(file= paste(diseases_file_dir, sep=""), header = TRUE, sep=",",check.names=FALSE)
 ###################################################
 
 ### MLR: 
 
-variables <- c("DF_all", "DF_artery", "DF_vein", "medianDiameter_all", "medianDiameter_artery", "medianDiameter_vein",
-               "N_green", "N_bif", "tVA", "tAA", "pixels_close_OD_over_total", "green_pixels_over_total_OD", 
-               "N_total_green_segments", "FD_all", "FD_artery", "FD_vein", "VD_orig_all", "VD_orig_artery", "VD_orig_vein", 
-               "VD_200px_all", "VD_200px_artery", "VD_200px_vein", 
-               "age", "age2","sex", "cov1", "cov2", "cov3", "cov4","cov5", "cov6","cov7", "cov8","cov9","cov10", 
-               "cov11","cov12", "cov13", "cov14","cov15", "cov16","cov17", "cov18","cov19","cov20")
+
+
+data_all["SBP"]= (data_all["SBP1"]+data_all["SBP2"])/2
+data_all["DBP"]= (data_all["DBP1"]+data_all["DBP2"])/2
+data_all["PR"]= (data_all["PR1"]+data_all["PR2"])/2
+
+list_diseases<- c('SBP', 'DBP', 'PR', 'birth_weight', 'BMI', 'HbA1c', 'mothers_Age', 'fathers_Age', 'pulse_wave_arterial_stiffness_index' , 'N_cigarettes_curr_daily', 'Pack_year_smok', 'HDL_cholesterol',
+                  'LDL_direct', 'Triglycerides', 'age_death')
+
+list_diseases_logit <- c('hypertension','myopia', 'age_current_smoker', 
+                         'age_diabetes', 'age_angina', 'age_heartattack', 'age_DVT', 'age_stroke', 'age_pulmonary_embolism', 
+                         'age_cataract', 'age_other_serious_eye_condition','date_AD', 'age_death', 
+                         'eye_amblyopia', 'eye_presbyopia', 'eye_hypermetropia', 'eye_myopia', 'eye_astigmatism', 'eye_diabetes')
+
+list_diseases_categorical <- c('skin_colour','hair_colour', 'alcohol_intake_frequency', 'medication_cholesterol_BP_diabetes')
+
+
+#variables <- c("DF_all", "DF_artery", "DF_vein", "medianDiameter_all", "medianDiameter_artery", "medianDiameter_vein",
+#               "N_green", "N_bif", "tVA", "tAA", "pixels_close_OD_over_total", "green_pixels_over_total_OD", 
+#               "N_total_green_segments", "FD_all", "FD_artery", "FD_vein", "VD_orig_all", "VD_orig_artery", "VD_orig_vein", 
+#               "VD_200px_all", "VD_200px_artery", "VD_200px_vein", 
+#               "age", "age2","sex", "cov1", "cov2", "cov3", "cov4","cov5", "cov6","cov7", "cov8","cov9","cov10", 
+#               "cov11","cov12", "cov13", "cov14","cov15", "cov16","cov17", "cov18","cov19","cov20")
+
+covariants <- c("N_bif", "age", "age2","sex", "cov1", "cov2", "cov3", "cov4","cov5", "cov6","cov7", "cov8","cov9","cov10", 
+                "cov11","cov12", "cov13", "cov14","cov15", "cov16","cov17", "cov18","cov19","cov20")
 
 for (i in list_diseases){
   outcome <- as.name(i)

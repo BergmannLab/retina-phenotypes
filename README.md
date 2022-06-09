@@ -1,6 +1,7 @@
 # Bryhnild directories to avoid duplications:
 * All the files with the phenotypes measurement (with images names) can be found in: '/NVME/decrypted/ukbb/fundus/phenotypes/'
-* All the phenofiles and the phenofiles_qqnorm can be found in: ' '
+* All the phenofiles and the phenofiles_qqnorm can be found in: '/HDD/data/UKBiob/phenofiles/'
+* All the GWAS results can be found in: '/HDD/data/UKBiob/GWAS/'
 * All the coordinates values (with centerlines) and the ARIA diameters for different QC can be found in: '/NVME/decrypted/ukbb/fundus/2021_10_rawMeasurements/'
 * All the UKBB data can be found in: '/NVME/decrypted/ukbb/labels/'
 

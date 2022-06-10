@@ -45,13 +45,14 @@ def multiple_scatter_plots_3(df_data_completo, main_phenotypes, save_dir):
     # Create a pair grid instance
     #grid = sns.pairplot(df_data_completo[main_phenotypes], diag_kind="hist",  kind="reg",
                            # plot_kws={'scatter_kws': {'alpha': 0.8, 's': 0.5}})
-    grid = sns.PairGrid(data=df_data_completo, vars=main_phenotypes, size=4)
+    grid = sns.set_context("paper", rc={"axes.labelsize":18})
+    grid = sns.PairGrid(data=df_data_completo, vars=main_phenotypes)
     grid = grid.map_upper(sns.scatterplot, cmap="Blues_d")
     grid = grid.map_upper(corr)
     grid = grid.map_diag(plt.pyplot.hist, bins=10, edgecolor='k')
     #grid = grid.map_lower(sns.scatterplot, color=".1")
     grid = grid.map_lower(sns.scatterplot, alpha=0.2)
-    grid = grid.map_lower(sns.kdeplot, cmap="Blues_d")
+    grid = grid.map_lower(sns.kdeplot, cmap="Greys_d")
     #grid = grid.map_lower(sns.kdeplot, levels=5, color=".1")
     grid.savefig(save_dir + 'example_type3_seaborn.png')
 

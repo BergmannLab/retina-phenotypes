@@ -18,18 +18,18 @@ plotPvals <- function(name,pheno,do_qqplot,do_manhattan){
   pvalues <- `^`(10,-pheno$P) # transform -log10 p values
   pheno$P <- pvalues
   if(do_qqplot){
-    try(GWASTools::qqPlot(pvalues, main=name, cex.lab=2, cex.main=3.5, cex = 1.5, cex.axis = 2))
+    try(GWASTools::qqPlot(pvalues, main=name, cex.lab=1.5, cex.main=2.5, cex = 1.5, cex.axis = 1.5))
   }
   if(do_manhattan){
-    try(qqman::manhattan(pheno, main=name, cex.lab=2, cex.main=3.5, cex = 1.5, cex.axis = 2))
+    try(qqman::manhattan(pheno, main=name, cex.lab=1.5, cex.main=2.5, cex = 1.5, cex.axis = 1.5))
   
 }}
 
 Plot_QQ_Manhattan <- function(pheno, inputs ){
-  jpeg(file= paste(pheno, "_QQPLOT.jpg", sep=""), width=2000,height=1000)
+  jpeg(file= paste("/HDD/data/UKBiob/GWAS/2022_06_08_all_phenotypes_LWNet_Decile3/Manhattan_QQplots/", pheno, "_QQPLOT.jpg", sep=""), width=1200,height=600)
   plotPvals(paste(pheno), inputs ,TRUE,FALSE)
   dev.off()
-  jpeg(file= paste( pheno, "_MANHATTAN.jpg", sep=""), width=2000,height=1000)
+  jpeg(file= paste("/HDD/data/UKBiob/GWAS/2022_06_08_all_phenotypes_LWNet_Decile3/Manhattan_QQplots/", pheno, "_MANHATTAN.jpg", sep=""), width=1200,height=600)
   #width=2000,height=1000)
   plotPvals(paste(pheno),inputs,FALSE,TRUE)
   dev.off()

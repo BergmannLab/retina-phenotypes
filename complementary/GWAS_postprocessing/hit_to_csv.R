@@ -30,6 +30,7 @@ foo_hit_to_csv <- function(pheno_list) {
       
       chromo_name <- paste("output_ukb_imp_chr",chromo_numb,"_v3.txt", sep="")
       gwasResults <- read.table(chromo_name, sep=" ",header=T, stringsAsFactors= F)
+      gwasResults[is.na(gwasResults)] <- 0 # Sofia
       gwasResults <- gwasResults[complete.cases(gwasResults), ] # drop NAs (can happen when maf=1)
       
       pval_header <- paste(pheno_name,".log10p",sep="")

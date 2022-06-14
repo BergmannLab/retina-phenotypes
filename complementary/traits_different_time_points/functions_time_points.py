@@ -12,28 +12,29 @@ def create_ukbb_dfs(dir_ukb_csv_1,list_right_eyes, list_left_eyes):
     df_data_left = df_data[list_left_eyes]
     return df_data_right,df_data_left
 
+
 def read_phenotypes_per_image(phenofiles_dir, phenotypes_files):
-    pheno_ARIA = pd.read_csv(phenofiles_dir + phenotypes_files[0])
-    pheno_N_green = pd.read_csv(phenofiles_dir + phenotypes_files[1])
-    pheno_N_bif = pd.read_csv(phenofiles_dir+ phenotypes_files[2])
-    pheno_tVA = pd.read_csv(phenofiles_dir+ phenotypes_files[3])
-    pheno_tAA = pd.read_csv(phenofiles_dir + phenotypes_files[4])
-    pheno_NeoOD = pd.read_csv(phenofiles_dir + phenotypes_files[5])
-    pheno_greenOD = pd.read_csv(phenofiles_dir + phenotypes_files[6])
-    pheno_N_green_seg = pd.read_csv(phenofiles_dir + phenotypes_files[7])
+    pheno_N_bif = pd.read_csv(phenofiles_dir + phenotypes_files[0])
+    pheno_tAA = pd.read_csv(phenofiles_dir + phenotypes_files[1])
+    pheno_tVA = pd.read_csv(phenofiles_dir+ phenotypes_files[2])
+    pheno_ARIA = pd.read_csv(phenofiles_dir+ phenotypes_files[3])
+    pheno_CRAVE = pd.read_csv(phenofiles_dir + phenotypes_files[4])
+    pheno_diam_var = pd.read_csv(phenofiles_dir + phenotypes_files[5])
+    pheno_FD = pd.read_csv(phenofiles_dir + phenotypes_files[6])
+    pheno_VD = pd.read_csv(phenofiles_dir + phenotypes_files[7])
 
     ## Add name to the first column and solve a misslabeling! (This should be solved!)
-    pheno_ARIA.rename(columns={pheno_ARIA.columns[0]: 'image'}, inplace=True)
-    pheno_N_green.rename(columns={pheno_N_green.columns[0]: 'image'}, inplace=True)
     pheno_N_bif.rename(columns={pheno_N_bif.columns[0]: 'image'}, inplace=True)
-    pheno_tVA.rename(columns={pheno_tVA.columns[0]: 'image'}, inplace=True)
     pheno_tAA.rename(columns={pheno_tAA.columns[0]: 'image'}, inplace=True)
-    pheno_NeoOD.rename(columns={pheno_NeoOD.columns[0]: 'image'}, inplace=True)
-    pheno_greenOD.rename(columns={pheno_greenOD.columns[0]: 'image'}, inplace=True)
-    pheno_N_green_seg.rename(columns={pheno_N_green_seg.columns[0]: 'image'}, inplace=True)
+    pheno_tVA.rename(columns={pheno_tVA.columns[0]: 'image'}, inplace=True)
+    pheno_ARIA.rename(columns={pheno_ARIA.columns[0]: 'image'}, inplace=True)
+    pheno_CRAVE.rename(columns={pheno_CRAVE.columns[0]: 'image'}, inplace=True)
+    pheno_diam_var.rename(columns={pheno_diam_var.columns[0]: 'image'}, inplace=True)
+    pheno_FD.rename(columns={pheno_FD.columns[0]: 'image'}, inplace=True)
+    pheno_VD.rename(columns={pheno_VD.columns[0]: 'image'}, inplace=True)
 
-    print(pheno_NeoOD.columns, pheno_greenOD.columns, pheno_N_green_seg.columns)
-    return pheno_ARIA,pheno_N_green,pheno_N_bif,pheno_tVA,pheno_tAA,pheno_NeoOD,pheno_greenOD,pheno_N_green_seg
+    #print(pheno_N_bif.columns, pheno_tAA.columns, pheno_tVA.columns)
+    return pheno_N_bif, pheno_tAA, pheno_tVA, pheno_ARIA, pheno_CRAVE, pheno_diam_var, pheno_FD, pheno_VD 
 
 
 def plt_RL_00_10(df_right_intersection_00, df_right_intersection_10, df_left_intersection_00, 

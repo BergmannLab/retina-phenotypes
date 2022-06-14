@@ -13,19 +13,19 @@ diseases_file_dir <- '/NVME/decrypted/ukbb/labels/2022_06_08_Diseases_and_phenot
 
 ## Option 1: If you want to create the diseases file ########################################
 ### Read disease data:
-#source("~/retina-phenotypes/complementary/traits_association_with_diseases/auxiliar_survival_MLR.R") # Modify location
-#data_aux = read_disease_data(ukbb_files_dir) ## You can change the diseases on it
+source("~/retina-phenotypes/complementary/traits_association_with_diseases/auxiliar_survival_MLR.R") # Modify location
+data_aux = read_disease_data(ukbb_files_dir) ## You can change the diseases on it
 
 ### Read phenofile data and create data set:
-#data_all = create_dataset(data_aux, phenofiles_dir) ## You can change the phenofiles on it
-#colnames(data_all)
-#data_all["age2"]= data_all["age"]^2
+data_all = create_dataset(data_aux, phenofiles_dir) ## You can change the phenofiles on it
+colnames(data_all)
+data_all["age2"]= data_all["age"]^2
 
-#write.csv(data_all, paste(diseases_file_dir, sep="") , row.names = FALSE)
+write.csv(data_all, paste(diseases_file_dir, sep="") , row.names = FALSE)
 ##################################################
 
 ## Option 2: If you want already have the diseases file ####################################
-data_all <- read.csv(file= paste(diseases_file_dir, sep=""), header = TRUE, sep=",",check.names=FALSE)
+#data_all <- read.csv(file= paste(diseases_file_dir, sep=""), header = TRUE, sep=",",check.names=FALSE)
 ###################################################
 
 ### MLR: 

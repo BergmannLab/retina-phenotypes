@@ -15,6 +15,8 @@ Sensitive data (i.e. with eid) is going to be located on '/NVME/decrypted/' and 
 * All the UKBB data can be found in: '/NVME/decrypted/ukbb/labels/'
 * A merge file between the diseases and the phenotypes of interest for the MLR can be also found in: '/NVME/decrypted/ukbb/labels/'
 
+* Drive Ground Truth for bifurcations, crossings, and end points can be found in: '/HDD/data/Other_datasets/DRIVE/RetinalFeatures_bif_cross'
+
 # CODE - FROM RETINA IMAGES TO TRAITS (only needed the folders: 'configs', 'input' and 'preprocessing'): 
 
 ## Requirements:

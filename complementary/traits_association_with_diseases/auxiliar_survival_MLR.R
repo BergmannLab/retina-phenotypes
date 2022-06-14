@@ -202,7 +202,7 @@ create_dataset <- function(data_cov, phenofiles_dir)
                         header = TRUE, sep=",",check.names=FALSE)
   pheno_ratios_CRAE_CRVE <- read.csv(file= paste(phenofiles_dir, "/2022-06-08_ratios_CRAE_CRVE.csv", sep=""),
                                 header = TRUE, sep=",",check.names=FALSE)
-  pheno_ratios_ARIA <- read.csv(file= paste(phenofiles_dir, "/2022-06-08_ratios_aria_phenotypes.csv", sep=""),
+  pheno_ratios_ARIA <- read.csv(file= paste(phenofiles_dir, "/2022-06-09_ratios_aria_phenotypes.csv", sep=""),
                                 header = TRUE, sep=",",check.names=FALSE)
   pheno_dia_var <- read.csv(file= paste(phenofiles_dir, "/2022-06-08_diameter_variability.csv", sep=""),
                                 header = TRUE, sep=",",check.names=FALSE)
@@ -235,6 +235,9 @@ create_dataset <- function(data_cov, phenofiles_dir)
   pheno_VD[c('eid', 'image', 'year', 'instance')] <- str_split_fixed(pheno_VD$eid, '_', 4)
   pheno_baseline[c('eid', 'image', 'year', 'instance')] <- str_split_fixed(pheno_baseline$eid, '_', 4)
   
+  print('nrow(pheno_N_bif) antes de nada')
+  print(nrow(pheno_N_bif))
+  
   # Only select 21015
   pheno_N_bif <- pheno_N_bif %>% group_by(image) %>% filter(image == 21015)
   pheno_tVA <- pheno_tVA %>% group_by(image) %>% filter(image == 21015)
@@ -246,17 +249,56 @@ create_dataset <- function(data_cov, phenofiles_dir)
   pheno_VD <- pheno_VD %>% group_by(image) %>% filter(image == 21015)
   pheno_baseline <- pheno_baseline %>% group_by(image) %>% filter(image == 21015)
   
+  print('nrow(pheno_N_bif) solo 21015')
+  print(nrow(pheno_N_bif))
+    
+  
+  # Only select year 0 and instance 0
+  pheno_N_bif <- pheno_N_bif %>% group_by(year) %>% filter(year == 0)
+  pheno_tVA <- pheno_tVA %>% group_by(year) %>% filter(year == 0)
+  pheno_tAA <- pheno_tAA %>% group_by(year) %>% filter(year == 0)
+  pheno_ratios_CRAE_CRVE <- pheno_ratios_CRAE_CRVE %>% group_by(year) %>% filter(year == 0)
+  pheno_ratios_ARIA <- pheno_ratios_ARIA %>% group_by(year) %>% filter(year == 0)
+  pheno_dia_var <- pheno_dia_var %>% group_by(year) %>% filter(year == 0)
+  pheno_FD <- pheno_FD %>% group_by(year) %>% filter(year == 0)
+  pheno_VD <- pheno_VD %>% group_by(year) %>% filter(year == 0)
+  pheno_baseline <- pheno_baseline %>% group_by(year) %>% filter(year == 0)
+  
+  print('nrow(pheno_N_bif) solo 0')
+  print(nrow(pheno_N_bif))
+    
+  pheno_N_bif <- pheno_N_bif %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_tVA <- pheno_tVA %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_tAA <- pheno_tAA %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_ratios_CRAE_CRVE <- pheno_ratios_CRAE_CRVE %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_ratios_ARIA <- pheno_ratios_ARIA %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_dia_var <- pheno_dia_var %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_FD <- pheno_FD %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_VD <- pheno_VD %>% group_by(instance) %>% filter(instance == '0.png')
+  pheno_baseline <- pheno_baseline %>% group_by(instance) %>% filter(instance == '0.png')
+  
+  print('nrow(pheno_N_bif) solo 0.png')
+  print(nrow(pheno_N_bif))
   
   ################# Read phenofiles data ############################
-  g = merge(pheno_N_bif, data_cov, by = "eid") 
-  g = merge(g, pheno_tVA, by = "eid") 
-  g = merge(g, pheno_tAA, by = "eid") # To do: avoid warnings!
-  g = merge(g, pheno_ratios_CRAE_CRVE, by = "eid") 
-  g = merge(g, pheno_ratios_ARIA, by = "eid") 
-  g = merge(g, pheno_dia_var, by = "eid") 
-  g = merge(g, pheno_FD, by = "eid") 
-  g = merge(g, pheno_VD, by = "eid") 
-  g = merge(g, pheno_baseline, by = "eid") 
+  g = merge(pheno_N_bif, data_cov, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
+  g = merge(g, pheno_tVA, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
+  g = merge(g, pheno_tAA, by = "eid", no.dups = TRUE) # To do: avoid warnings!
+  print(nrow(g))
+  g = merge(g, pheno_ratios_CRAE_CRVE, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
+  g = merge(g, pheno_ratios_ARIA, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
+  g = merge(g, pheno_dia_var, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
+  g = merge(g, pheno_FD, by = "eid", no.dups = TRUE)
+  print(nrow(g))
+  g = merge(g, pheno_VD, by = "eid", no.dups = TRUE)
+  print(nrow(g))
+  g = merge(g, pheno_baseline, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
   
   return(g)
   } 

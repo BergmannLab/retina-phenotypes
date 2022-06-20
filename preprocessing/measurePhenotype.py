@@ -877,7 +877,7 @@ if __name__ == '__main__':
         out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
         df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
-        df_data = df_data[['Unnamed: 0', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_artery', 'DF_vein']]
+        df_data = df_data[['Unnamed: 0', 'medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein']]
         df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
         df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
         df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']

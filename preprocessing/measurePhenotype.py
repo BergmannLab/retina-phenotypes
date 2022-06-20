@@ -1,26 +1,28 @@
 import itertools
 import os, sys
-from datetime import datetime
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
-from matplotlib import cm
-import seaborn
 import csv
-from multiprocessing import Pool
-from PIL import Image
 import PIL
-from scipy import stats
 import math
 import cv2
+from skimage import data, io, filters
+from datetime import datetime
+from scipy.spatial import distance_matrix
+from matplotlib import pyplot as plt
+from scipy import stats
+from multiprocessing import Pool
+from PIL import Image
+from matplotlib import cm
+
 
 aria_measurements_dir = sys.argv[3] #'/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/ARIA_MEASUREMENTS_DIR' 
 qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
 phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR'  
 OD_output_dir = sys.argv[5]
-df_OD = pd.read_csv(OD_output_dir+"od_all.csv", sep=',')
+df_OD = pd.read_csv(OD_output_dir+"/od_all.csv", sep=',')
 
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
@@ -80,27 +82,41 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
         OD_position.dropna(subset=['center_x_y'], inplace=True)
-        return {
-            'median_CRE': None
-            if OD_position.empty
-            else compute_CRE(df_pintar, OD_position, filter_type)
-        }
+        if OD_position.empty:
+            return {
+            'median_CRE': None,
+            'eq_CRE': None
+            }
+
+        else:
+            #median_CRE = compute_CRE(df_pintar, OD_position, filter_type)
+            median_CRE, eq_CRE = compute_CRE(df_pintar, OD_position, filter_type, imageID)
+            return {
+                'median_CRE': median_CRE,
+                'eq_CRE': eq_CRE }
 
     except Exception as e:
         print(e)
-        return {'median_CRE': np.nan}
+        return {
+                'median_CRE': np.nan,
+                'eq_CRE': np.nan
+                } 
 
-def compute_CRE(df_pintar, OD_position, filter_type=-1):
+def compute_CRE(df_pintar, OD_position, filter_type, imageID): #filter_type=-1):
     """
     :param df_pintar:
     :param OD_position:
     :param filter_type:
     :return:
     """
-    df_veins_arter = get_intersections(df_pintar, OD_position, filter_type)
-    return df_veins_arter['Diameter'].median()
+    df_veins_arter, CRE_eq = get_intersections(df_pintar, OD_position, filter_type, imageID)
 
-def get_intersections(df_pintar, OD_position, filter_type):
+    df_veins_arter_median =df_veins_arter.median()
+    CRE_eq_median =CRE_eq.median()
+    #print('statistics.median(df_veins_arter)', statistics.median(df_veins_arter))
+    return df_veins_arter_median[0], CRE_eq_median[0]
+
+def get_intersections(df_pintar, OD_position, filter_type, imageID):
     """
     :param df_pintar:
     :param OD_position:
@@ -108,59 +124,88 @@ def get_intersections(df_pintar, OD_position, filter_type):
     :return:
     """
     angle = np.arange(0, 360, 0.01)
+    aux = []
+    aux_eq = []
     df_pintar['X'] = df_pintar['X'].round(0)
     df_pintar['Y'] = df_pintar['Y'].round(0)
-    radius = [240, 280] # TO DO: Read diameter OD
+    r1 = (OD_position['width'] + OD_position['height'])/4
+    radius = [2*r1.iloc[0], 2.5*r1.iloc[0]]
     for p in radius: 
         new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
         df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
         df_veins_arter.sort_values(by=['Diameter'], ascending=False, inplace=True)
-        # TO DO: Select only those with less than a certain value
-    return df_veins_arter
+        # Two options: Select only those with less than a certain diameter value, or select the N first 
+        num_segments_selected=3
+        df_veins_arter = df_veins_arter.head(num_segments_selected) 
+        D_median = df_veins_arter['Diameter'].median()
+        data = {'modif_CRE': D_median}
+        aux.append(data)
+        #limit_diameter = 2 # Select it better 
+        #df_veins_arter = df_veins_arter[df_veins_arter['Diameter']>limit_diameter]
+        if filter_type==-1: 
+            cte=0.95
+            X ='A'
+        else: 
+            cte=0.88
+            X ='V'
+        equation_CRA = cte*((df_veins_arter['Diameter'].iloc[0])**2 + (df_veins_arter['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
+        data_eq = {'CRE': equation_CRA}
+        aux_eq.append(data_eq)
+
+        # Save the position of the intersections per image: TO MODIFY
+        #df_save = df_save.append(df_veins_arter)
+    
+    # Save the position of the intersections per image: TO MODIFY
+    #dir_CRE_position=phenotype_dir + 'CR'+X+'E_position/'
+    #if not os.path.exists(dir_CRE_position):
+    #    os.mkdir(dir_CRE_position)
+    #df_save.to_csv(dir_CRE_position +'/' + imageID + '_CR'+X+'E_position.csv', index=False)
+
+    return pd.DataFrame(aux), pd.DataFrame(aux_eq) #,statistics.median(auxiliar_values_eq) #pd.DataFrame(auxiliar_values)#, statistics.median(auxiliar_values_eq)
 
 
 
-def diameter_variability(imgname_and_filter: str and int) -> dict:
+def diameter_variability(imgname: str) -> dict:
     """
     :param imgname_and_filter:
     :return:
     """
     try:
-        imgname = imgname_and_filter[0]
-        filter_type = imgname_and_filter[1]
         imageID = imgname.split(".")[0]
+        print('imageID', imageID)
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
-        std_values=df_pintar.groupby(['i'])['Diameter'].std()
-
+        std_values=df_pintar.groupby(['index'])['Diameter'].std()
+        print('std_values.median()', std_values.median())
         median_values_vessels = df_pintar.groupby(['type'])['Diameter'].median()
+        print('median_values_vessels', median_values_vessels)
         mean_values_vessels = df_pintar.groupby(['type'])['Diameter'].mean()
+        print('mean_values_vessels', mean_values_vessels)
         std_values_vessels = df_pintar.groupby(['type'])['Diameter'].std()
+        print('std_values_vessels', std_values_vessels)
 
         return {'D_median_std': std_values.median(), 'D_mean_std': std_values.mean(), 'D_std_std': std_values.std(),
         'D_A_median_std': median_values_vessels[1], 'D_A_mean_std': mean_values_vessels[1], 'D_A_std_std': std_values_vessels[1],
-        'D_V_median_std': median_values_vessels[-1], 'D_V_mean_std': mean_values_vessels[-1], 'D_V_std_std': std_values_vessels[-1],
-        'D_G_median_std': median_values_vessels[0], 'D_G_mean_std': mean_values_vessels[0], 'D_G_std_std': std_values_vessels[0]}
+        'D_V_median_std': median_values_vessels[-1], 'D_V_mean_std': mean_values_vessels[-1], 'D_V_std_std': std_values_vessels[-1]}
+        #'D_G_median_std': median_values_vessels[0], 'D_G_mean_std': mean_values_vessels[0], 'D_G_std_std': std_values_vessels[0]} ## only for green segments
 
     except Exception as e:
         print(e)
         return {'D_median_std': np.nan, 'D_mean_std': np.nan, 'D_std_std': np.nan, 
         'D_A_median_std': np.nan, 'D_A_mean_std': np.nan, 'D_A_std_std': np.nan,
-        'D_V_median_std': np.nan, 'D_V_mean_std': np.nan, 'D_V_std_std': np.nan,
-        'D_G_median_std': np.nan, 'D_G_mean_std': np.nan, 'D_G_std_std': np.nan}
+        'D_V_median_std': np.nan, 'D_V_mean_std': np.nan, 'D_V_std_std': np.nan}
+        #'D_G_median_std': np.nan, 'D_G_mean_std': np.nan, 'D_G_std_std': np.nan} ## only for green segments
 
 
-def baseline_traits(imgname_and_filter: str and int) -> dict:
+def baseline_traits(imgname: str) -> dict:
     """
     :param imgname_and_filter:
     :return:
     """
     try:
-        imgname = imgname_and_filter[0]
-        #filter_type = imgname_and_filter[1]
         imageID = imgname.split(".")[0]
         # Next step: Include only the pixels inside the mask? Save the masks from LWnet?
-        img = iio.imread(imageID + '.png')
+        img = io.imread(imageID + '.png')
         # print(img.shape)
         return {'std_intensity': np.std(img), 'mean_intensity': np.mean(img), 'median_intensity': np.median(img)}
 
@@ -335,7 +380,7 @@ def main_fractal_dimension(imgname: str) -> dict:
     imageID = imgname.split(".")[0]
     #print(imageID)
     try:
-        img = Image.open(imageID + "_bin_seg.png")
+        img = Image.open(imageID + ".png")#"_bin_seg.png") Modified
         img_artery = replaceRGB(img, (255, 0, 0), (0, 0, 0))
         img_vein = replaceRGB(img, (0, 0, 255), (0, 0, 0))
         w, h = img.size
@@ -421,13 +466,13 @@ def read_data(imageID, diameter=False):
         df_merge['Diameter'] = pd.to_numeric(df_merge['Diameter'])
 
         return df_merge
-
-    df_merge = pd.merge(
-        x, y, how='outer', on=['index', 'level_0']).merge(
-        df_all_seg[['index', "AVScore"]],
-        how='outer',
-        on='index',
-        indicator=True).rename(columns={'value_x': 'X', 'value_y': 'Y', 'AVScore': 'type'})
+    else:
+        df_merge = pd.merge(
+            x, y, how='outer', on=['index', 'level_0']).merge(
+            df_all_seg[['index', "AVScore"]],
+            how='outer',
+            on='index',
+            indicator=True).rename(columns={'value_x': 'X', 'value_y': 'Y', 'AVScore': 'type'})
 
     df_merge['X'] = pd.to_numeric(df_merge['X'])
     df_merge['Y'] = pd.to_numeric(df_merge['Y'])
@@ -441,7 +486,7 @@ def ang(lineA, lineB):
     :param lineB:
     :return:
     """
-    # Get nicer vector form
+    # Get nicer vector formå
     vA = [(lineA[0][0] - lineA[1][0]), (lineA[0][1] - lineA[1][1])]
     vB = [(lineB[0][0] - lineB[1][0]), (lineB[0][1] - lineB[1][1])]
     # Get dot prod
@@ -485,6 +530,7 @@ def bifurcation_counter(df_results, imageID):
     :param df_results:
     :return:
     """
+    norm_acceptance=7.5
     X_1_aux = X_2_aux = 0.0
     bif_counter = 0
     cte = 3.5
@@ -508,14 +554,13 @@ def bifurcation_counter(df_results, imageID):
                 and (y[j] <= y[s] + cte)
                 and index_v[j] != index_v[s]
                 and (dis_type[j] == dis_type[s])
-                and (dis_type[j] != 0 or dis_type[s] != 0)
-                and (
+                and (dis_type[j] != 0 and dis_type[s] != 0)
+                and ( # With this condition we avoid having most of the repetitions 
                     x[j] != X_1_aux
                     and x[s] != X_1_aux
                     and x[j] != X_2_aux
                     and x[s] != X_2_aux
                     )):
-                bif_counter = bif_counter + 1
                 X_1_aux = x[s]
                 X_2_aux = x[j]
                 data = {
@@ -525,8 +570,12 @@ def bifurcation_counter(df_results, imageID):
                     'i': index_v[j]}
                 aux.append(data)
 
-    # Save the position of the bifurcations per image
+    ## Correct for the few repetitions remained
     df_bif_positions = pd.DataFrame(aux)
+    df_bif_positions = delete_points_very_close(df_bif_positions, norm_acceptance)
+    bif_counter=len(df_bif_positions)
+
+    # Save the position of the bifurcations per image
     dir_bif_position=phenotype_dir + 'bifurcations_position/'
     if not os.path.exists(dir_bif_position):
         os.mkdir(dir_bif_position)
@@ -534,6 +583,25 @@ def bifurcation_counter(df_results, imageID):
 
     return bif_counter
 
+def delete_points_very_close(df_bif_positions, norm_acceptance):
+    #compute distance 
+    df_bif_aux= pd.DataFrame([])
+    df_bif_aux['X']=df_bif_positions['X']
+    df_bif_aux['Y']=df_bif_positions['Y']
+
+    distance=pd.DataFrame(distance_matrix(df_bif_aux.values, df_bif_aux.values), index=df_bif_aux.index, columns=df_bif_aux.index)
+    distance = pd.DataFrame(np.tril(distance))
+    distance = distance.replace(0, np.nan)
+    auxiliar=distance[distance < norm_acceptance]
+    auxiliar=auxiliar.unstack().reset_index()
+    auxiliar.columns=['row','column','Norm']
+    cols = auxiliar.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    auxiliar = auxiliar[cols]
+    auxiliar = auxiliar.dropna()
+    df_bif_positions = df_bif_positions.drop(auxiliar['row'].to_list())
+
+    return df_bif_positions
 
 def circular_df_filter(radio, angle, od_position, df_pintar):
     """
@@ -682,7 +750,7 @@ def compute_mean_angle_with_mode(df_final_vote):
     )
 
 
-def compute_mean_angle(df_pintar, OD_position, filter_type=-1):
+def compute_mean_angle(df_pintar, OD_position, filter_type): #filter_type=-1):
     """
     :param df_pintar:
     :param OD_position:
@@ -776,10 +844,11 @@ if __name__ == '__main__':
     # fuction_to_execute posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios'
     fuction_to_execute = sys.argv[6]  # 'tva' 
     filter_tva_taa = 1 if fuction_to_execute == 'taa' else (-1 if fuction_to_execute == 'tva' else None)
+    filter_CRAE_CRVE = 1 if fuction_to_execute == 'CRAE' else (-1 if fuction_to_execute == 'CRVE' else None)
     # all the images
     imgfiles = pd.read_csv(qcFile, header=None)
     imgfiles = imgfiles[0].values
-
+    DATE = datetime.now().strftime("%Y-%m-%d")
     # development param
     imgfiles_length = len(imgfiles)  # len(imgfiles) is default
 
@@ -791,17 +860,14 @@ if __name__ == '__main__':
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_tva_taa]))
         out = pool.map(main_tva_or_taa, imgages_and_filter)
         # create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print( "you didn't chosee any fuction")
+    elif fuction_to_execute in {'CRAE', 'CRVE'}:
+        imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_CRAE_CRVE]))
+        out = pool.map(main_CRAE_CRVE, imgages_and_filter)
     elif fuction_to_execute == 'bifurcations':
         out = pool.map(main_bifurcations, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'green_segments':
-        out = pool.map(main_num_green_segment_and_pixels, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'neo_vascularization':
-        out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'diameter_variability':
         out = pool.map(diameter_variability, imgfiles[:imgfiles_length]) 
     elif fuction_to_execute == 'aria_phenotypes':
-        out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'ratios':
         out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'fractal_dimension':
         out = pool.map(main_fractal_dimension, imgfiles[:imgfiles_length])
@@ -809,23 +875,39 @@ if __name__ == '__main__':
         out = pool.map(main_vascular_density, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'baseline':
         out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
-
-    else:
-        out = None
-    pool.close()
-    create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print(
-        "You didn't chose any possible function. Options: tva, taa, bifurcations, green_segments,"
-        " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")
-
-    if fuction_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
-        # To modify!
-        DATE = datetime.now().strftime("%Y-%m-%d")
-
-        df_data = pd.read_csv(phenotype_dir+DATE+"_ARIA_phenotypes.csv", sep=',')
-        df_data = df_data[['Unnamed: 0', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_artery', 'DF_vein']]
+    elif fuction_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
+        df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
+        df_data = df_data[['Unnamed: 0', 'medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein']]
         df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
         df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
         df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
         df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
+        df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
+    elif fuction_to_execute == 'ratios_CRAE_CRVE':
+        df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
+        df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
 
-        df_data.to_csv(phenotype_dir + DATE + "_ratios_ARIA_phenotypes.csv", sep=',', index=False)
+        df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
+        df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+
+        df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
+        df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+
+        df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
+
+        df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
+        df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
+        df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
+
+    #elif fuction_to_execute == 'green_segments': #NOT ANYMORE SINCE WE USE LWNET
+    #    out = pool.map(main_num_green_segment_and_pixels, imgfiles[:imgfiles_length])
+    #elif fuction_to_execute == 'neo_vascularization': #NOT ANYMORE SINCE WE USE LWNET
+    #    out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])
+
+    else:
+        out = None
+
+    pool.close()
+    create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print(
+        "You didn't chose any possible function. Options: tva, taa, bifurcations, green_segments,"
+        " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")

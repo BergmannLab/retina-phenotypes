@@ -16,5 +16,5 @@ mkdir -p $phenotypes_dir
 OD_file_dir=$code_dir/output/$data_set/optic_disc/
 
 ### Compute the trait (PHENOTYPE_OF_INTEREST) selected for all the images:
-$python_dir measurePhenotype.py $ALL_IMAGES $phenotypes_dir $dir_ARIA_output $classification_output_dir $OD_file_dir $PHENOTYPE_OF_INTEREST
+nohup $python_dir measurePhenotype.py $ALL_IMAGES $phenotypes_dir $dir_ARIA_output $classification_output_dir $OD_file_dir $PHENOTYPE_OF_INTEREST &
 # Remark: putting measurements in scratch really makes a difference! (1.5 instead of 20 minutes -> 10x speedup!!)

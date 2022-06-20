@@ -44,7 +44,7 @@ Output: Optic disc positions in `output/*dataset*/optic_disc/`
 Code: `./predict_optic_disc.sh`
 
 5 - Run `preprocessing/run_measurePhenotype.sh`. 
-Output: Trait measurements 
+Output: Trait measurements. By default in the folder: `output/*your_data_set*/phenotypes_all/`
 Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh' 
 
 ### Some possible errors and reminders:

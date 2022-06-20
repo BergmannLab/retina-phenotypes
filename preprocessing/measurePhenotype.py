@@ -16,6 +16,12 @@ from multiprocessing import Pool
 from PIL import Image
 from matplotlib import cm
 
+delta=10
+R_0 = 300
+radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
+
+min_ta=35
+max_ta=200
 
 aria_measurements_dir = sys.argv[3] #'/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/ARIA_MEASUREMENTS_DIR' 
 qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
@@ -678,7 +684,7 @@ def get_main_angle_row(df_potential_points):
                            index=['X_1', 'Y_1', 'Diameter_1', 'type_1', 'i_1', 'X_2', 'Y_2', 'Diameter_2', 'type_2',
                                   'i_2', 'angle'])
     if not df_potential_points.empty:
-        df_angles_1 = df_potential_points[(df_potential_points["angle"] >= 90) & (df_potential_points["angle"] <= 230)]
+        df_angles_1 = df_potential_points[(df_potential_points["angle"] >= min_ta) & (df_potential_points["angle"] <= max_ta)]
         df_angles_1 = df_angles_1.sort_values(['Diameter_1', 'Diameter_2'], ascending=[False, False])
         if not df_angles_1.empty:
             main_angle = df_angles_1.iloc[0]
@@ -713,7 +719,6 @@ def get_radious_votes(df_pintar, OD_position, filter_type):
     df_pintar['X'] = df_pintar['X'].round(0)
     df_pintar['Y'] = df_pintar['Y'].round(0)
     auxiliar_angle = []
-    radius = [240, 250, 260, 270, 280, 290]
     for p in radius:
         new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
         df_veins_arter = new_df_2[new_df_2["type"] == filter_type]

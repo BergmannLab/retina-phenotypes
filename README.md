@@ -39,9 +39,13 @@ Code: `bash MeasureVessels.sh`
 * 1 - Generate the test dataset in required square 256x256px format: `preprocessing/optic-nerve-cnn/scripts/TEST_organize_datasets.ipynb` : Point to your dataset of choice, define output path, and modify the number of cores, and then run all the cells.
 * 2 - Predict using the generated dataset : `preprocessing/optic-nerve-cnn/scripts/TEST_unet_od_on_ukbiobank.ipynb` : Change indir,outdir and no_batches accordingly, then run sequentially.
 
-4 - Run `preprocessing/run_measurePhenotype.sh`. 
-Output: Trait measurements. By default in the folder: `output/*your_data_set*/phenotypes_all/`
-Code: `bash run_measurePhenotype.sh` 
+4 - Run `preprocessing/predict_optic_disc.sh`.
+Output: Optic disc positions in `output/*dataset*/optic_disc/`
+Code: `./predict_optic_disc.sh`
+
+5 - Run `preprocessing/run_measurePhenotype.sh`. 
+Output: Trait measurements 
+Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh' 
 
 ### Some possible errors and reminders:
 * LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "your_python_dir/python -m pip install scikit-image==0.16.2" and python3

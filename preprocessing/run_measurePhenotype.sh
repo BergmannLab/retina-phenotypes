@@ -13,7 +13,7 @@ mkdir -p $phenotypes_dir
 
 ### For some traits it is needed to know the position of the Optic Disk (OD). For that we modified an existing code: 
 # If you want to use the DRIVE dataset or for the UKBB we already provide the OD positions file. Otherwise you will need to provide your own OD position file (in the same format).
-OD_file_dir=$dir_input
+OD_file_dir=$code_dir/output/$data_set/optic_disc/
 
 ### Compute the trait (PHENOTYPE_OF_INTEREST) selected for all the images:
 nohup $python_dir measurePhenotype.py $ALL_IMAGES $phenotypes_dir $dir_ARIA_output $classification_output_dir $OD_file_dir $PHENOTYPE_OF_INTEREST &

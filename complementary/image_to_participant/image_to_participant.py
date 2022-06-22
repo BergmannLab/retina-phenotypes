@@ -13,7 +13,6 @@ import matplotlib.image as mpimg
 from matplotlib import cm
 import csv
 from multiprocessing import Pool
-from pandarallel import pandarallel
 
 def getParticipantStatfiles(participant):
         return [img.split(".png")[0]+"_all_segmentStats.tsv" for img in imgs if participant in img]
@@ -231,7 +230,7 @@ def rank_INT(series, c=3.0/8, stochastic=False):
 
     # Convert rank to normal distribution
     transformed = rank.apply(rank_to_normal, c=c, n=len(rank))
-    
+
     return transformed.reindex(orig_idx, fill_value=np.NaN)
 
 def rank_to_normal(rank, c, n):
@@ -282,6 +281,7 @@ if __name__ == '__main__':
         print('Start of getParticipantImages pool')
         pool1 = Pool()
         out = list(pool1.map(getParticipantImages, participants[0:nTest]))
+        pool1.close()
         imgs_per_participant = [i[0] for i in out]
         instance_per_participant = [ i[1] for i in out ]
         instance_df = pd.DataFrame(columns=['instance'], index=participants[0:nTest], data=instance_per_participant)
@@ -290,6 +290,7 @@ if __name__ == '__main__':
         print('start of imgToParticipant pool')
         pool = Pool()
         out = pool.map(imgToParticipant, imgs_per_participant)
+        pool.close()
         #curating participant-wise output
         participants_stats = pd.DataFrame(out, columns=stats.columns)
         participants_stats.index = participants[0:nTest]
@@ -314,8 +315,34 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         #phenofile_out[phenofile_out.isna().any(axis=1)] = np.nan
         
         #creating rank-based INT phenofile
-        pandarallel.initialize(nb_workers=60, progress_bar=False)
-        phenofile_out_rbINT = phenofile_out.parallel_apply(rank_INT)
+        def apply_rank_INT(col):
+            return rank_INT(phenofile_out[col])
+        
+        phenofile_out.replace([np.inf, -np.inf], np.nan, inplace=True)
+        cols=phenofile_out.columns
+        pool=Pool()
+        out=list(pool.map(apply_rank_INT, cols))
+        pool.close()
+        phenofile_out_rbINT = phenofile_out.copy()
+        for idx,i in enumerate(cols):
+            phenofile_out_rbINT[i] = out[idx]
+        
+        phenofile_out_rbINT.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+        for i in cols:
+            f=plt.figure()
+            plt.hist(phenofile_out[i].dropna().values, 100)
+            plt.title(i)
+            f.savefig(output_dir+"/distributions/"+EXPERIMENT_ID+"_"+i+".pdf")
+            plt.close()
+            f=plt.figure()
+            plt.hist(phenofile_out_rbINT[i].dropna().values, 100)
+            plt.title(i)
+            f.savefig(output_dir+"/distributions/qqnorm_"+EXPERIMENT_ID+"_"+i+".pdf")
+            plt.close()
+
+        #phenofile_out_rbINT = phenofile_out.groupby(phenofile_out.index).parallel_apply(rank_INT, axis=1)
+        #print(phenofile_out_rbINT)
 
         # saving both raw and rank-based INT, and instance list
         phenofile_out.to_csv(output_dir+EXPERIMENT_ID+"_with_ids.csv")
@@ -329,3 +356,5 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         phenofile_out_rbINT.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm.csv", index=False, sep=" ")
 
         instances_out.to_csv(output_dir+EXPERIMENT_ID+"_instances.csv")
+        print("END OF SCRIPT")
+        sys.exit() # script was stuck at end without it

@@ -318,10 +318,12 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         phenofile_out_rbINT = phenofile_out.parallel_apply(rank_INT)
 
         # saving both raw and rank-based INT, and instance list
+        phenofile_out.to_csv(output_dir+EXPERIMENT_ID+"_with_ids.csv")
         phenofile_out = phenofile_out.astype(str)
         phenofile_out = phenofile_out.replace('nan', '-999')
         phenofile_out.to_csv(output_dir+EXPERIMENT_ID+".csv", index=False, sep=" ")
 
+        phenofile_out_rbINT.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm_with_ids.csv")
         phenofile_out_rbINT = phenofile_out_rbINT.astype(str)
         phenofile_out_rbINT = phenofile_out_rbINT.replace('nan', '-999')
         phenofile_out_rbINT.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm.csv", index=False, sep=" ")

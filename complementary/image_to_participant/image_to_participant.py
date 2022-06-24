@@ -260,8 +260,7 @@ if __name__ == '__main__':
         #               "2022-02-04_bifurcations.csv",\
         #               "2022-02-01_N_green_pixels.csv",\
         #               "2022-02-13_tVA_phenotypes.csv"]
-        measurements = ["2021-11-30_fractal_dimension.csv","2022-02-21_N_green_segments_phenotypes.csv","2022-05-04_vascular_density.csv","2022-05-10_lwnet_phenotypes.csv","2022-05-22_bifurcations_lwnet.csv","2022-05-30_taa_lwnet.csv",  "2022-05-30_tva_lwnet.csv"]
-        
+        measurements = ["2022-02-21_N_green_segments_phenotypes.csv","2022-06-08_bifurcations.csv","2022-06-08_fractal_dimension.csv","2022-06-08_vascular_density.csv","2022-06-22_tva.csv","2022-05-10_lwnet_phenotypes.csv","2022-06-08_diameter_variability.csv","2022-06-08_ratios_CRAE_CRVE.csv","2022-06-22_taa.csv"]
         for i,measurement in enumerate(measurements):
                 if i==0:
                         stats = pd.read_csv(measurement, index_col=0)
@@ -345,12 +344,19 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         #print(phenofile_out_rbINT)
 
         # saving both raw and rank-based INT, and instance list
-        phenofile_out.to_csv(output_dir+EXPERIMENT_ID+"_with_ids.csv")
+        
+        with_ids_out = phenofile_out.copy()
+        with_ids_out['instance'] = instances_out['instance']
+        with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_with_ids.csv")
+        
         phenofile_out = phenofile_out.astype(str)
         phenofile_out = phenofile_out.replace('nan', '-999')
         phenofile_out.to_csv(output_dir+EXPERIMENT_ID+".csv", index=False, sep=" ")
 
-        phenofile_out_rbINT.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm_with_ids.csv")
+        with_ids_out = phenofile_out_rbINT.copy()
+        with_ids_out['instance'] = instances_out['instance']
+        with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm_with_ids.csv")
+        
         phenofile_out_rbINT = phenofile_out_rbINT.astype(str)
         phenofile_out_rbINT = phenofile_out_rbINT.replace('nan', '-999')
         phenofile_out_rbINT.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm.csv", index=False, sep=" ")

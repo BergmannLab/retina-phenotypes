@@ -16,19 +16,25 @@ from multiprocessing import Pool
 from PIL import Image
 from matplotlib import cm
 
-delta=10
-R_0 = 300
-radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
 
-min_ta=35
-max_ta=200
+## Parameters for temporal angle
+delta = 10
+R_0 = 240
+radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
+min_ta = 75
+max_ta = 200
+lower_accept = 15 
+upper_accept = 2
+
+## Parameters for bifurcations
+norm_acceptance=7.5
+cte = 3.5
 
 aria_measurements_dir = sys.argv[3] #'/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/ARIA_MEASUREMENTS_DIR' 
 qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
 phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR'  
-OD_output_dir = sys.argv[5]
-df_OD = pd.read_csv(OD_output_dir+"/od_all.csv", sep=',')
+OD_output_dir = #sys.argv[5]
 
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
@@ -64,15 +70,21 @@ def main_tva_or_taa(imgname_and_filter: str and int) -> dict:
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
         OD_position.dropna(subset=['center_x_y'], inplace=True)
+        
+        if filter_type==-1: 
+            trait_name ='tva'
+        else: 
+            trait_name ='taa'
+            
         return {
-            'mean_angle': None
+            'mean_angle_'+str(trait_name) : None
             if OD_position.empty
             else compute_mean_angle(df_pintar, OD_position, filter_type)
         }
 
     except Exception as e:
         print(e)
-        return {'mean_angle': np.nan}
+        return {'mean_angle_'+str(trait_name): np.nan}
 
 
 def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
@@ -135,7 +147,8 @@ def get_intersections(df_pintar, OD_position, filter_type, imageID):
     df_pintar['X'] = df_pintar['X'].round(0)
     df_pintar['Y'] = df_pintar['Y'].round(0)
     r1 = (OD_position['width'] + OD_position['height'])/4
-    radius = [2*r1.iloc[0], 2.5*r1.iloc[0]]
+    radius = [2*r1.iloc[0], 2.1*r1.iloc[0], 2.2*r1.iloc[0], 2.3*r1.iloc[0], 
+              2.4*r1.iloc[0], 2.5*r1.iloc[0]]
     for p in radius: 
         new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
         df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
@@ -150,10 +163,10 @@ def get_intersections(df_pintar, OD_position, filter_type, imageID):
         #df_veins_arter = df_veins_arter[df_veins_arter['Diameter']>limit_diameter]
         if filter_type==-1: 
             cte=0.95
-            X ='A'
+            X ='V'
         else: 
             cte=0.88
-            X ='V'
+            X ='A'
         equation_CRA = cte*((df_veins_arter['Diameter'].iloc[0])**2 + (df_veins_arter['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
         data_eq = {'CRE': equation_CRA}
         aux_eq.append(data_eq)
@@ -536,10 +549,9 @@ def bifurcation_counter(df_results, imageID):
     :param df_results:
     :return:
     """
-    norm_acceptance=7.5
+    
     X_1_aux = X_2_aux = 0.0
     bif_counter = 0
-    cte = 3.5
     aux = []
     df_bif_positions = pd.DataFrame([])
     number_rows = df_results.shape[0]
@@ -735,8 +747,8 @@ def get_angle_mode(df_final_vote):
     """
     for i in range(len(df_final_vote) - 1):
         for j in range(len(df_final_vote)):
-            if (df_final_vote['angle'].loc[i + 1] >= df_final_vote['angle'].loc[j] - 15) and (
-                    df_final_vote['angle'].loc[i + 1] <= df_final_vote['angle'].loc[j] + 2):
+            if (df_final_vote['angle'].loc[i + 1] >= df_final_vote['angle'].loc[j] - lower_accept) and (
+                    df_final_vote['angle'].loc[i + 1] <= df_final_vote['angle'].loc[j] + upper_accept):
                 df_final_vote['vote_angle'].loc[i + 1] = j
                 break
     return df_final_vote[df_final_vote['vote_angle'] == df_final_vote.mode()['vote_angle'][0]].copy()
@@ -749,7 +761,7 @@ def compute_mean_angle_with_mode(df_final_vote):
     """
     df_final = get_angle_mode(df_final_vote)
     return (
-        df_final['angle'].mean()
+        df_final['angle'].mean().round(0)
         if df_final.shape[0] >= 3 and df_final['angle'].mean() != 0.0
         else None
     )
@@ -855,7 +867,7 @@ if __name__ == '__main__':
     imgfiles = imgfiles[0].values
     DATE = datetime.now().strftime("%Y-%m-%d")
     # development param
-    imgfiles_length = len(imgfiles)  # len(imgfiles) is default
+    imgfiles_length = 10 #len(imgfiles)  # len(imgfiles) is default
 
     # computing the phenotype as a parallel process
     os.chdir(lwnet_dir)
@@ -903,6 +915,14 @@ if __name__ == '__main__':
         df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
         df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
         df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
+    elif fuction_to_execute == 'ratios_taa_tva':
+        df_data_taa = pd.read_csv(phenotype_dir+DATE+"_taa.csv", sep=',')
+        df_data_tva = pd.read_csv(phenotype_dir+DATE+"_tva.csv", sep=',')
+        df_data_taa.rename(columns={ df_data_taa.columns[0]: "image" }, inplace = True)
+        df_data_tva.rename(columns={ df_data_tva.columns[0]: "image" }, inplace = True)
+        df_merge=df_data_taa.merge(df_data_tva, how='inner', on='image')
+        df_merge['ratio_taa_tva'] = df_merge['mean_angle_taa'] / df_merge['mean_angle_tva']
+        df_merge.to_csv(phenotype_dir + DATE + "_ratios_taa_tva.csv", sep=',', index=False)
 
     #elif fuction_to_execute == 'green_segments': #NOT ANYMORE SINCE WE USE LWNET
     #    out = pool.map(main_num_green_segment_and_pixels, imgfiles[:imgfiles_length])

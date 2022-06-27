@@ -30,11 +30,14 @@ upper_accept = 2
 norm_acceptance=7.5
 cte = 3.5
 
+## N main vessels
+limit_diameter_main = 10 # Select it better 
+
 aria_measurements_dir = sys.argv[3] #'/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/ARIA_MEASUREMENTS_DIR' 
 qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
 phenotype_dir = sys.argv[2]
-lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR'  
-OD_output_dir = #sys.argv[5]
+lwnet_dir = sys.argv[4] 
+OD_output_dir = sys.argv[5]
 
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
@@ -86,6 +89,93 @@ def main_tva_or_taa(imgname_and_filter: str and int) -> dict:
         print(e)
         return {'mean_angle_'+str(trait_name): np.nan}
 
+    
+def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
+    """
+    :param imgname_and_filter:
+    :return:
+    """
+    try:
+        print('primera linea')
+        imgname = imgname_and_filter[0]
+        print(imgname)
+        filter_type = imgname_and_filter[1]
+        imageID = imgname.split(".")[0]
+        print('imageID', imageID)
+        df_pintar = read_data(imageID, diameter=True)
+        df_pintar['type'] = np.sign(df_pintar['type'])
+        OD_position = df_OD[df_OD['image'] == imgname]
+        OD_position.dropna(subset=['center_x_y'], inplace=True)
+        
+        if filter_type==-1: 
+            trait_name ='Veins'
+        else: 
+            trait_name ='Arteties'
+            
+        if OD_position.empty:
+            return {
+                    'N_median_main_'+str(trait_name): None,
+                    'N_std_main_'+str(trait_name): None#,
+                    #'N_CVMe_main_'+str(trait_name): None,
+                    #'N_CVP_main_'+str(trait_name): None
+                    }
+        else: #, N_median_CVMe, N_median_CVP
+            N_main_v, N_std_v = compute_N_main_v(df_pintar, OD_position, filter_type, imageID)
+
+            return {
+                    'N_median_main_'+str(trait_name): N_main_v,
+                    'N_std_main_'+str(trait_name): N_std_v.round(2)#,
+                    #'N_CVMe_main_'+str(trait_name): N_median_CVMe,
+                    #'N_CVP_main_'+str(trait_name): N_median_CVP
+                    }
+
+    except Exception as e:
+        print(e)
+        return {
+                'N_median_main_'+str(trait_name): np.nan,
+                'N_std_main_'+str(trait_name): np.nan#,
+                #'N_CVMe_main_'+str(trait_name): np.nan,
+                #'N_CVP_main_'+str(trait_name): np.nan
+                } 
+
+def compute_N_main_v(df_pintar, OD_position, filter_type, imageID): #filter_type=-1):
+    """
+    :param df_pintar:
+    :param OD_position:
+    :param filter_type:
+    :return:
+    """
+    Number_main_vessels = get_intersections_N_main_v(df_pintar, OD_position, filter_type, imageID)
+    print('Number_main_vessels', Number_main_vessels)
+    #Dev_median = sum(abs(Number_main_vessels - Number_main_vessels.median()))/(len(Number_main_vessels)- Number_main_vessels.isnull().sum())
+    
+    return Number_main_vessels.median()[0], Number_main_vessels.std()[0]#, Dev_median/abs(Number_main_vessels.median()), Number_main_vessels.std()/abs(Number_main_vessels.mean())
+
+def get_intersections_N_main_v(df_pintar, OD_position, filter_type, imageID):
+    """
+    :param df_pintar:
+    :param OD_position:
+    :param filter_type:
+    :return:
+    """
+    angle = np.arange(0, 360, 0.01)
+    aux = []
+    df_pintar['X'] = df_pintar['X'].round(0)
+    df_pintar['Y'] = df_pintar['Y'].round(0)
+    delta = 10
+    R_0 = 240
+    radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta]
+    for p in radius: 
+        new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
+        df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
+        #df_veins_arter.sort_values(by=['Diameter'], ascending=False, inplace=True)
+        df_veins_arter = df_veins_arter[df_veins_arter['Diameter']>limit_diameter_main]
+        data = {'N_main_vessels': df_veins_arter.shape[0]}
+        #print('data', data)
+        aux.append(data)
+    return pd.DataFrame(aux)
+
+
 
 def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
     """
@@ -110,8 +200,8 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
             #median_CRE = compute_CRE(df_pintar, OD_position, filter_type)
             median_CRE, eq_CRE = compute_CRE(df_pintar, OD_position, filter_type, imageID)
             return {
-                'median_CRE': median_CRE,
-                'eq_CRE': eq_CRE }
+                'median_CRE': median_CRE.round(0),
+                'eq_CRE': eq_CRE.round(0)}
 
     except Exception as e:
         print(e)
@@ -191,29 +281,28 @@ def diameter_variability(imgname: str) -> dict:
     """
     try:
         imageID = imgname.split(".")[0]
-        print('imageID', imageID)
+        #print('imageID', imageID)
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
-        std_values=df_pintar.groupby(['index'])['Diameter'].std()
-        print('std_values.median()', std_values.median())
-        median_values_vessels = df_pintar.groupby(['type'])['Diameter'].median()
-        print('median_values_vessels', median_values_vessels)
-        mean_values_vessels = df_pintar.groupby(['type'])['Diameter'].mean()
-        print('mean_values_vessels', mean_values_vessels)
-        std_values_vessels = df_pintar.groupby(['type'])['Diameter'].std()
-        print('std_values_vessels', std_values_vessels)
+        # std of the diameters per index, i.e. std of each segment
+        std_values_vessels=df_pintar.groupby(['index'])['Diameter'].std()
+        # median of the diameters per index, i.e. median of each segment
+        median_values_vessels = df_pintar.groupby(['index'])['Diameter'].median()
+        
+        Dev_median = sum(abs(median_values_vessels - 
+                             median_values_vessels.median()))/(len(median_values_vessels)- 
+                                                               median_values_vessels.isnull().sum())
 
-        return {'D_median_std': std_values.median(), 'D_mean_std': std_values.mean(), 'D_std_std': std_values.std(),
-        'D_A_median_std': median_values_vessels[1], 'D_A_mean_std': mean_values_vessels[1], 'D_A_std_std': std_values_vessels[1],
-        'D_V_median_std': median_values_vessels[-1], 'D_V_mean_std': mean_values_vessels[-1], 'D_V_std_std': std_values_vessels[-1]}
-        #'D_G_median_std': median_values_vessels[0], 'D_G_mean_std': mean_values_vessels[0], 'D_G_std_std': std_values_vessels[0]} ## only for green segments
+        return {'D_median_CVMe': Dev_median/abs(median_values_vessels.median()), 
+                'D_median_CVP': median_values_vessels.std()/abs(median_values_vessels.mean()),
+                'D_std_median': std_values_vessels.median(), 'D_std_std': std_values_vessels.std()}
+    
 
     except Exception as e:
         print(e)
-        return {'D_median_std': np.nan, 'D_mean_std': np.nan, 'D_std_std': np.nan, 
-        'D_A_median_std': np.nan, 'D_A_mean_std': np.nan, 'D_A_std_std': np.nan,
-        'D_V_median_std': np.nan, 'D_V_mean_std': np.nan, 'D_V_std_std': np.nan}
-        #'D_G_median_std': np.nan, 'D_G_mean_std': np.nan, 'D_G_std_std': np.nan} ## only for green segments
+        return {'D_dev_median_CVMe': np.nan, 'D_median_CVP': np.nan,
+                'D_std_median': np.nan,  'D_std_std': np.nan}
+
 
 
 def baseline_traits(imgname: str) -> dict:
@@ -862,12 +951,14 @@ if __name__ == '__main__':
     fuction_to_execute = sys.argv[6]  # 'tva' 
     filter_tva_taa = 1 if fuction_to_execute == 'taa' else (-1 if fuction_to_execute == 'tva' else None)
     filter_CRAE_CRVE = 1 if fuction_to_execute == 'CRAE' else (-1 if fuction_to_execute == 'CRVE' else None)
+    filter_N_main = 1 if fuction_to_execute == 'N_main_arteires' else (-1 if fuction_to_execute == 'N_main_veins' else None)
+    
     # all the images
     imgfiles = pd.read_csv(qcFile, header=None)
     imgfiles = imgfiles[0].values
     DATE = datetime.now().strftime("%Y-%m-%d")
     # development param
-    imgfiles_length = 10 #len(imgfiles)  # len(imgfiles) is default
+    imgfiles_length = len(imgfiles)  # len(imgfiles) is default
 
     # computing the phenotype as a parallel process
     os.chdir(lwnet_dir)
@@ -876,10 +967,12 @@ if __name__ == '__main__':
     if fuction_to_execute in {'taa', 'tva'}:
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_tva_taa]))
         out = pool.map(main_tva_or_taa, imgages_and_filter)
-        # create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print( "you didn't chosee any fuction")
     elif fuction_to_execute in {'CRAE', 'CRVE'}:
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_CRAE_CRVE]))
         out = pool.map(main_CRAE_CRVE, imgages_and_filter)
+    elif fuction_to_execute in {'N_main_arteires', 'N_main_veins'}:
+        imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_N_main]))
+        out = pool.map(main_N_main_vessels, imgages_and_filter)
     elif fuction_to_execute == 'bifurcations':
         out = pool.map(main_bifurcations, imgfiles[:imgfiles_length])
     elif fuction_to_execute == 'diameter_variability':

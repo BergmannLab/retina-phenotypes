@@ -260,7 +260,8 @@ if __name__ == '__main__':
         #               "2022-02-04_bifurcations.csv",\
         #               "2022-02-01_N_green_pixels.csv",\
         #               "2022-02-13_tVA_phenotypes.csv"]
-        measurements = ["2022-02-21_N_green_segments_phenotypes.csv","2022-06-08_bifurcations.csv","2022-06-08_fractal_dimension.csv","2022-06-08_vascular_density.csv","2022-06-22_tva.csv","2022-05-10_lwnet_phenotypes.csv","2022-06-08_diameter_variability.csv","2022-06-08_ratios_CRAE_CRVE.csv","2022-06-22_taa.csv"]
+        measurements = os.listdir(input_dir)
+        print("The following image measurement files are taken into account: ", measurements)
         for i,measurement in enumerate(measurements):
                 if i==0:
                         stats = pd.read_csv(measurement, index_col=0)
@@ -331,12 +332,12 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         for i in cols:
             f=plt.figure()
             plt.hist(phenofile_out[i].dropna().values, 100)
-            plt.title(i)
+            plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))
             f.savefig(output_dir+"/distributions/"+EXPERIMENT_ID+"_"+i+".pdf")
             plt.close()
             f=plt.figure()
             plt.hist(phenofile_out_rbINT[i].dropna().values, 100)
-            plt.title(i)
+            plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))
             f.savefig(output_dir+"/distributions/qqnorm_"+EXPERIMENT_ID+"_"+i+".pdf")
             plt.close()
 

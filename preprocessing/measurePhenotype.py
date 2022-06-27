@@ -841,10 +841,11 @@ if __name__ == '__main__':
     qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
     phenotype_dir = sys.argv[2] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/OUTPUT/' 
     lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR' 
-    # fuction_to_execute posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios'
-    fuction_to_execute = sys.argv[6]  # 'tva' 
-    filter_tva_taa = 1 if fuction_to_execute == 'taa' else (-1 if fuction_to_execute == 'tva' else None)
-    filter_CRAE_CRVE = 1 if fuction_to_execute == 'CRAE' else (-1 if fuction_to_execute == 'CRVE' else None)
+    # function_to_execute posibilities: 'tva', 'taa', 'bifurcations', 'green_segments', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios'
+    traits = sys.argv[6].split(',')
+    print(traits)
+    filter_tva_taa = 1 if function_to_execute == 'taa' else (-1 if function_to_execute == 'tva' else None)
+    filter_CRAE_CRVE = 1 if function_to_execute == 'CRAE' else (-1 if function_to_execute == 'CRVE' else None)
     # all the images
     imgfiles = pd.read_csv(qcFile, header=None)
     imgfiles = imgfiles[0].values
@@ -854,60 +855,63 @@ if __name__ == '__main__':
 
     # computing the phenotype as a parallel process
     os.chdir(lwnet_dir)
-    pool = Pool()
+    
+    for function_to_execute in traits:
+        
+        pool=Pool()
 
-    if fuction_to_execute in {'taa', 'tva'}:
-        imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_tva_taa]))
-        out = pool.map(main_tva_or_taa, imgages_and_filter)
-        # create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print( "you didn't chosee any fuction")
-    elif fuction_to_execute in {'CRAE', 'CRVE'}:
-        imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_CRAE_CRVE]))
-        out = pool.map(main_CRAE_CRVE, imgages_and_filter)
-    elif fuction_to_execute == 'bifurcations':
-        out = pool.map(main_bifurcations, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'diameter_variability':
-        out = pool.map(diameter_variability, imgfiles[:imgfiles_length]) 
-    elif fuction_to_execute == 'aria_phenotypes':
-        out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'fractal_dimension':
-        out = pool.map(main_fractal_dimension, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'vascular_density':
-        out = pool.map(main_vascular_density, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'baseline':
-        out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
-        df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
-        df_data = df_data[['Unnamed: 0', 'medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein']]
-        df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
-        df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
-        df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
-        df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
-        df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
-    elif fuction_to_execute == 'ratios_CRAE_CRVE':
-        df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
-        df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
+        if function_to_execute in {'taa', 'tva'}:
+            imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_tva_taa]))
+            out = pool.map(main_tva_or_taa, imgages_and_filter)
+            # create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print( "you didn't chosee any function")
+        elif function_to_execute in {'CRAE', 'CRVE'}:
+            imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_CRAE_CRVE]))
+            out = pool.map(main_CRAE_CRVE, imgages_and_filter)
+        elif function_to_execute == 'bifurcations':
+            out = pool.map(main_bifurcations, imgfiles[:imgfiles_length])
+        elif function_to_execute == 'diameter_variability':
+            out = pool.map(diameter_variability, imgfiles[:imgfiles_length]) 
+        elif function_to_execute == 'aria_phenotypes':
+            out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
+        elif function_to_execute == 'fractal_dimension':
+            out = pool.map(main_fractal_dimension, imgfiles[:imgfiles_length])
+        elif function_to_execute == 'vascular_density':
+            out = pool.map(main_vascular_density, imgfiles[:imgfiles_length])
+        elif function_to_execute == 'baseline':
+            out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
+        elif function_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
+            df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
+            df_data = df_data[['Unnamed: 0', 'medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein']]
+            df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
+            df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
+            df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
+            df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
+            df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
+        elif function_to_execute == 'ratios_CRAE_CRVE':
+            df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
+            df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
 
-        df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
-        df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+            df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
+            df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
 
-        df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
-        df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+            df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
+            df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
 
-        df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
+            df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
 
-        df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
-        df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
-        df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
+            df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
+            df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
+            df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
 
-    #elif fuction_to_execute == 'green_segments': #NOT ANYMORE SINCE WE USE LWNET
-    #    out = pool.map(main_num_green_segment_and_pixels, imgfiles[:imgfiles_length])
-    #elif fuction_to_execute == 'neo_vascularization': #NOT ANYMORE SINCE WE USE LWNET
-    #    out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])
+        #elif function_to_execute == 'green_segments': #NOT ANYMORE SINCE WE USE LWNET
+        #    out = pool.map(main_num_green_segment_and_pixels, imgfiles[:imgfiles_length])
+        #elif function_to_execute == 'neo_vascularization': #NOT ANYMORE SINCE WE USE LWNET
+        #    out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])
 
-    else:
-        out = None
+        else:
+            out = None
 
-    pool.close()
-    create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print(
-        "You didn't chose any possible function. Options: tva, taa, bifurcations, green_segments,"
-        " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")
+        pool.close()
+        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print(
+            "You didn't chose any possible function. Options: tva, taa, bifurcations, green_segments,"
+            " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")

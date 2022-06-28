@@ -1022,10 +1022,10 @@ if __name__ == '__main__':
     #elif fuction_to_execute == 'neo_vascularization': #NOT ANYMORE SINCE WE USE LWNET
     #    out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])
 
-    else:
-        out = None
+        else:
+            out = None
 
-    pool.close()
-    create_output_(out, imgfiles, fuction_to_execute, imgfiles_length) if out else print(
-        "You didn't chose any possible function. Options: tva, taa, bifurcations, green_segments,"
-        " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")
+        pool.close()
+        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print(
+            "You didn't chose any possible function. Options: tva, taa, bifurcations, green_segments,"
+            " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")

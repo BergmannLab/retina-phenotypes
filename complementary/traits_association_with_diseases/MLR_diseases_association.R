@@ -4,10 +4,10 @@ library(tidyr)
 
 ### Initialization:
 ukbb_files_dir <- '/NVME/decrypted/ukbb/labels/'
-phenofiles_dir <- '/NVME/decrypted/ukbb/fundus/phenotypes/lwnet_QC2/'
+phenofiles_dir <- '/NVME/decrypted/multitrait/image_phenotype/collection/'
 output_dir <- '/SSD/home/sofia/retina/tratis_association_with_diseases/'
-diseases_file_dir <- '/NVME/decrypted/ukbb/labels/2022_06_08_Diseases_and_phenotypes_MLR_21015.csv'
-
+diseases_file_dir <- '/NVME/decrypted/multitrait/diseases/24_06_2022_Diseases_and_phenotypes_MLR_both.csv'
+phenofiles_dir_both <- '/NVME/decrypted/multitrait/'
 
 ### Read data:
 
@@ -17,9 +17,13 @@ source("~/retina-phenotypes/complementary/traits_association_with_diseases/auxil
 data_aux = read_disease_data(ukbb_files_dir) ## You can change the diseases on it
 
 ### Read phenofile data and create data set:
-data_all = create_dataset(data_aux, phenofiles_dir) ## You can change the phenofiles on it
+## For file with only one eye:
+#data_all = create_dataset(data_aux, phenofiles_dir, 21015, 0, '0.png') ## You can change the phenofiles on it
+
+## For file with both eyes:
+data_all = create_dataset_both_eyes(data_aux, phenofiles_dir_both)
+
 colnames(data_all)
-data_all["age2"]= data_all["age"]^2
 
 write.csv(data_all, paste(diseases_file_dir, sep="") , row.names = FALSE)
 ##################################################
@@ -29,9 +33,7 @@ write.csv(data_all, paste(diseases_file_dir, sep="") , row.names = FALSE)
 ###################################################
 
 ### MLR: 
-
-
-
+#data_all["age2"]= data_all["age"]^2
 data_all["SBP"]= (data_all["SBP1"]+data_all["SBP2"])/2
 data_all["DBP"]= (data_all["DBP1"]+data_all["DBP2"])/2
 data_all["PR"]= (data_all["PR1"]+data_all["PR2"])/2

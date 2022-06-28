@@ -1022,8 +1022,8 @@ if __name__ == '__main__':
     #elif fuction_to_execute == 'neo_vascularization': #NOT ANYMORE SINCE WE USE LWNET
     #    out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])
 
-        else:
-            out = None
+    else:
+        out = None
 
         pool.close()
         create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print(

@@ -6,8 +6,9 @@ library(tidyr)
 ukbb_files_dir <- '/NVME/decrypted/ukbb/labels/'
 phenofiles_dir <- '/NVME/decrypted/multitrait/image_phenotype/collection/'
 output_dir <- '/SSD/home/sofia/retina/tratis_association_with_diseases/'
-diseases_file_dir <- '/NVME/decrypted/multitrait/diseases/24_06_2022_Diseases_and_phenotypes_MLR_both.csv'
-phenofiles_dir_both <- '/NVME/decrypted/multitrait/'
+diseases_file_dir <- '/NVME/decrypted/multitrait/diseases/28_06_2022_Diseases_and_phenotypes_MLR_both_ventile2.csv'
+phenofiles_dir_both <- '/NVME/decrypted/multitrait//participant_phenotype/'
+name_phenofile <-"2022_06_27_multitrait_full_ventile2_with_ids.csv"
 
 ### Read data:
 
@@ -21,7 +22,7 @@ data_aux = read_disease_data(ukbb_files_dir) ## You can change the diseases on i
 #data_all = create_dataset(data_aux, phenofiles_dir, 21015, 0, '0.png') ## You can change the phenofiles on it
 
 ## For file with both eyes:
-data_all = create_dataset_both_eyes(data_aux, phenofiles_dir_both)
+data_all = create_dataset_both_eyes(data_aux, phenofiles_dir_both, name_phenofile)
 
 colnames(data_all)
 

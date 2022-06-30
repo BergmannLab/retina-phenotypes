@@ -383,31 +383,39 @@ create_dataset <- function(data_cov, phenofiles_dir, eye_selected, year_selected
   } 
 
 
-create_dataset_both_eyes <- function(data_cov, phenofiles_dir) 
+create_dataset_both_eyes <- function(data_cov, phenofiles_dir, name_phenofile) 
   { 
   ################# Read phenofiles data ############################
-
-  pheno_df <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2.csv", sep=""),
-                          header = TRUE, sep=" ",check.names=FALSE)
-
   
-  pheno_eid <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2_instances.csv", sep=""),
-                        header = TRUE, sep=",",check.names=FALSE)
-  print('nrow(pheno_df) y pheno_eid antes de nada')
-  print(nrow(pheno_df))
-  print(nrow(pheno_eid))
-  
-  if(nrow(pheno_df)== nrow(pheno_eid)) 
-  {   
-    names(pheno_eid)[1] <- 'eid'
-    pheno_df$eid <- pheno_eid$eid
-    print(nrow(pheno_df))
-    
-    ################# Read phenofiles data ############################
-    g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
-    print(nrow(g))
-    
-    return(g)
-    }
-  else print("Error, different sizes!")
+  pheno_df <- read.csv(file= paste(phenofiles_dir, name_phenofile, sep=""),
+                                               header = TRUE, sep=",",check.names=FALSE)
+  names(pheno_df)[1] <- 'eid'
+  g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
+  #   
+  return(g)
+                       
+  # pheno_df <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2.csv", sep=""),
+  #                         header = TRUE, sep=" ",check.names=FALSE)
+  # 
+  # 
+  # pheno_eid <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2_instances.csv", sep=""),
+  #                       header = TRUE, sep=",",check.names=FALSE)
+  # print('nrow(pheno_df) y pheno_eid antes de nada')
+  # print(nrow(pheno_df))
+  # print(nrow(pheno_eid))
+  # 
+  # if(nrow(pheno_df)== nrow(pheno_eid)) 
+  # {   
+  #   names(pheno_eid)[1] <- 'eid'
+  #   pheno_df$eid <- pheno_eid$eid
+  #   print(nrow(pheno_df))
+  #   
+  #   ################# Read phenofiles data ############################
+  #   g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
+  #   print(nrow(g))
+  #   
+  #   return(g)
+  #   }
+  # else print("Error, different sizes!")
   } 

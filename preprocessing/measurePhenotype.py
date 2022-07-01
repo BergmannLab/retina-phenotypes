@@ -38,7 +38,7 @@ qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/
 phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] 
 OD_output_dir = sys.argv[5]
-
+df_OD = pd.read_csv(OD_output_dir+"/od_all.csv", sep=',')
 mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
 def main_bifurcations(imgname: str) -> dict:
@@ -193,24 +193,28 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
         OD_position.dropna(subset=['center_x_y'], inplace=True)
+        if filter_type==-1: 
+            X ='V'
+        else: 
+            X ='A'
         if OD_position.empty:
             return {
-            'median_CRE': None,
-            'eq_CRE': None
+            'median_CR'+str(X)+'E': None,
+            'eq_CR'+str(X)+'E': None
             }
 
         else:
             #median_CRE = compute_CRE(df_pintar, OD_position, filter_type)
             median_CRE, eq_CRE = compute_CRE(df_pintar, OD_position, filter_type, imageID)
             return {
-                'median_CRE': median_CRE.round(0),
-                'eq_CRE': eq_CRE.round(0)}
+                'median_CR'+str(X)+'E': median_CRE.round(0),
+                'eq_CR'+str(X)+'E': eq_CRE.round(0)}
 
     except Exception as e:
         print(e)
         return {
-                'median_CRE': np.nan,
-                'eq_CRE': np.nan
+                'median_CR'+str(X)+'E': np.nan,
+                'eq_CR'+str(X)+'E': np.nan
                 } 
 
 def compute_CRE(df_pintar, OD_position, filter_type, imageID): #filter_type=-1):
@@ -242,6 +246,9 @@ def get_intersections(df_pintar, OD_position, filter_type, imageID):
     r1 = (OD_position['width'] + OD_position['height'])/4
     radius = [2*r1.iloc[0], 2.1*r1.iloc[0], 2.2*r1.iloc[0], 2.3*r1.iloc[0], 
               2.4*r1.iloc[0], 2.5*r1.iloc[0]]
+    #delta = 10
+    #R_0 = 200
+    #radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta]
     for p in radius: 
         new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
         df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
@@ -927,11 +934,11 @@ if __name__ == '__main__':
     qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
     phenotype_dir = sys.argv[2] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/OUTPUT/' 
     lwnet_dir = sys.argv[4] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/LWNET_DIR' 
-    # fuction_to_execute posibilities: 'tva', 'taa', 'bifurcations', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios'
-    fuction_to_execute = sys.argv[6]  # 'tva' 
-    filter_tva_taa = 1 if fuction_to_execute == 'taa' else (-1 if fuction_to_execute == 'tva' else None)
-    filter_CRAE_CRVE = 1 if fuction_to_execute == 'CRAE' else (-1 if fuction_to_execute == 'CRVE' else None)
-    filter_N_main = 1 if fuction_to_execute == 'N_main_arteires' else (-1 if fuction_to_execute == 'N_main_veins' else None)
+    # function_to_execute posibilities: 'tva', 'taa', 'bifurcations', 'neo_vascularization', 'aria_phenotypes', 'fractal_dimension', 'ratios'
+    function_to_execute = sys.argv[6]  # 'tva' 
+    filter_tva_taa = 1 if function_to_execute == 'taa' else (-1 if function_to_execute == 'tva' else None)
+    filter_CRAE_CRVE = 1 if function_to_execute == 'CRAE' else (-1 if function_to_execute == 'CRVE' else None)
+    filter_N_main = 1 if function_to_execute == 'N_main_arteires' else (-1 if function_to_execute == 'N_main_veins' else None)
     
     # all the images
     imgfiles = pd.read_csv(qcFile, header=None)
@@ -944,30 +951,30 @@ if __name__ == '__main__':
     os.chdir(lwnet_dir)
     pool = Pool()
 
-    if fuction_to_execute in {'taa', 'tva'}:
+    if function_to_execute in {'taa', 'tva'}:
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_tva_taa]))
         out = pool.map(main_tva_or_taa, imgages_and_filter)
-    elif fuction_to_execute in {'CRAE', 'CRVE'}:
+    elif function_to_execute in {'CRAE', 'CRVE'}:
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_CRAE_CRVE]))
         out = pool.map(main_CRAE_CRVE, imgages_and_filter)
-    elif fuction_to_execute in {'N_main_arteires', 'N_main_veins'}:
+    elif function_to_execute in {'N_main_arteires', 'N_main_veins'}:
         imgages_and_filter = list(zip(imgfiles[:imgfiles_length], imgfiles_length * [filter_N_main]))
         out = pool.map(main_N_main_vessels, imgages_and_filter)
-    elif fuction_to_execute == 'bifurcations':
+    elif function_to_execute == 'bifurcations':
         out = pool.map(main_bifurcations, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'diameter_variability':
+    elif function_to_execute == 'diameter_variability':
         out = pool.map(diameter_variability, imgfiles[:imgfiles_length]) 
-    elif fuction_to_execute == 'aria_phenotypes':
+    elif function_to_execute == 'aria_phenotypes':
         out = pool.map(main_aria_phenotypes, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'fractal_dimension':
+    elif function_to_execute == 'fractal_dimension':
         out = pool.map(main_fractal_dimension, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'vascular_density':
+    elif function_to_execute == 'vascular_density':
         out = pool.map(main_vascular_density, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'baseline':
+    elif function_to_execute == 'baseline':
         out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
-    elif fuction_to_execute == 'neo_vascularization': 
+    elif function_to_execute == 'neo_vascularization': 
         out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])  
-    elif fuction_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
+    elif function_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
         df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
         df_data = df_data[['Unnamed: 0', 'medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein', 'DF_longestFifth_artery', 'DF_longestFifth_vein', 'medianDiameter_longestFifth_artery', 'medianDiameter_longestFifth_vein', 'tau2_longestFifth_artery', 'tau2_longestFifth_vein', 'tau3_longestFifth_artery', 'tau3_longestFifth_vein', 'tau4_longestFifth_artery', 'tau4_longestFifth_vein']]
         df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
@@ -980,13 +987,13 @@ if __name__ == '__main__':
         df_merge['ratio_tau3_longest'] = df_merge['tau3_longestFifth_artery'] / df_merge['tau3_longestFifth_vein']
         df_merge['ratio_tau4_longest'] = df_merge['tau4_longestFifth_artery'] / df_merge['tau4_longestFifth_vein']
         df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
-    elif fuction_to_execute == 'ratios_CRAE_CRVE':
+    elif function_to_execute == 'ratios_CRAE_CRVE':
         df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
         df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
         df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
-        df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+        #df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
         df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
-        df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+        #df_data_CRVE.rename(columnscreate_output_={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
         df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
         df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
         df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
@@ -995,7 +1002,7 @@ if __name__ == '__main__':
     else:
         out = None
 
-        pool.close()
-        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print(
+    pool.close()
+    create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print(
             "You didn't chose any possible function. Options: tva, taa, bifurcations,"
             " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")

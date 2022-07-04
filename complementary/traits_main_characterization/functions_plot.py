@@ -1,5 +1,3 @@
-# Sofia 09-06-2022
-
 import pandas as pd
 import seaborn as sns
 import os

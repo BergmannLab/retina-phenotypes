@@ -193,10 +193,7 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
         OD_position.dropna(subset=['center_x_y'], inplace=True)
-        if filter_type==-1: 
-            X ='V'
-        else: 
-            X ='A'
+            
         if OD_position.empty:
             return {
             'median_CR'+str(X)+'E': None,
@@ -207,14 +204,14 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
             #median_CRE = compute_CRE(df_pintar, OD_position, filter_type)
             median_CRE, eq_CRE = compute_CRE(df_pintar, OD_position, filter_type, imageID)
             return {
-                'median_CR'+str(X)+'E': median_CRE.round(0),
-                'eq_CR'+str(X)+'E': eq_CRE.round(0)}
+                'median_CRE': median_CRE.round(0),
+                'eq_CRE': eq_CRE.round(0)}
 
     except Exception as e:
         print(e)
         return {
-                'median_CR'+str(X)+'E': np.nan,
-                'eq_CR'+str(X)+'E': np.nan
+                'median_CRE': np.nan,
+                'eq_CRE': np.nan
                 } 
 
 def compute_CRE(df_pintar, OD_position, filter_type, imageID): #filter_type=-1):
@@ -991,9 +988,9 @@ if __name__ == '__main__':
         df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
         df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
         df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
-        #df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+        df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
         df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
-        #df_data_CRVE.rename(columnscreate_output_={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+        df_data_CRVE.rename(columnscreate_output_={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
         df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
         df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
         df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']

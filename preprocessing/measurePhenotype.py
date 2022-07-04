@@ -110,7 +110,7 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
         if filter_type==-1: 
             trait_name ='Veins'
         else: 
-            trait_name ='Arteties'
+            trait_name ='Arteries'
             
         if OD_position.empty:
             return {

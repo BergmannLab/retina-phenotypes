@@ -1,0 +1,5 @@
+phenofiles_dir='/HDD/data/UKBiob/phenofiles/'
+phenofile_used_for_dist_plots="2022_06_08_all_phenotypes_LWNet_Decile3_qqnorm.csv"
+save_dir='/SSD/home/sofia/retina-phenotypes/complementary/traits_main_characterization/results/'
+main_phenotypes_seaborn = ["bifurcations",  "mean_angle_taa", "mean_angle_tva", "eq_CRAE", "eq_CRVE", "medianDiameter_all", "DF_all"]
+plot_histograms=True

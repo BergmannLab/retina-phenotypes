@@ -330,11 +330,11 @@ def baseline_traits(imgname: str) -> dict:
         # Next step: Include only the pixels inside the mask? Save the masks from LWnet?
         img = io.imread(imageID + '.png')
         # print(img.shape)
-        return {'std_intensity': np.std(img), 'mean_intensity': np.mean(img), 'median_intensity': np.median(img)}
+        return {'std_intensity': np.std(img), 'mean_intensity': np.mean(img)}#, 'median_intensity': np.median(img)}
 
     except Exception as e:
         print(e)
-        return {'std_intensity': np.nan, 'mean_intensity': np.nan, 'median_intensity': np.nan}
+        return {'std_intensity': np.nan, 'mean_intensity': np.nan}#, 'median_intensity': np.nan}
 
 
 def main_neo_vascularization_od(imgname: str) -> dict:

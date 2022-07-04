@@ -11,31 +11,53 @@ read_disease_data <- function(ukbb_files_dir)
   ### Read Ukbb files:
   data_1 <- read.csv(file= paste(ukbb_files_dir, "/1_data_extraction/ukb34181.csv", sep=""), header = TRUE, sep=",",check.names=FALSE)
   gwas_covar <- data_1
-  gwas_covar <- gwas_covar[, c('21022-0.0', '31-0.0', '22009-0.1', '22009-0.2', '22009-0.3', '22009-0.4','22009-0.5', '22009-0.6', '22009-0.7', '22009-0.8', '22009-0.9', '22009-0.10', '22009-0.11', '22009-0.12', '22009-0.13', '22009-0.14', '22009-0.15', '22009-0.16', '22009-0.17', '22009-0.18', '22009-0.19', '22009-0.20', 'eid')]
+  gwas_covar <- gwas_covar[, c('21022-0.0', '31-0.0', '22009-0.1', '22009-0.2', '22009-0.3', '22009-0.4','22009-0.5', '22009-0.6', '22009-0.7', '22009-0.8', '22009-0.9', '22009-0.10', '22009-0.11', '22009-0.12', '22009-0.13', '22009-0.14', '22009-0.15', '22009-0.16', '22009-0.17', '22009-0.18', '22009-0.19', '22009-0.20', 
+'22009-0.21', '22009-0.22', '22009-0.23', '22009-0.24','22009-0.25', '22009-0.26', '22009-0.27', '22009-0.28', '22009-0.29', '22009-0.30', '22009-0.31', '22009-0.32', '22009-0.33', 
+'22009-0.34', '22009-0.35', '22009-0.36', '22009-0.37', '22009-0.38', '22009-0.39', '22009-0.40', 'eid')]
   gwas_covar <- gwas_covar %>% 
     rename(
         'age_recruitment'='21022-0.0',
         'sex'='31-0.0',
-        'cov1'='22009-0.1', 
-        'cov2'='22009-0.2', 
-        'cov3'='22009-0.3', 
-        'cov4'='22009-0.4', 
-        'cov5'='22009-0.5', 
-        'cov6'='22009-0.6', 
-        'cov7'='22009-0.7', 
-        'cov8'='22009-0.8', 
-        'cov9'='22009-0.9',
-        'cov10'='22009-0.10', 
-        'cov11'='22009-0.11', 
-        'cov12'='22009-0.12', 
-        'cov13'='22009-0.13', 
-        'cov14'='22009-0.14', 
-        'cov15'='22009-0.15', 
-        'cov16'='22009-0.16', 
-        'cov17'='22009-0.17', 
-        'cov18'='22009-0.18',
-        'cov19'='22009-0.19', 
-        'cov20'='22009-0.20'
+        'PC1'='22009-0.1', 
+        'PC2'='22009-0.2', 
+        'PC3'='22009-0.3', 
+        'PC4'='22009-0.4', 
+        'PC5'='22009-0.5', 
+        'PC6'='22009-0.6', 
+        'PC7'='22009-0.7', 
+        'PC8'='22009-0.8', 
+        'PC9'='22009-0.9',
+        'PC10'='22009-0.10', 
+        'PC11'='22009-0.11', 
+        'PC12'='22009-0.12', 
+        'PC13'='22009-0.13', 
+        'PC14'='22009-0.14', 
+        'PC15'='22009-0.15', 
+        'PC16'='22009-0.16', 
+        'PC17'='22009-0.17', 
+        'PC18'='22009-0.18',
+        'PC19'='22009-0.19', 
+        'PC20'='22009-0.20',
+        'PC21'='22009-0.21', 
+        'PC22'='22009-0.22', 
+        'PC23'='22009-0.23', 
+        'PC24'='22009-0.24', 
+        'PC25'='22009-0.25', 
+        'PC26'='22009-0.26', 
+        'PC27'='22009-0.27', 
+        'PC28'='22009-0.28', 
+        'PC29'='22009-0.29',
+        'PC30'='22009-0.30', 
+        'PC31'='22009-0.31', 
+        'PC32'='22009-0.32', 
+        'PC33'='22009-0.33', 
+        'PC34'='22009-0.34', 
+        'PC35'='22009-0.35', 
+        'PC36'='22009-0.36', 
+        'PC37'='22009-0.37', 
+        'PC38'='22009-0.38',
+        'PC39'='22009-0.39', 
+        'PC40'='22009-0.40'
     )
   # names(gwas_covar) <- c('age', 'sex', 'cov1', 'cov2', 'cov3', 'cov4', 'cov5', 'cov6', 'cov7', 'cov8', 'cov9', 'eid')
   data_1 <- data_1[, c('34-0.0','53-0.0', '53-1.0', '53-2.0', '21003-0.0', '21003-1.0','21003-2.0',
@@ -208,65 +230,42 @@ read_disease_data <- function(ukbb_files_dir)
 }
 
 
-
-read_survival_data <- function(survival_data_dir) 
-{ 
-  ################# Read survival data ############################
-  data_survival_cov <- read.csv(file= paste(survival_data_dir, "/pruebas_survival.csv", sep=""), 
-                                header = TRUE, sep=",",check.names=FALSE)
-  colnames(data_survival_cov)
-  data_survival_cov <- data_survival_cov %>% 
-    rename(
-      'age'='21022-0.0',
-      'sex'='31-0.0',
-      'etnia'='21000-0.0' 
-    )
+create_dataset_both_eyes <- function(data_cov, phenofiles_dir, name_phenofile) 
+  { 
+  ################# Read phenofiles data ############################
   
-  # plot histograms
-  dev.new()
-  pdf(file= paste(survival_output_dir, "/histogramas.pdf", sep=""))
-  hist.data.frame(data_survival_cov)
-  dev.off()
-
-  return(data_survival_cov)
-}
-
-read_survival_data_GWAS <- function(survival_data_dir) 
-{ 
-  ################# Read survival data ############################
-  data_survival_cov <- read.csv(file= paste(survival_data_dir, "/pruebas_survival.csv", sep=""), 
-                                header = TRUE, sep=",",check.names=FALSE)
-  colnames(data_survival_cov)
-  data_survival_cov <- data_survival_cov %>% 
-    rename(
-      'age'='21022-0.0',
-      'sex'='31-0.0',
-      'cov1'='22009-0.1' , 
-      'cov2'='22009-0.2', 
-      'cov3'='22009-0.5', 
-      'cov4'='22009-0.6', 
-      'cov5'='22009-0.7', 
-      'cov6'='22009-0.8', 
-      'cov7'='22009-0.16', 
-      'cov8'='22009-0.17', 
-      'cov9'='22009-0.18'
-    )
-  
-  # plot histograms
-  #dev.new()
-  #pdf(file= paste(survival_output_dir, "/histogramas.pdf", sep=""))
-  #hist.data.frame(data_survival_cov)
-  #dev.off()
-  # names(data_survival_cov) <- c( 'eid', '40000-0.0', '40000-1.0', 'age', 'sex', 
-  #                                'cov1', 'cov2', 'cov3', 'cov4', 'cov5', 'cov6', 
-  #                                'cov7', 'cov8', 'cov9', 'year_death', 'death') 
-  # "eid"        "40000-0.0"  "40000-1.0"  "21022-0.0"  "31-0.0"     "22009-0.1"  "22009-0.2"  "22009-0.5" 
-  # "22009-0.6"  "22009-0.7"  "22009-0.8"  "22009-0.16" "22009-0.17" "22009-0.18" "year_death"       "death"
-  
-  # Lo uso para comprobar que funcione lo de pintar: dev.off() 
-  #plot(rnorm(50), rnorm(50))
-  return(data_survival_cov)
-}
+  pheno_df <- read.csv(file= paste(phenofiles_dir, name_phenofile, sep=""),
+                                               header = TRUE, sep=",",check.names=FALSE)
+  names(pheno_df)[1] <- 'eid'
+  g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
+  print(nrow(g))
+  #   
+  return(g)
+                       
+  # pheno_df <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2.csv", sep=""),
+  #                         header = TRUE, sep=" ",check.names=FALSE)
+  # 
+  # 
+  # pheno_eid <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2_instances.csv", sep=""),
+  #                       header = TRUE, sep=",",check.names=FALSE)
+  # print('nrow(pheno_df) y pheno_eid antes de nada')
+  # print(nrow(pheno_df))
+  # print(nrow(pheno_eid))
+  # 
+  # if(nrow(pheno_df)== nrow(pheno_eid)) 
+  # {   
+  #   names(pheno_eid)[1] <- 'eid'
+  #   pheno_df$eid <- pheno_eid$eid
+  #   print(nrow(pheno_df))
+  #   
+  #   ################# Read phenofiles data ############################
+  #   g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
+  #   print(nrow(g))
+  #   
+  #   return(g)
+  #   }
+  # else print("Error, different sizes!")
+  } 
 
 
 create_dataset <- function(data_cov, phenofiles_dir, eye_selected, year_selected, instance_selected) 
@@ -383,39 +382,3 @@ create_dataset <- function(data_cov, phenofiles_dir, eye_selected, year_selected
   } 
 
 
-create_dataset_both_eyes <- function(data_cov, phenofiles_dir, name_phenofile) 
-  { 
-  ################# Read phenofiles data ############################
-  
-  pheno_df <- read.csv(file= paste(phenofiles_dir, name_phenofile, sep=""),
-                                               header = TRUE, sep=",",check.names=FALSE)
-  names(pheno_df)[1] <- 'eid'
-  g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
-  print(nrow(g))
-  #   
-  return(g)
-                       
-  # pheno_df <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2.csv", sep=""),
-  #                         header = TRUE, sep=" ",check.names=FALSE)
-  # 
-  # 
-  # pheno_eid <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2_instances.csv", sep=""),
-  #                       header = TRUE, sep=",",check.names=FALSE)
-  # print('nrow(pheno_df) y pheno_eid antes de nada')
-  # print(nrow(pheno_df))
-  # print(nrow(pheno_eid))
-  # 
-  # if(nrow(pheno_df)== nrow(pheno_eid)) 
-  # {   
-  #   names(pheno_eid)[1] <- 'eid'
-  #   pheno_df$eid <- pheno_eid$eid
-  #   print(nrow(pheno_df))
-  #   
-  #   ################# Read phenofiles data ############################
-  #   g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
-  #   print(nrow(g))
-  #   
-  #   return(g)
-  #   }
-  # else print("Error, different sizes!")
-  } 

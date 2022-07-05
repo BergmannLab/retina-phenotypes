@@ -69,31 +69,24 @@ def main_tva_or_taa(imgname_and_filter: str and int) -> dict:
     :param imgname_and_filter:
     :return:
     """
-    
-    imgname = imgname_and_filter[0]
-    filter_type = imgname_and_filter[1]
-    imageID = imgname.split(".")[0]
-    
-    if filter_type==-1: 
-        trait_name ='tva'
-    else: 
-        trait_name ='taa' 
-
     try:
+        imgname = imgname_and_filter[0]
+        filter_type = imgname_and_filter[1]
+        imageID = imgname.split(".")[0]
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
         OD_position.dropna(subset=['center_x_y'], inplace=True)
            
         return {
-            'mean_angle_'+str(trait_name) : None
+            'mean_angle' : None
             if OD_position.empty
             else compute_mean_angle(df_pintar, OD_position, filter_type)
         }
 
     except Exception as e:
         print(e)
-        return {'mean_angle_'+str(trait_name): np.nan}
+        return {'mean_angle': np.nan}
 
     
 def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
@@ -112,16 +105,11 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
         OD_position.dropna(subset=['center_x_y'], inplace=True)
-        
-        if filter_type==-1: 
-            trait_name ='Veins'
-        else: 
-            trait_name ='Arteries'
             
         if OD_position.empty:
             return {
-                    'N_median_main_'+str(trait_name): None,
-                    'N_std_main_'+str(trait_name): None#,
+                    'N_median_main': None,
+                    'N_std_main': None#,
                     #'N_CVMe_main_'+str(trait_name): None,
                     #'N_CVP_main_'+str(trait_name): None
                     }
@@ -132,8 +120,8 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
                 N_std_v=np.nan
 
             return {
-                    'N_median_main_'+str(trait_name): N_main_v,
-                    'N_std_main_'+str(trait_name): N_std_v.round(2)#,
+                    'N_median_main': N_main_v,
+                    'N_std_main': N_std_v.round(2)#,
                     #'N_CVMe_main_'+str(trait_name): N_median_CVMe,
                     #'N_CVP_main_'+str(trait_name): N_median_CVP
                     }
@@ -141,8 +129,8 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
     except Exception as e:
         print(e)
         return {
-                'N_median_main_'+str(trait_name): np.nan,
-                'N_std_main_'+str(trait_name): np.nan#,
+                'N_median_main'): np.nan,
+                'N_std_main': np.nan#,
                 #'N_CVMe_main_'+str(trait_name): np.nan,
                 #'N_CVP_main_'+str(trait_name): np.nan
                 } 
@@ -192,17 +180,10 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
     :return:
     """
     
-    imgname = imgname_and_filter[0]
-    filter_type = imgname_and_filter[1]
-    imageID = imgname.split(".")[0]
-        
-    if filter_type==-1: 
-        X ='A'
-    else: 
-        X ='V'
-         
-
     try:
+        imgname = imgname_and_filter[0]
+        filter_type = imgname_and_filter[1]
+        imageID = imgname.split(".")[0]
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
@@ -210,22 +191,22 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
             
         if OD_position.empty:
             return {
-            'median_CR'+str(X)+'E': None,
-            'eq_CR'+str(X)+'E': None
+            'median_CRE': None,
+            'eq_CRE': None
             }
 
         else:
             #median_CRE = compute_CRE(df_pintar, OD_position, filter_type)
             median_CRE, eq_CRE = compute_CRE(df_pintar, OD_position, filter_type, imageID)
             return {
-                'median_CR'+str(X)+'E': median_CRE.round(0),
-                'eq_CR'+str(X)+'E': eq_CRE.round(0)}
+                'median_CRE': median_CRE.round(0),
+                'eq_CRE': eq_CRE.round(0)}
 
     except Exception as e:
         print(e)
         return {
-                'median_CR'+str(X)+'E': np.nan,
-                'eq_CR'+str(X)+'E': np.nan
+                'median_CRE': np.nan,
+                'eq_CRE': np.nan
                 } 
 
 def compute_CRE(df_pintar, OD_position, filter_type, imageID): #filter_type=-1):
@@ -999,13 +980,32 @@ if __name__ == '__main__':
             df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
             df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
             df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
-            #df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+            df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
             df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
-            #df_data_CRVE.rename(columnscreate_output_={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+            df_data_CRVE.rename(columnscreate_output_={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
             df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
             df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
             df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
             df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
+            
+            #Renaming column names
+            #### taa and tva
+            df_data_taa = pd.read_csv(phenotype_dir+DATE+"_taa.csv", sep=',')
+            df_data_taa.rename(columns={'mean_angle': 'mean_angle_taa'}, inplace=True)
+            df_data_taa.to_csv(phenotype_dir + DATE + "_taa.csv", sep=',', index=False)
+            
+            df_data_tva = pd.read_csv(phenotype_dir+DATE+"_tva.csv", sep=',')
+            df_data_tva.rename(columns={'mean_angle': 'mean_angle_tva'}, inplace=True)
+            df_data_tva.to_csv(phenotype_dir + DATE + "_tva.csv", sep=',', index=False)
+            
+            #### N main arteries and veins
+            df_data_NA = pd.read_csv(phenotype_dir+DATE+"_N_main_arteires.csv", sep=',')
+            df_data_NA.rename(columns={'N_median_main': 'N_median_main_arteries', 'N_std_main': 'N_std_main_arteries'}, inplace=True)
+            df_data_NA.to_csv(phenotype_dir + DATE + "_N_main_arteires.csv", sep=',', index=False)
+            
+            df_data_NV = pd.read_csv(phenotype_dir+DATE+"_N_main_veins.csv", sep=',')
+            df_data_NV.rename(columns={'N_median_main': 'N_median_main_veins', 'N_std_main': 'N_std_main_veins'}, inplace=True)
+            df_data_NV.to_csv(phenotype_dir + DATE + "_N_main_veins.csv", sep=',', index=False)
 
         else:
             out = None

@@ -55,6 +55,8 @@ echo Number of images equal to $n_img
 
 classification_output_dir=$dir_input/AV_maps/
 
+OD_FILE=$dir_input/OD_position.csv
+
 #### OUTPUT
 dir_ARIA_output=$code_dir/output/$data_set/ARIA_output/
 MeasureVessels_dir=$code_dir/output/$data_set/VesselMeasurements/

@@ -60,7 +60,7 @@ def main_bifurcations(imgname: str) -> dict:
         return {'bifurcations': float(bifurcation_counter(df_results, imageID))}
 
     except Exception as e:
-        print(e)
+        print(imgname, e)
         return {'bifurcations': np.nan}
 
 
@@ -95,12 +95,12 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
     :return:
     """
     try:
-        print('primera linea')
+        #print('primera linea')
         imgname = imgname_and_filter[0]
-        print(imgname)
+        #print(imgname)
         filter_type = imgname_and_filter[1]
         imageID = imgname.split(".")[0]
-        print('imageID', imageID)
+        #print('imageID', imageID)
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
@@ -127,9 +127,9 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
                     }
 
     except Exception as e:
-        print(e)
+        print(imgname, e)
         return {
-                'N_median_main'): np.nan,
+                'N_median_main': np.nan,
                 'N_std_main': np.nan#,
                 #'N_CVMe_main_'+str(trait_name): np.nan,
                 #'N_CVP_main_'+str(trait_name): np.nan
@@ -143,7 +143,7 @@ def compute_N_main_v(df_pintar, OD_position, filter_type, imageID): #filter_type
     :return:
     """
     Number_main_vessels = get_intersections_N_main_v(df_pintar, OD_position, filter_type, imageID)
-    print('Number_main_vessels', Number_main_vessels)
+    #print('Number_main_vessels', Number_main_vessels)
     #Dev_median = sum(abs(Number_main_vessels - Number_main_vessels.median()))/(len(Number_main_vessels)- Number_main_vessels.isnull().sum())
     
     return Number_main_vessels.median()[0], Number_main_vessels.std()[0]#, Dev_median/abs(Number_main_vessels.median()), Number_main_vessels.std()/abs(Number_main_vessels.mean())
@@ -203,7 +203,7 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
                 'eq_CRE': eq_CRE.round(0)}
 
     except Exception as e:
-        print(e)
+        print(imgname, e)
         return {
                 'median_CRE': np.nan,
                 'eq_CRE': np.nan
@@ -305,7 +305,7 @@ def diameter_variability(imgname: str) -> dict:
     
 
     except Exception as e:
-        print(e)
+        print(imageID, e)
         return {'D_dev_median_CVMe': np.nan, #'D_median_CVP': np.nan,
                 'D_std_median': np.nan,  'D_std_std': np.nan,
                 'D_A_std_std': np.nan, 'D_V_std_std':np.nan}
@@ -325,7 +325,7 @@ def baseline_traits(imgname: str) -> dict:
         return {'std_intensity': np.std(img), 'mean_intensity': np.mean(img)}#, 'median_intensity': np.median(img)}
 
     except Exception as e:
-        print(e)
+        print(imgname, e)
         return {'std_intensity': np.nan, 'mean_intensity': np.nan}#, 'median_intensity': np.nan}
 
 
@@ -346,7 +346,7 @@ def main_neo_vascularization_od(imgname: str) -> dict:
         )
 
     except Exception as e:
-        print(e)
+        print(imgname, e)
         return {'pixels_fraction': np.nan}
 
 def main_aria_phenotypes(imgname):    # still need to modify it
@@ -375,7 +375,7 @@ def main_aria_phenotypes(imgname):    # still need to modify it
             quintStats_vein = df[(df['arcLength'] > lengthQuints[3]) & (df['AVScore'] < 0)].median(axis=0).values
 
         except Exception as e:
-            print(e)
+            print(imgname, e)
             print("longest 5th failed")
             quintStats_all = [np.nan for _ in range(14)]
             quintStats_artery = quintStats_all
@@ -385,7 +385,7 @@ def main_aria_phenotypes(imgname):    # still need to modify it
         return np.concatenate((all_medians, artery_medians, vein_medians, quintStats_all, \
                                quintStats_artery, quintStats_vein, df_im['nVessels'].values), axis=None).tolist()
     except Exception as e:
-        print(e)
+        print(imgname, e)
         print("ARIA didn't have stats for img", imageID)
         return [np.nan for _ in range(84)]
 
@@ -456,7 +456,7 @@ def main_vascular_density(imgname: str) -> dict:
                  'VD_small_all': vd_small_all, 'VD_small_artery': vd_small_artery, 'VD_small_vein': vd_small_vein }
 
     except Exception as e:
-        print(e)
+        print(imgname, e)
         return { 'VD_orig_all': np.nan, 'VD_orig_artery': np.nan, 'VD_orig_vein': np.nan,
                  'VD_small_all': np.nan, 'VD_small_artery': np.nan, 'VD_small_vein': np.nan }
 
@@ -501,7 +501,7 @@ def main_fractal_dimension(imgname: str) -> dict:
         }
 
     except Exception as e:
-        print(e)
+        print(imgname, e)
         return {'slope': np.nan, 'slope_artery': np.nan, 'slope_vein': np.nan }
 
 
@@ -929,10 +929,13 @@ if __name__ == '__main__':
     DATE = datetime.now().strftime("%Y-%m-%d")
     
     # development param
-    imgfiles_length = len(imgfiles)  # len(imgfiles) is default
+    imgfiles_length = 10#len(imgfiles)  # len(imgfiles) is default
 
 
     for function_to_execute in traits:
+
+        print("\nStarting function", function_to_execute, '\n')
+
         # computing the phenotype as a parallel process
         os.chdir(lwnet_dir)
         pool = Pool()
@@ -970,19 +973,20 @@ if __name__ == '__main__':
             #df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
             df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
             #df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
-            df_merge['ratio_medianDiameter_longest'] = df_merge['medianDiameter_longestFifth_artery'] / df_merge['medianDiameter_longestFifth_vein']
-            df_merge['ratio_DF_longest'] = df_merge['DF_longestFifth_artery'] / df_merge['DF_longestFifth_vein']
-            df_merge['ratio_tau2_longest'] = df_merge['tau2_longestFifth_artery'] / df_merge['tau2_longestFifth_vein']
-            df_merge['ratio_tau3_longest'] = df_merge['tau3_longestFifth_artery'] / df_merge['tau3_longestFifth_vein']
-            df_merge['ratio_tau4_longest'] = df_merge['tau4_longestFifth_artery'] / df_merge['tau4_longestFifth_vein']
-            df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
+            df_merge = pd.DataFrame()
+            df_merge['ratio_medianDiameter_longest'] = df_data['medianDiameter_longestFifth_artery'] / df_data['medianDiameter_longestFifth_vein']
+            df_merge['ratio_DF_longest'] = df_data['DF_longestFifth_artery'] / df_data['DF_longestFifth_vein']
+            df_merge['ratio_tau2_longest'] = df_data['tau2_longestFifth_artery'] / df_data['tau2_longestFifth_vein']
+            df_merge['ratio_tau3_longest'] = df_data['tau3_longestFifth_artery'] / df_data['tau3_longestFifth_vein']
+            df_merge['ratio_tau4_longest'] = df_data['tau4_longestFifth_artery'] / df_data['tau4_longestFifth_vein']
+            df_merge.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
         elif function_to_execute == 'ratios_CRAE_CRVE':
             df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
             df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
             df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
             df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
             df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
-            df_data_CRVE.rename(columnscreate_output_={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+            df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
             df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
             df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
             df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
@@ -1011,6 +1015,4 @@ if __name__ == '__main__':
             out = None
 
         pool.close()
-        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print(
-                "You didn't chose any possible function. Options: tva, taa, bifurcations,"
-                " neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.")
+        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print("WARNING Your function is ", function_to_execute, ".\nThis function does not exist. Options: tva, taa, bifurcations neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.", sep='')

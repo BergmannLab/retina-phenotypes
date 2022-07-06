@@ -929,7 +929,7 @@ if __name__ == '__main__':
     DATE = datetime.now().strftime("%Y-%m-%d")
     
     # development param
-    imgfiles_length = 10#len(imgfiles)  # len(imgfiles) is default
+    imgfiles_length = 100#len(imgfiles)  # len(imgfiles) is default
 
 
     for function_to_execute in traits:

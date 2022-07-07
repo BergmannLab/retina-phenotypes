@@ -1,4 +1,4 @@
-function [results, images] = REVIEW_evaluate_diameter_measurements(image_set, processor, chunk_start, chunk_size, AV_option, AV_thr, minQCthr1, maxQCthr1, minQCthr2, maxQCthr2, path_to_raw, path_to_AV_classified, path_to_output) % mattia: added parameters
+function [results, images] = REVIEW_evaluate_diameter_measurements(image_set, processor, chunk_start, chunk_size, AV_option, AV_thr, minQCthr1, maxQCthr1, minQCthr2, maxQCthr2, path_to_raw, path_to_AV_classified, path_to_output, ALL_IMAGES) % mattia: added parameters
 % Apply an ARIA vessel processor to a set of images in the REVIEW database
 % (see http://reviewdb.lincoln.ac.uk/), and compare the diameter
 % measurements with those of manual observers.
@@ -82,7 +82,9 @@ if ~exist(dir_images, 'dir')
 end
 
 % Get the names of the image files - all BMP, except for CLRIS
-fn_im = dir([dir_images, '*', image_ext]);
+%fn_im = dir([dir_images, '*', image_ext]);
+tmp=fileread(ALL_IMAGES);
+fn_im=strsplit(tmp,'\n');
 
 % Get the file name for the observer markings
 observer_file_name = [dir_REVIEW, 'Observer Marking for ', image_set_name, observer_set_ext];
@@ -120,10 +122,10 @@ chunk_end = chunk_start+chunk_size-1; % mattia: adding logic to break down into 
 for ii = chunk_end:-1:chunk_start  %mattia: updating for loop accordingly
 
     % Apply the automated detection & measurement processing
-    file_name = [dir_images, fn_im(ii).name]; % raw get image
-    AV_file_name = [path_to_AV_classified, fn_im(ii).name]; % raw AV uncertain map image
+    file_name = [dir_images, fn_im{ii}]; % raw get image
+    AV_file_name = [path_to_AV_classified, fn_im{ii}]; % raw AV uncertain map image
 	try
-        disp(strcat("processing: ", fn_im(ii).name))
+        disp(strcat("processing: ", fn_im{ii}))
     	[vd_algorithm, processing_time(ii)] = Vessel_Data_IO.load_from_file(file_name, AV_file_name, processor, settings, AV_option, AV_thr, minQCthr1, maxQCthr1, minQCthr2, maxQCthr2, path_to_output);
 	catch ME
         % mattia: skipping on exception

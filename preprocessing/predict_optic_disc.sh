@@ -2,8 +2,8 @@
 
 source ../configs/config_.sh
 
-output_dir=$code_dir/output/$data_set/optic_disc/
-mkdir -p $output_dir
+optic_disc_dir=$RUN_DIR/optic_disc/
+mkdir -p $optic_disc_dir
 
-$python_dir optic-nerve-cnn/scripts/TEST_organize_datasets.py $dir_images $output_dir $n_cpu
-$python_dir optic-nerve-cnn/scripts/TEST_unet_od_on_ukbiobank.py $output_dir $n_cpu $data_set
+$python_dir optic-nerve-cnn/scripts/TEST_organize_datasets.py $dir_images/ $optic_disc_dir $n_cpu $ALL_IMAGES
+$python_dir optic-nerve-cnn/scripts/TEST_unet_od_on_ukbiobank.py $optic_disc_dir $n_cpu $data_set

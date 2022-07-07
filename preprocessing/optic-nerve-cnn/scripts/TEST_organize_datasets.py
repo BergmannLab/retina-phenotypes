@@ -48,7 +48,10 @@ import cv2
 
 datapath = sys.argv[2] # where to store output. h5f requires absolute path
 rawdir = sys.argv[1]
-nfiles = len(glob.glob(rawdir+'*.png'))
+filesdir = sys.argv[4]
+with open(filesdir) as f:
+    files = f.read().splitlines()
+nfiles = len(files)
 print(f'count of image files nfiles={nfiles}')
 
 
@@ -86,7 +89,7 @@ def generate_batch(variables):
 
     with h5py.File(h5file,'w') as  h5f:
         
-        batch_files = sorted(glob.iglob(rawdir + "*.png"))[start_b:stop]
+        batch_files = [rawdir + i for i in files[start_b:stop]]
         h5f.create_dataset("filenames", data=np.array(batch_files, dtype='S'))
         img_ds = h5f.create_dataset('raw_256px',shape=(stop-start_b, 256, 256,3), dtype=int)
         for cnt, ifile in enumerate(batch_files) :

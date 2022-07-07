@@ -71,16 +71,16 @@ def main_tva_or_taa(imgname_and_filter: str and int) -> dict:
     """
     try:
         imgname = imgname_and_filter[0]
-        print(imgname)
+        #print(imgname)
         filter_type = imgname_and_filter[1]
-        print(filter_type)
+        #print(filter_type)
         imageID = imgname.split(".")[0]
         df_pintar = read_data(imageID, diameter=True)
         df_pintar['type'] = np.sign(df_pintar['type'])
-        print("df_pintar", df_pintar)
+        #print("df_pintar", df_pintar)
         OD_position = df_OD[df_OD['image'] == imgname]
         OD_position.dropna(subset=['center_x_y'], inplace=True)
-        print(OD_position)
+        #print(OD_position)
 
         return {
             'mean_angle' : None
@@ -824,7 +824,7 @@ def get_angle_mode(df_final_vote):
             if (df_final_vote['angle'].loc[i + 1] >= df_final_vote['angle'].loc[j] - lower_accept) and (
                     df_final_vote['angle'].loc[i + 1] <= df_final_vote['angle'].loc[j] + upper_accept):
 
-                print("get_angle_mode, if passes at i,j =", str(i), str(j))
+                #print("get_angle_mode, if passes at i,j =", str(i), str(j))
 
                 df_final_vote['vote_angle'].loc[i + 1] = j
                 break
@@ -837,7 +837,7 @@ def compute_mean_angle_with_mode(df_final_vote):
     :return:
     """
     df_final = get_angle_mode(df_final_vote)
-    print("df_final", df_final)
+    #print("df_final", df_final)
     return (
         df_final['angle'].mean()
         if df_final.shape[0] >= 3 and df_final['angle'].mean() != 0.0
@@ -937,7 +937,7 @@ if __name__ == '__main__':
     DATE = datetime.now().strftime("%Y-%m-%d")
     
     # development param
-    imgfiles_length = 1#len(imgfiles)  # len(imgfiles) is default
+    imgfiles_length = len(imgfiles)  # len(imgfiles) is default
 
 
     for function_to_execute in traits:

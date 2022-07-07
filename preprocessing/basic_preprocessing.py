@@ -8,19 +8,14 @@ def remove_spaces(images_input_dir, all_files):
         os.rename(os.path.join(images_input_dir, filename), os.path.join(images_input_dir, filename.replace(' ', '')))
 
 
-# Convert all images to '.png' and create file with all the images names
+# Convert all images to '.png'
 def covert_to_png(images_input_dir, images_output_dir, all_files, filetype):
-    with open(data_set_input_dir + "NoQC.txt", "w") as outfile:
-        for filename in all_files:
-            prefix = filename.split('.')[0]
-            png_filename = prefix + '.png'
-            if filetype != '*.png':
-                im1 = Image.open(os.path.join(images_input_dir, filename))
-                im1.save(os.path.join(images_output_dir, png_filename))
-    
-            # Create file with all the images names
-            outfile.writelines(png_filename)
-            outfile.writelines("\n")
+    for filename in all_files:
+        prefix = filename.split('.')[0]
+        png_filename = prefix + '.png'
+        if filetype != '*.png':
+            im1 = Image.open(os.path.join(images_input_dir, filename))
+            im1.save(os.path.join(images_output_dir, png_filename))
 
 # So far, you read the images from 'images_data_set/' 
 # and you add the no spaces png images to the folder 'images_data_set/data_set/'
@@ -35,6 +30,6 @@ all_files = [f for f in os.listdir(images_input_dir) if f.endswith(filetype[1:])
 remove_spaces(images_input_dir, all_files)
 
 all_files2 = [f for f in os.listdir(images_input_dir) if f.endswith(filetype[1:])]
-print(all_files2)
-print(images_input_dir)
+#print(all_files2)
+#print(images_input_dir)
 covert_to_png(images_input_dir, images_output_dir, all_files2, filetype)

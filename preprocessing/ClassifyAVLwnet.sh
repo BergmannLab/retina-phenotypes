@@ -15,6 +15,8 @@
 source ../configs/config_.sh
 begin=$(date +%s)
 
+mkdir -p $RUN_DIR
+
 #### Create the folder where the after preprocessing images are going to be located (for the dataset selected):
 if [[ "$image_type" != *.png ]]; then
 	mkdir $dir_images
@@ -31,20 +33,23 @@ mkdir $classification_output_dir
 #### Artery Vein segementation using WNET: (Analyze many image at the same time)
 parallel_lwnet () {
 for j in $(seq $1 $2 ); do
-	image="${raw_imgs[ $(( j - 1 )) ]}"
+	image=$dir_images/"${raw_imgs[ $(( j - 1 )) ]}"
+	#echo $image
 	if [ $lwnet_gpu = "False" ]; then
-            $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cpu
+		# taskset: limits script to specific CPU
+		nice taskset -c $3 $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cpu
         else
-        	$python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0
+        	nice taskset -c $3 $python_dir predict_one_image_av.py --model_path experiments/big_wnet_drive_av/ --im_path $image --result_path $classification_output_dir --device cuda:0
         fi
     done
 }
 
 cd $lwnet_dir
-raw_imgs=($dir_images*.png )
-for i in $(seq 1 20); do echo ${raw_imgs[i]}; done
+readarray -t raw_imgs < $ALL_IMAGES
+#echo $raw_imgs | head -n10
+
+#for i in $(seq 1 20); do echo ${raw_imgs[i]}; done
 echo lwnet input $dir_images
-echo $raw_imgs
 for i in $(seq 1 $(( $n_cpu + 1 )) ); do #n_cpu + 1 to force a remainder iteration
     a=$(( i * step_size ))
     b=$n_img
@@ -52,13 +57,13 @@ for i in $(seq 1 $(( $n_cpu + 1 )) ); do #n_cpu + 1 to force a remainder iterati
     upper_lim=$(( a < b ? a : b )) # minimum operation
     
     echo Batch $i: from $lower_lim to $upper_lim
-    parallel_lwnet $lower_lim $upper_lim &
+    parallel_lwnet $lower_lim $upper_lim $(( i - 1 )) & # 3rd variable: uniquely allocated CPU per parallel task, speeds up things!
 done
 
 wait
 
 ### Rename the LWnet output (for ARIA you need the raw_image and the AV_image to have the same name):
-$python_dir $code_dir/preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 
+$python_dir $config_dir/../preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 
 
 echo FINISHED: Images have been classified, and written to $classification_output_dir
 end=$(date +%s) # calculate execution time

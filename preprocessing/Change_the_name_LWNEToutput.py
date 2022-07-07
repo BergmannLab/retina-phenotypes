@@ -16,7 +16,7 @@ images_input_dir = sys.argv[1]
 filetype = '_bin_seg.png' 
 
 all_files = [f for f in os.listdir(images_input_dir) if f.endswith(filetype[1:])]
-print(all_files)
+#print(all_files)
 
 remove_bin_seg(images_input_dir, all_files)
 

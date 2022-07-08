@@ -26,26 +26,23 @@ Sensitive data (i.e. with eid) is going to be located on '/NVME/decrypted/' and 
 
 ## Pipeline:
 1- Modify `configs/config_local.sh`
+Particularly: Define path of the research repository, and name the RUN.
 
 2 - Run `preprocessing/ClassifyAVLwnet.sh`. 
-Output: AV maps for your images.  By default in the folder: `input/*your_data_set*/AV_maps/`
+Output: AV maps for your images.  By default in the folder: `*RUN*/AV_maps`
 Code: `bash ClassifyAVLwnet.sh` 
 
-3 - Run `preprocessing/MeasureVessels.sh`. 
-Output: Centerlines output.  By default in the folder: `output/*your_data_set*/ARIA_output/`
-Code: `bash MeasureVessels.sh`
-
-3.a - NOTE: For some phenotypes you would need the Optic Disk poistion. For DRIVE we already provide a file, but if you want to compute the it for other Datasets we provide additional code for 'Optic disc prediction using training weights from UK Biobank':
-* 1 - Generate the test dataset in required square 256x256px format: `preprocessing/optic-nerve-cnn/scripts/TEST_organize_datasets.ipynb` : Point to your dataset of choice, define output path, and modify the number of cores, and then run all the cells.
-* 2 - Predict using the generated dataset : `preprocessing/optic-nerve-cnn/scripts/TEST_unet_od_on_ukbiobank.ipynb` : Change indir,outdir and no_batches accordingly, then run sequentially.
-
-4 - Run `preprocessing/predict_optic_disc.sh`.
-Output: Optic disc positions in `output/*dataset*/optic_disc/`
+3 - Run `preprocessing/predict_optic_disc.sh`.
+Output: Optic disc positions in `*RUN*/optic_disc`
 Code: `./predict_optic_disc.sh`
 
+4 - Run `preprocessing/MeasureVessels.sh`. 
+Output: Centerlines output.  By default in the folder: `*RUN*/skeletons_etc`
+Code: `bash MeasureVessels.sh`
+
 5 - Run `preprocessing/run_measurePhenotype.sh`. 
-Output: Trait measurements. By default in the folder: `output/*your_data_set*/phenotypes_all/`
-Code: `bash run_measurePhenotype.sh' or  `sbatch run_measurePhenotype.sh' 
+Output: Trait measurements. By default in the folder: `*RUN*/image_phenotype`
+Code: `bash run_measurePhenotype.sh'
 
 ### Some possible errors and reminders:
 * LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "your_python_dir/python -m pip install scikit-image==0.16.2" and python3

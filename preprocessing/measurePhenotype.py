@@ -456,13 +456,13 @@ def main_vascular_density(imgname: str) -> dict:
         vd_small_artery = np.mean(img_mskd_small[:,:,2]) / 255
         vd_small_vein = np.mean(img_mskd_small[:,:,0]) / 255
 
-        return { 'VD_orig_all': vd_orig_all, 'VD_orig_artery': vd_orig_artery, 'VD_orig_vein': vd_orig_vein,
-                 'VD_small_all': vd_small_all, 'VD_small_artery': vd_small_artery, 'VD_small_vein': vd_small_vein }
+        return { 'VD_orig_all': vd_orig_all, 'VD_orig_artery': vd_orig_artery, 'VD_orig_vein': vd_orig_vein }
+                 #'VD_small_all': vd_small_all, 'VD_small_artery': vd_small_artery, 'VD_small_vein': vd_small_vein }
 
     except Exception as e:
         print(imgname, e)
-        return { 'VD_orig_all': np.nan, 'VD_orig_artery': np.nan, 'VD_orig_vein': np.nan,
-                 'VD_small_all': np.nan, 'VD_small_artery': np.nan, 'VD_small_vein': np.nan }
+        return { 'VD_orig_all': np.nan, 'VD_orig_artery': np.nan, 'VD_orig_vein': np.nan }
+                 #'VD_small_all': np.nan, 'VD_small_artery': np.nan, 'VD_small_vein': np.nan }
 
 
 def main_fractal_dimension(imgname: str) -> dict:
@@ -499,14 +499,14 @@ def main_fractal_dimension(imgname: str) -> dict:
         slope_vein, intercept, r_value, p_value, std_err = stats.linregress(np.log([1 / i for i in box_sidelengths]),
                                                                             np.log(N_boxes_vein))
         return {
-            'slope': float(slope),
-            'slope_artery': float(slope_artery),
-            'slope_vein': float(slope_vein)
+            'FD_all': float(slope),
+            'FD_artery': float(slope_artery),
+            'FD_vein': float(slope_vein)
         }
 
     except Exception as e:
         print(imgname, e)
-        return {'slope': np.nan, 'slope_artery': np.nan, 'slope_vein': np.nan }
+        return {'FD_all': np.nan, 'FD_artery': np.nan, 'FD_vein': np.nan }
 
 
 
@@ -911,7 +911,7 @@ def create_output_(out, imgfiles, function_to_execute, imgfiles_length):
     )
 
     if function_to_execute == "aria_phenotypes":
-        first_statsfile = pd.read_csv(aria_measurements_dir + "1027180_21015_0_0_all_segmentStats.tsv", sep='\t')
+        first_statsfile = pd.read_csv(aria_measurements_dir + imgfiles[0].split('.')[0]+"_all_segmentStats.tsv", sep='\t')
         cols = first_statsfile.columns
         cols_full = [i + "_all" for i in cols] + [i + "_artery" for i in cols] + [i + "_vein" for i in cols]\
         +  [i + "_longestFifth_all" for i in cols] + [i + "_longestFifth_artery" for i in cols] + [i + "_longestFifth_vein" for i in cols]\

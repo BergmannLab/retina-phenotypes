@@ -18,14 +18,17 @@ from matplotlib import cm
 
 
 ## Parameters for temporal angle
-delta = 10
-R_0 = 240
+delta = 10 #also for N_main_vessels
+R_0 = 240 #also for N_main_vessels
 radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
 min_ta = 75
 max_ta = 200
 lower_accept = 15 
 upper_accept = 2
 
+## Parameters for main_N_main_vessels
+radius_N_main_v = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta]
+    
 ## Parameters for bifurcations
 norm_acceptance=7.5
 cte = 3.5
@@ -52,12 +55,12 @@ def main_bifurcations(imgname: str) -> dict:
     """
     try:
         imageID = imgname.split(".")[0]
-        df_pintar = read_data(imageID)
-        aux = df_pintar.groupby('index')
-        df_results = pd.concat([aux.head(1), aux.tail(1)]).drop_duplicates().sort_values('index').reset_index(drop=True)
-        df_results['type'] = np.sign(df_results['type'])
-        df_results.sort_values(by=['X'], inplace=True, ascending=False)
-        return {'bifurcations': float(bifurcation_counter(df_results, imageID))}
+        df_vasculature = read_data(imageID)
+        aux = df_vasculature.groupby('index')
+        df_segments = pd.concat([aux.head(1), aux.tail(1)]).drop_duplicates().sort_values('index').reset_index(drop=True)
+        df_segments['type'] = np.sign(df_segments['type'])
+        df_segments.sort_values(by=['X'], inplace=True, ascending=False)
+        return {'bifurcations': float(bifurcation_counter(df_segments, imageID))}
 
     except Exception as e:
         print(imgname, e)
@@ -75,17 +78,17 @@ def main_tva_or_taa(imgname_and_filter: str and int) -> dict:
         filter_type = imgname_and_filter[1]
         #print(filter_type)
         imageID = imgname.split(".")[0]
-        df_pintar = read_data(imageID, diameter=True)
-        df_pintar['type'] = np.sign(df_pintar['type'])
-        #print("df_pintar", df_pintar)
+        df_vasculature = read_data(imageID, diameter=True)
+        df_vasculature['type'] = np.sign(df_vasculature['type'])
+        #print("df_vasculature", df_vasculature)
         OD_position = df_OD[df_OD['image'] == imgname]
-        OD_position.dropna(subset=['center_x_y'], inplace=True)
+        #OD_position.dropna(subset=['center_x_y'], inplace=True)
         #print(OD_position)
 
         return {
             'mean_angle' : None
             if OD_position.empty
-            else compute_mean_angle(df_pintar, OD_position, filter_type)
+            else compute_mean_angle(df_vasculature, OD_position, filter_type)
         }
 
     except Exception as e:
@@ -105,10 +108,10 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
         filter_type = imgname_and_filter[1]
         imageID = imgname.split(".")[0]
         #print('imageID', imageID)
-        df_pintar = read_data(imageID, diameter=True)
-        df_pintar['type'] = np.sign(df_pintar['type'])
+        df_vasculature = read_data(imageID, diameter=True)
+        df_vasculature['type'] = np.sign(df_vasculature['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
-        OD_position.dropna(subset=['center_x_y'], inplace=True)
+        #OD_position.dropna(subset=['center_x_y'], inplace=True)
             
         if OD_position.empty:
             return {
@@ -118,14 +121,14 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
                     #'N_CVP_main_'+str(trait_name): None
                     }
         else: #, N_median_CVMe, N_median_CVP
-            N_main_v, N_std_v = compute_N_main_v(df_pintar, OD_position, filter_type, imageID)
+            N_main_v, N_std_v = compute_N_main_v(df_vasculature, OD_position, filter_type, imageID)
             if (N_main_v==0) or (N_main_v==1) or (N_main_v=='0') or (N_main_v=='1'):
                 N_main_v=np.nan
                 N_std_v=np.nan
 
             return {
                     'N_median_main': N_main_v,
-                    'N_std_main': N_std_v.round(2)#,
+                    'N_std_main': N_std_v #,
                     #'N_CVMe_main_'+str(trait_name): N_median_CVMe,
                     #'N_CVP_main_'+str(trait_name): N_median_CVP
                     }
@@ -134,44 +137,41 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
         print(imgname, e)
         return {
                 'N_median_main': np.nan,
-                'N_std_main': np.nan#,
+                'N_std_main': np.nan #,
                 #'N_CVMe_main_'+str(trait_name): np.nan,
                 #'N_CVP_main_'+str(trait_name): np.nan
                 } 
 
-def compute_N_main_v(df_pintar, OD_position, filter_type, imageID): #filter_type=-1):
+def compute_N_main_v(df_vasculature, OD_position, filter_type, imageID): #filter_type=-1):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param OD_position:
     :param filter_type:
     :return:
     """
-    Number_main_vessels = get_intersections_N_main_v(df_pintar, OD_position, filter_type, imageID)
+    Number_main_vessels = get_intersections_N_main_v(df_vasculature, OD_position, filter_type, imageID)
     #print('Number_main_vessels', Number_main_vessels)
     #Dev_median = sum(abs(Number_main_vessels - Number_main_vessels.median()))/(len(Number_main_vessels)- Number_main_vessels.isnull().sum())
     
     return Number_main_vessels.median()[0], Number_main_vessels.std()[0]#, Dev_median/abs(Number_main_vessels.median()), Number_main_vessels.std()/abs(Number_main_vessels.mean())
 
-def get_intersections_N_main_v(df_pintar, OD_position, filter_type, imageID):
+def get_intersections_N_main_v(df_vasculature, OD_position, filter_type, imageID):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param OD_position:
     :param filter_type:
     :return:
     """
     angle = np.arange(0, 360, 0.01)
     aux = []
-    df_pintar['X'] = df_pintar['X'].round(0)
-    df_pintar['Y'] = df_pintar['Y'].round(0)
-    delta = 10
-    R_0 = 240
-    radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta]
-    for p in radius: 
-        new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
-        df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
-        #df_veins_arter.sort_values(by=['Diameter'], ascending=False, inplace=True)
-        df_veins_arter = df_veins_arter[df_veins_arter['Diameter']>limit_diameter_main]
-        data = {'N_main_vessels': df_veins_arter.shape[0]}
+    df_vasculature['X'] = df_vasculature['X'].round(0)
+    df_vasculature['Y'] = df_vasculature['Y'].round(0)
+    for p in radius_N_main_v: 
+        df_intersection = circular_df_filter(p, angle, OD_position, df_vasculature)
+        df_specific_vessel_type_intersection = df_intersection[df_intersection["type"] == filter_type]
+        #df_specific_vessel_type_intersection.sort_values(by=['Diameter'], ascending=False, inplace=True)
+        df_specific_vessel_type_intersection = df_specific_vessel_type_intersection[df_specific_vessel_type_intersection['Diameter']>limit_diameter_main]
+        data = {'N_main_vessels': df_specific_vessel_type_intersection.shape[0]}
         #print('data', data)
         aux.append(data)
     return pd.DataFrame(aux)
@@ -188,10 +188,10 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
         imgname = imgname_and_filter[0]
         filter_type = imgname_and_filter[1]
         imageID = imgname.split(".")[0]
-        df_pintar = read_data(imageID, diameter=True)
-        df_pintar['type'] = np.sign(df_pintar['type'])
+        df_vasculature = read_data(imageID, diameter=True)
+        df_vasculature['type'] = np.sign(df_vasculature['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
-        OD_position.dropna(subset=['center_x_y'], inplace=True)
+        #OD_position.dropna(subset=['center_x_y'], inplace=True)
             
         if OD_position.empty:
             return {
@@ -200,8 +200,8 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
             }
 
         else:
-            #median_CRE = compute_CRE(df_pintar, OD_position, filter_type)
-            median_CRE, eq_CRE = compute_CRE(df_pintar, OD_position, filter_type, imageID)
+            #median_CRE = compute_CRE(df_vasculature, OD_position, filter_type)
+            median_CRE, eq_CRE = compute_CRE(df_vasculature, OD_position, filter_type, imageID)
             return {
                 'median_CRE': median_CRE.round(0),
                 'eq_CRE': eq_CRE.round(0)}
@@ -213,23 +213,23 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
                 'eq_CRE': np.nan
                 } 
 
-def compute_CRE(df_pintar, OD_position, filter_type, imageID): #filter_type=-1):
+def compute_CRE(df_vasculature, OD_position, filter_type, imageID): #filter_type=-1):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param OD_position:
     :param filter_type:
     :return:
     """
-    df_veins_arter, CRE_eq = get_intersections(df_pintar, OD_position, filter_type, imageID)
+    df_specific_vessel_type_intersection, CRE_eq = get_intersections(df_vasculature, OD_position, filter_type, imageID)
 
-    df_veins_arter_median =df_veins_arter.median()
+    df_specific_vessel_type_intersection_median =df_specific_vessel_type_intersection.median()
     CRE_eq_median =CRE_eq.median()
-    #print('statistics.median(df_veins_arter)', statistics.median(df_veins_arter))
-    return df_veins_arter_median[0], CRE_eq_median[0]
+    #print('statistics.median(df_specific_vessel_type_intersection)', statistics.median(df_specific_vessel_type_intersection))
+    return df_specific_vessel_type_intersection_median[0], CRE_eq_median[0]
 
-def get_intersections(df_pintar, OD_position, filter_type, imageID):
+def get_intersections(df_vasculature, OD_position, filter_type, imageID):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param OD_position:
     :param filter_type:
     :return:
@@ -237,8 +237,8 @@ def get_intersections(df_pintar, OD_position, filter_type, imageID):
     angle = np.arange(0, 360, 0.01)
     aux = []
     aux_eq = []
-    df_pintar['X'] = df_pintar['X'].round(0)
-    df_pintar['Y'] = df_pintar['Y'].round(0)
+    df_vasculature['X'] = df_vasculature['X'].round(0)
+    df_vasculature['Y'] = df_vasculature['Y'].round(0)
     r1 = (OD_position['width'] + OD_position['height'])/4
     radius = [2*r1.iloc[0], 2.1*r1.iloc[0], 2.2*r1.iloc[0], 2.3*r1.iloc[0], 
               2.4*r1.iloc[0], 2.5*r1.iloc[0]]
@@ -246,29 +246,29 @@ def get_intersections(df_pintar, OD_position, filter_type, imageID):
     #R_0 = 200
     #radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta]
     for p in radius: 
-        new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
-        df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
-        df_veins_arter.sort_values(by=['Diameter'], ascending=False, inplace=True)
+        df_intersection = circular_df_filter(p, angle, OD_position, df_vasculature)
+        df_specific_vessel_type_intersection = df_intersection[df_intersection["type"] == filter_type].copy()
+        df_specific_vessel_type_intersection.sort_values(by=['Diameter'], ascending=False, inplace=True)
         # Two options: Select only those with less than a certain diameter value, or select the N first 
         num_segments_selected=3
-        df_veins_arter = df_veins_arter.head(num_segments_selected) 
-        D_median = df_veins_arter['Diameter'].median()
+        df_specific_vessel_type_intersection = df_specific_vessel_type_intersection.head(num_segments_selected) 
+        D_median = df_specific_vessel_type_intersection['Diameter'].median()
         data = {'modif_CRE': D_median}
         aux.append(data)
         #limit_diameter = 2 # Select it better 
-        #df_veins_arter = df_veins_arter[df_veins_arter['Diameter']>limit_diameter]
+        #df_specific_vessel_type_intersection = df_specific_vessel_type_intersection[df_specific_vessel_type_intersection['Diameter']>limit_diameter]
         if filter_type==-1: 
             cte=0.95
             X ='V'
         else: 
             cte=0.88
             X ='A'
-        equation_CRA = cte*((df_veins_arter['Diameter'].iloc[0])**2 + (df_veins_arter['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
+        equation_CRA = cte*((df_specific_vessel_type_intersection['Diameter'].iloc[0])**2 + (df_specific_vessel_type_intersection['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
         data_eq = {'CRE': equation_CRA}
         aux_eq.append(data_eq)
 
         # Save the position of the intersections per image: TO MODIFY
-        #df_save = df_save.append(df_veins_arter)
+        #df_save = df_save.append(df_specific_vessel_type_intersection)
     
     # Save the position of the intersections per image: TO MODIFY
     #dir_CRE_position=phenotype_dir + 'CR'+X+'E_position/'
@@ -288,18 +288,18 @@ def diameter_variability(imgname: str) -> dict:
     try:
         imageID = imgname.split(".")[0]
         #print('imageID', imageID)
-        df_pintar = read_data(imageID, diameter=True)
-        df_pintar['type'] = np.sign(df_pintar['type'])
+        df_vasculature = read_data(imageID, diameter=True)
+        df_vasculature['type'] = np.sign(df_vasculature['type'])
         # std of the diameters per index, i.e. std of each segment
-        std_values_vessels=df_pintar.groupby(['index'])['Diameter'].std()
+        std_values_vessels=df_vasculature.groupby(['index'])['Diameter'].std()
         # median of the diameters per index, i.e. median of each segment
-        median_values_vessels = df_pintar.groupby(['index'])['Diameter'].median()
+        median_values_vessels = df_vasculature.groupby(['index'])['Diameter'].median()
         
         Dev_median = sum(abs(median_values_vessels - 
                              median_values_vessels.median()))/(len(median_values_vessels)- 
                                                                median_values_vessels.isnull().sum())
         
-        type_std_values_vessels = df_pintar.groupby(['type'])['Diameter'].std()
+        type_std_values_vessels = df_vasculature.groupby(['type'])['Diameter'].std()
 
         return {'D_median_CVMe': Dev_median/abs(median_values_vessels.median()), 
                 #'D_median_CVP': median_values_vessels.std()/abs(median_values_vessels.mean()),
@@ -310,7 +310,7 @@ def diameter_variability(imgname: str) -> dict:
 
     except Exception as e:
         print(imageID, e)
-        return {'D_dev_median_CVMe': np.nan, #'D_median_CVP': np.nan,
+        return {'D_median_CVMe': np.nan, #'D_median_CVP': np.nan,
                 'D_std_median': np.nan,  'D_std_std': np.nan,
                 'D_A_std_std': np.nan, 'D_V_std_std':np.nan}
 
@@ -340,13 +340,13 @@ def main_neo_vascularization_od(imgname: str) -> dict:
     """
     try:
         imageID = imgname.split(".")[0]
-        df_pintar = read_data(imageID)
-        df_pintar['type'] = np.sign(df_pintar['type'])
+        df_vasculature = read_data(imageID)
+        df_vasculature['type'] = np.sign(df_vasculature['type'])
         OD_position = df_OD[df_OD['image'] == imgname]
         return (
             None
             if OD_position.empty
-            else compute_neo_vascularization_od(df_pintar, OD_position)
+            else compute_neo_vascularization_od(df_vasculature, OD_position)
         )
 
     except Exception as e:
@@ -618,9 +618,9 @@ def replaceRGB(img, old, new):
     return out
 
 
-def bifurcation_counter(df_results, imageID):
+def bifurcation_counter(df_segments, imageID):
     """
-    :param df_results:
+    :param df_segments:
     :return:
     """
     
@@ -628,11 +628,11 @@ def bifurcation_counter(df_results, imageID):
     bif_counter = 0
     aux = []
     df_bif_positions = pd.DataFrame([])
-    number_rows = df_results.shape[0]
-    x = df_results['X'].values
-    y = df_results['Y'].values
-    dis_type = df_results['type'].values
-    index_v = df_results['index'].values
+    number_rows = df_segments.shape[0]
+    x = df_segments['X'].values
+    y = df_segments['Y'].values
+    dis_type = df_segments['type'].values
+    index_v = df_segments['index'].values
 
     for s in range(number_rows):
         for j in range(number_rows - s):
@@ -695,16 +695,16 @@ def delete_points_very_close(df_bif_positions, norm_acceptance):
 
     return df_bif_positions
 
-def circular_df_filter(radio, angle, od_position, df_pintar):
+def circular_df_filter(radio, angle, od_position, df_vasculature):
     """
     :param radio:
     :param angle:
     :param od_position:
-    :param df_pintar:
+    :param df_vasculature:
     :return:
     """
     df_circle = compute_circular_df(radio, angle, od_position)
-    new_df = pd.merge(df_circle, df_pintar, how='inner', left_on=['X', 'Y'], right_on=['X', 'Y'])
+    new_df = pd.merge(df_circle, df_vasculature, how='inner', left_on=['X', 'Y'], right_on=['X', 'Y'])
     return new_df.drop_duplicates(subset=['index'], keep='last')
 
 
@@ -723,19 +723,19 @@ def compute_circular_df(radio, angle, od_position):
     return df_circle
 
 
-def compute_potential_vein_arteries(df_veins_arter, od_position):
+def compute_potential_vein_arteries(df_specific_vessel_type_intersection, od_position):
     """
-    :param df_veins_arter:
+    :param df_specific_vessel_type_intersection:
     :param od_position:
     :return:
     """
     aux = []
-    veins_art_x = df_veins_arter['X'].values
-    veins_art_y = df_veins_arter['Y'].values
-    veins_art_index = df_veins_arter['index'].values
-    veins_art_diameter = df_veins_arter['Diameter'].values
-    veins_art_type = df_veins_arter['type'].values
-    for i, j in itertools.product(range(df_veins_arter.shape[0] - 1), range(df_veins_arter.shape[0] - 2)):
+    veins_art_x = df_specific_vessel_type_intersection['X'].values
+    veins_art_y = df_specific_vessel_type_intersection['Y'].values
+    veins_art_index = df_specific_vessel_type_intersection['index'].values
+    veins_art_diameter = df_specific_vessel_type_intersection['Diameter'].values
+    veins_art_type = df_specific_vessel_type_intersection['type'].values
+    for i, j in itertools.product(range(df_specific_vessel_type_intersection.shape[0] - 1), range(df_specific_vessel_type_intersection.shape[0] - 2)):
         lineA = ((od_position['x'].iloc[0], od_position['y'].iloc[0]), (veins_art_x[i], veins_art_y[i]))
         lineB = ((od_position['x'].iloc[0], od_position['y'].iloc[0]), (veins_art_x[j], veins_art_y[j]))
         if i == j:
@@ -770,10 +770,10 @@ def get_main_angle_row(df_potential_points):
                            index=['X_1', 'Y_1', 'Diameter_1', 'type_1', 'i_1', 'X_2', 'Y_2', 'Diameter_2', 'type_2',
                                   'i_2', 'angle'])
     if not df_potential_points.empty:
-        df_angles_1 = df_potential_points[(df_potential_points["angle"] >= min_ta) & (df_potential_points["angle"] <= max_ta)]
-        df_angles_1 = df_angles_1.sort_values(['Diameter_1', 'Diameter_2'], ascending=[False, False])
-        if not df_angles_1.empty:
-            main_angle = df_angles_1.iloc[0]
+        df_final_angles = df_potential_points[(df_potential_points["angle"] >= min_ta) & (df_potential_points["angle"] <= max_ta)].copy()
+        df_final_angles = df_final_angles.sort_values(['Diameter_1', 'Diameter_2'], ascending=[False, False])
+        if not df_final_angles.empty:
+            main_angle = df_final_angles.iloc[0]
     return main_angle
 
 
@@ -794,22 +794,22 @@ def get_data_angle(df_potential_points):
     }
 
 
-def get_radious_votes(df_pintar, OD_position, filter_type):
+def get_radious_votes(df_vasculature, OD_position, filter_type):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param OD_position:
     :param filter_type:
     :return:
     """
     angle = np.arange(0, 360, 0.01)
-    df_pintar['X'] = df_pintar['X'].round(0)
-    df_pintar['Y'] = df_pintar['Y'].round(0)
+    df_vasculature['X'] = df_vasculature['X'].round(0)
+    df_vasculature['Y'] = df_vasculature['Y'].round(0)
     auxiliar_angle = []
     for p in radius:
-        new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
-        df_veins_arter = new_df_2[new_df_2["type"] == filter_type]
-        df_veins_arter.sort_values(by=['Diameter'], ascending=False, inplace=True)
-        df_potential_points = compute_potential_vein_arteries(df_veins_arter, OD_position)
+        df_intersection = circular_df_filter(p, angle, OD_position, df_vasculature)
+        df_specific_vessel_type_intersection = df_intersection[df_intersection["type"] == filter_type].copy()
+        df_specific_vessel_type_intersection.sort_values(by=['Diameter'], ascending=False, inplace=True)
+        df_potential_points = compute_potential_vein_arteries(df_specific_vessel_type_intersection, OD_position)
         auxiliar_angle.append(get_data_angle(df_potential_points))
     return pd.DataFrame(auxiliar_angle)
 
@@ -823,9 +823,7 @@ def get_angle_mode(df_final_vote):
         for j in range(len(df_final_vote)):
             if (df_final_vote['angle'].loc[i + 1] >= df_final_vote['angle'].loc[j] - lower_accept) and (
                     df_final_vote['angle'].loc[i + 1] <= df_final_vote['angle'].loc[j] + upper_accept):
-
                 #print("get_angle_mode, if passes at i,j =", str(i), str(j))
-
                 df_final_vote['vote_angle'].loc[i + 1] = j
                 break
     return df_final_vote[df_final_vote['vote_angle'] == df_final_vote.mode()['vote_angle'][0]].copy()
@@ -845,31 +843,31 @@ def compute_mean_angle_with_mode(df_final_vote):
     )
 
 
-def compute_mean_angle(df_pintar, OD_position, filter_type): #filter_type=-1):
+def compute_mean_angle(df_vasculature, OD_position, filter_type): #filter_type=-1):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param OD_position:
     :param filter_type:
     :return:
     """
-    df_final_vote = get_radious_votes(df_pintar, OD_position, filter_type)
+    df_final_vote = get_radious_votes(df_vasculature, OD_position, filter_type)
     df_final_vote = df_final_vote.reset_index().rename(columns={'index': 'vote_angle'}).copy()
     return compute_mean_angle_with_mode(df_final_vote)
 
 
-def compute_vessel_radius_pixels(df_pintar, radius, od_position):
+def compute_vessel_radius_pixels(df_vasculature, radius, od_position):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param radius:
     :param od_position:
     :return:
     """
-    df_pintar['DeltaX'] = df_pintar['X'] - od_position['x'].iloc[0]
-    df_pintar['DeltaY'] = df_pintar['Y'] - od_position['y'].iloc[0]
-    df_pintar['r2_value'] = df_pintar['DeltaX'] * df_pintar['DeltaX'] + df_pintar['DeltaY'] * df_pintar['DeltaY']
-    df_pintar['r_value'] = (df_pintar['r2_value']) ** (1 / 2)
+    df_vasculature['DeltaX'] = df_vasculature['X'] - od_position['x'].iloc[0]
+    df_vasculature['DeltaY'] = df_vasculature['Y'] - od_position['y'].iloc[0]
+    df_vasculature['r2_value'] = df_vasculature['DeltaX'] * df_vasculature['DeltaX'] + df_vasculature['DeltaY'] * df_vasculature['DeltaY']
+    df_vasculature['r_value'] = (df_vasculature['r2_value']) ** (1 / 2)
 
-    return df_pintar[df_pintar['r_value'] <= radius].copy()
+    return df_vasculature[df_vasculature['r_value'] <= radius].copy()
 
 
 def compute_od_pixels_fraction(df_vessel_pixels_OD, n_rows):
@@ -885,15 +883,15 @@ def compute_od_pixels_fraction(df_vessel_pixels_OD, n_rows):
     }
 
 
-def compute_neo_vascularization_od(df_pintar, OD_position):
+def compute_neo_vascularization_od(df_vasculature, OD_position):
     """
-    :param df_pintar:
+    :param df_vasculature:
     :param OD_position:
     :return:
     """
     radius = 280
-    n_rows = df_pintar.shape[0]
-    df_vessel_pixels_OD = compute_vessel_radius_pixels(df_pintar, radius, OD_position)
+    n_rows = df_vasculature.shape[0]
+    df_vessel_pixels_OD = compute_vessel_radius_pixels(df_vasculature, radius, OD_position)
     return compute_od_pixels_fraction(df_vessel_pixels_OD, n_rows)
 
 def create_output_(out, imgfiles, function_to_execute, imgfiles_length):
@@ -974,53 +972,67 @@ if __name__ == '__main__':
             out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
         elif function_to_execute == 'neo_vascularization': 
             out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])  
-        elif function_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
-            df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
-            df_data = df_data[['Unnamed: 0', 'medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein', 'DF_longestFifth_artery', 'DF_longestFifth_vein', 'medianDiameter_longestFifth_artery', 'medianDiameter_longestFifth_vein', 'tau2_longestFifth_artery', 'tau2_longestFifth_vein', 'tau3_longestFifth_artery', 'tau3_longestFifth_vein', 'tau4_longestFifth_artery', 'tau4_longestFifth_vein']]
-            df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
-            #df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
-            df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
-            #df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
-            df_merge = pd.DataFrame()
-            df_merge['ratio_medianDiameter_longest'] = df_data['medianDiameter_longestFifth_artery'] / df_data['medianDiameter_longestFifth_vein']
-            df_merge['ratio_DF_longest'] = df_data['DF_longestFifth_artery'] / df_data['DF_longestFifth_vein']
-            df_merge['ratio_tau2_longest'] = df_data['tau2_longestFifth_artery'] / df_data['tau2_longestFifth_vein']
-            df_merge['ratio_tau3_longest'] = df_data['tau3_longestFifth_artery'] / df_data['tau3_longestFifth_vein']
-            df_merge['ratio_tau4_longest'] = df_data['tau4_longestFifth_artery'] / df_data['tau4_longestFifth_vein']
-            df_merge.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
-        elif function_to_execute == 'ratios_CRAE_CRVE':
-            df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
-            df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
-            df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
-            df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
-            df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
-            df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
-            df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
-            df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
-            df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
-            df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
-            
-            #Renaming column names
-            #### taa and tva
-            df_data_taa = pd.read_csv(phenotype_dir+DATE+"_taa.csv", sep=',')
-            df_data_taa.rename(columns={'mean_angle': 'mean_angle_taa'}, inplace=True)
-            df_data_taa.to_csv(phenotype_dir + DATE + "_taa.csv", sep=',', index=False)
-            
-            df_data_tva = pd.read_csv(phenotype_dir+DATE+"_tva.csv", sep=',')
-            df_data_tva.rename(columns={'mean_angle': 'mean_angle_tva'}, inplace=True)
-            df_data_tva.to_csv(phenotype_dir + DATE + "_tva.csv", sep=',', index=False)
-            
-            #### N main arteries and veins
-            df_data_NA = pd.read_csv(phenotype_dir+DATE+"_N_main_arteires.csv", sep=',')
-            df_data_NA.rename(columns={'N_median_main': 'N_median_main_arteries', 'N_std_main': 'N_std_main_arteries'}, inplace=True)
-            df_data_NA.to_csv(phenotype_dir + DATE + "_N_main_arteires.csv", sep=',', index=False)
-            
-            df_data_NV = pd.read_csv(phenotype_dir+DATE+"_N_main_veins.csv", sep=',')
-            df_data_NV.rename(columns={'N_median_main': 'N_median_main_veins', 'N_std_main': 'N_std_main_veins'}, inplace=True)
-            df_data_NV.to_csv(phenotype_dir + DATE + "_N_main_veins.csv", sep=',', index=False)
 
         else:
             out = None
 
         pool.close()
-        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print("WARNING Your function is ", function_to_execute, ".\nThis function does not exist. Options: tva, taa, bifurcations neo_vascularization, diameter_variability, aria_phenotypes, fractal_dimension, ratios, or baseline.", sep='')
+        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print("WARNING Your function is ", function_to_execute, ".\nThis function does not exist. Options:taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins", sep='')
+        
+        if function_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
+            df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
+            df_data = df_data[['Unnamed: 0', 'medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein', 'DF_longestFifth_artery', 'DF_longestFifth_vein', 'medianDiameter_longestFifth_artery', 'medianDiameter_longestFifth_vein', 'tau2_longestFifth_artery', 'tau2_longestFifth_vein', 'tau3_longestFifth_artery', 'tau3_longestFifth_vein', 'tau4_longestFifth_artery', 'tau4_longestFifth_vein']]
+            print(df_data)
+            df_data['ratio_AV_medianDiameter'] = df_data['medianDiameter_artery'] / df_data['medianDiameter_vein']
+            #df_data['ratio_VA_medianDiameter'] = df_data['medianDiameter_vein'] / df_data['medianDiameter_artery']
+            df_data['ratio_AV_DF'] = df_data['DF_artery'] / df_data['DF_vein']
+            #df_data['ratio_VA_DF'] = df_data['DF_vein'] / df_data['DF_artery']
+            df_data['ratio_medianDiameter_longest'] = df_data['medianDiameter_longestFifth_artery'] / df_data['medianDiameter_longestFifth_vein']
+            df_data['ratio_DF_longest'] = df_data['DF_longestFifth_artery'] / df_data['DF_longestFifth_vein']
+            df_data['ratio_tau2_longest'] = df_data['tau2_longestFifth_artery'] / df_data['tau2_longestFifth_vein']
+            df_data['ratio_tau3_longest'] = df_data['tau3_longestFifth_artery'] / df_data['tau3_longestFifth_vein']
+            df_data['ratio_tau4_longest'] = df_data['tau4_longestFifth_artery'] / df_data['tau4_longestFifth_vein']
+            print(df_data)
+            # only select the ratios
+            df_data.drop(['medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein', 'DF_longestFifth_artery', 
+                          'DF_longestFifth_vein', 'medianDiameter_longestFifth_artery', 'medianDiameter_longestFifth_vein', 'tau2_longestFifth_artery', 'tau2_longestFifth_vein',
+                          'tau3_longestFifth_artery', 'tau3_longestFifth_vein', 'tau4_longestFifth_artery', 'tau4_longestFifth_vein'], axis=1)
+            print(df_data)
+            df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',')#, index=True)
+            
+        elif function_to_execute == 'ratios_CRAE_CRVE':
+            df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
+            df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
+            df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+            
+            df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
+            df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
+            df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+            df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
+            df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
+            df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
+            print(df_merge)
+            df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',')#, index=False)
+            
+        #Renaming column names
+        if function_to_execute == 'taa': 
+            df_data_taa = pd.read_csv(phenotype_dir+DATE+"_taa.csv", sep=',')
+            df_data_taa.rename(columns={'mean_angle': 'mean_angle_taa'}, inplace=True)
+            df_data_taa.to_csv(phenotype_dir + DATE + "_taa.csv", sep=',', index=False)
+
+        elif function_to_execute == 'tva':
+            df_data_tva = pd.read_csv(phenotype_dir+DATE+"_tva.csv", sep=',')
+            df_data_tva.rename(columns={'mean_angle': 'mean_angle_tva'}, inplace=True)
+            df_data_tva.to_csv(phenotype_dir + DATE + "_tva.csv", sep=',', index=False)
+            
+        elif function_to_execute == 'N_main_arteires':
+            df_data_NA = pd.read_csv(phenotype_dir+DATE+"_N_main_arteires.csv", sep=',')
+            df_data_NA.rename(columns={'N_median_main': 'N_median_main_arteries', 'N_std_main': 'N_std_main_arteries'}, inplace=True)
+            df_data_NA.to_csv(phenotype_dir + DATE + "_N_main_arteires.csv", sep=',', index=False)
+            
+        elif function_to_execute == 'N_main_veins':
+            df_data_NV = pd.read_csv(phenotype_dir+DATE+"_N_main_veins.csv", sep=',')
+            df_data_NV.rename(columns={'N_median_main': 'N_median_main_veins', 'N_std_main': 'N_std_main_veins'}, inplace=True)
+            df_data_NV.to_csv(phenotype_dir + DATE + "_N_main_veins.csv", sep=',', index=False)
+
+

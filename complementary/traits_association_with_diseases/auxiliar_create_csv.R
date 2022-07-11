@@ -89,15 +89,19 @@ read_disease_data <- function(ukbb_files_dir)
   # names(data_1) <- c('age_diabetes', 'age_angina', 'age_heartattack', 'age_DVT', 'age_stroke', 'DBP', 'SBP', 'date_death',  'eid')
   
   data_2 <- read.csv(file= paste(ukbb_files_dir, "/2_data_extraction_BMI_height_IMT/ukb42432.csv", sep=""), header = TRUE, sep=",",check.names=FALSE)
-  data_2 <- data_2[, c('21001-0.0', '3456-0.0', '20161-0.0', '5084-0.0', '5085-0.0', '5086-0.0', '5087-0.0', 'eid')]
+  data_2 <- data_2[, c('21001-0.0', '3456-0.0', '20161-0.0', '5084-0.0', '5085-0.0', '5086-0.0', '5087-0.0', '5084-1.0', '5085-1.0', '5086-1.0', '5087-1.0', 'eid')]
   data_2 <- data_2 %>% 
     rename('BMI'='21001-0.0',
           'N_cigarettes_curr_daily'= '3456-0.0',
           'Pack_year_smok'='20161-0.0',
-          'spherical_power_R'='5084-0.0', 
-          'spherical_power_L'='5085-0.0', 
-          'cylindrical_power_L'='5086-0.0', 
-          'cylindrical_power_R'='5087-0.0'
+          'spherical_power_R_00'='5084-0.0', 
+          'spherical_power_L_00'='5085-0.0', 
+          'cylindrical_power_L_00'='5086-0.0', 
+          'cylindrical_power_R_00'='5087-0.0',
+          'spherical_power_R_10'='5084-1.0', 
+          'spherical_power_L_10'='5085-1.0', 
+          'cylindrical_power_L_10'='5086-1.0', 
+          'cylindrical_power_R_10'='5087-1.0'
           )
     
   #data_3 <- read.csv(file=paste(ukbb_files_dir, "/3_data_extraction_tinnitus/ukb42625.csv", sep=""), header = TRUE, sep=",",check.names=FALSE)

@@ -83,14 +83,14 @@ max_QCthreshold_2=100000
 
 #### FUNDUS MEASUREMENTS
 
-PHENOTYPE_OF_INTEREST='taa,tva,CRAE,CRVE,bifurcations,diameter_variability,aria_phenotypes,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins,ratios,ratios_CRAE_CRVE'
-phenotypes_dir=$RUN_DIR/image_phenotype
+PHENOTYPE_OF_INTEREST='taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins'
+phenotypes_dir=$RUN_DIR/image_phenotype/
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
 PARTICIPANT_STAT_ID=2022_07_08_ventile2
 QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles2.txt
-PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype # participant-level phenotyoes
+PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
 
@@ -112,5 +112,5 @@ remainder=$(( n_img - step_size * n_cpu ))
 
 #### USER-SPECIFIC CONFIGURATIONS
 
-source $config_dir/config_personal.sh
+source $config_dir/config_brynhild.sh
 

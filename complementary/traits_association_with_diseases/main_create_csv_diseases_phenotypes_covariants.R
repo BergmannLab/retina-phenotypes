@@ -35,24 +35,22 @@ data_all["cylindrical_power_00"]= (data_all["cylindrical_power_R_00"]+data_all["
 data_all["cylindrical_power_10"]= (data_all["cylindrical_power_R_10"]+data_all["cylindrical_power_L_10"])/2
 
 
-## Squared and cubic:
-data_all["age_center_2_00"]= data_all["age_center_00"]^2
-data_all["age_center_2_10"]= data_all["age_center_10"]^2
-data_all["age_center_2_20"]= data_all["age_center_20"]^2
+## Covariants select by instances
+data_all$instances <- ifelse(data_all$instances == 0 | data_all$instances == 1, NaN, 1)
 
-data_all["age_center_3_00"]= data_all["age_center_00"]^3
-data_all["age_center_3_10"]= data_all["age_center_10"]^3
-data_all["age_center_3_20"]= data_all["age_center_20"]^3
+data_all["age_center"] = data_all["age_center_10"]/data_all["instances"] 
+data_all$age_center <- ifelse(is.na(data_all$age_center), data_all$age_center_00, data_all$age_center)
+data_all["age_center_2"]= data_all["age_center"]^2
+data_all["age_center_3"]= data_all["age_center"]^3
 
-data_all["spherical_power_2_00"]= data_all["spherical_power_00"]^2
-data_all["spherical_power_2_10"]= data_all["spherical_power_10"]^2
-data_all["cylindrical_power_2_00"]= data_all["cylindrical_power_00"]^2
-data_all["cylindrical_power_2_10"]= data_all["cylindrical_power_10"]^2
+data_all["spherical_power"] = data_all["spherical_power_10"]/data_all["instances"] 
+data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
+data_all["spherical_power_2"]= data_all["spherical_power"]^2
+data_all["spherical_power_3"]= data_all["spherical_power"]^3
 
-data_all["spherical_power_3_00"]= data_all["spherical_power_00"]^3
-data_all["spherical_power_3_10"]= data_all["spherical_power_10"]^3
-data_all["cylindrical_power_3_00"]= data_all["cylindrical_power_00"]^3
-data_all["cylindrical_power_3_10"]= data_all["cylindrical_power_10"]^3
-
+data_all["cylindrical_power"] = data_all["cylindrical_power_10"]/data_all["instances"] 
+data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
+data_all["cylindrical_power_2"]= data_all["cylindrical_power"]^2
+data_all["cylindrical_power_3"]= data_all["cylindrical_power"]^3
 
 write.csv(data_all, paste(diseases_pheno_cov_file+ QC_name+'.csv', sep="") , row.names = FALSE)

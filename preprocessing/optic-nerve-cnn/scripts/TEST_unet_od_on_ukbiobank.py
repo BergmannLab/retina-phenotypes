@@ -499,7 +499,7 @@ def center_adjust_position(center_pos, resize_dict, scaling_param):
 for i in range(1,no_batches+1):
     # print(i)
     df = pd.read_pickle(outdir + "/OD_batch"+str(i)+".pkl")
-    df.index.name='index'
+    df.index.name='image'
 
     df["width"] = df["width"] * scaling_param
     df['height'] = df['height'] * scaling_param

@@ -1,26 +1,116 @@
-############################## CONFIG FILE for Retina pipeline ##############################
+############################## CONFIG FILE for fundus multitrait project ##############################
 
-config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+#### PROJECT COMPUTATION DIRECTORY
 
-#### quality thresholds for ARIA
+PROJECT_DIR=/NVME/decrypted/scratch/multitrait
+
+#### CONFIGURATIONS DIRECTORY
+
+config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # returns parent directory of this file
+
+#### DATASET OF CHOICE
+
+data_set=UK_BIOBANK #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
+
+#image_type options: *.jpg, *.tif, *.png, ...
+if [[ data_set == UK_BIOBANK ]]; then
+	image_type=*.png
+elif [[ data_set == DRIVE ]]; then
+	image_type=*.tif
+else
+	image_type=*.png
+fi
+# ARIA processor
+# needs to be specified now already, for the repo to remain compatible with ARIA nomenclature:
+# DRIVE has its own processor, UK_BIOBANK we allocate to CLRIS
+if [[ $data_set == UK_BIOBANK ]]; then
+        aria_processor=CLRIS
+else
+        aria_processor=$data_set
+fi
+
+#### PROJECT DATA
+
+dir_images2=/NVME/decrypted/ukbb/fundus/raw/CLRIS/ # folder containing raw fundus images
+
+#### UNIQUE RUN LABEL
+
+RUN="$data_set"_TEST
+
+#### FOLDER STRUCTURE
+
+RUN_DIR=$PROJECT_DIR/$RUN
+dir_input=$RUN_DIR/input && mkdir -p $dir_input
+dir_images=$dir_input/$aria_processor
+
+# If raw images are already in PNG format, dir_images is a symbolic link pointing to the raw images
+if [[ "$image_type" = *.png ]]; then
+        rm $dir_input/$aria_processor # clean if pipeline was run before
+	ln -s $dir_images2 $dir_input/$aria_processor
+else
+        # clean, and regenerate directory
+        rm -rf $dir_input/$aria_processor
+        mkdir -p $dir_input/$aria_processor
+fi
+
+#### LIST OF RAW IMAGES
+
+ls $dir_images | head -n 200 > $dir_input/all_raw_images.txt
+ALL_IMAGES=$dir_input/all_raw_images.txt
+n_img=$(cat $ALL_IMAGES | wc -l)
+echo Number of raw fundus images to be processed: $n_img
+
+#### PIXEL-WISE, ARTERY-VEIN SPECIFIC VESSEL SEGMENTATION
+
+classification_output_dir=$RUN_DIR/AV_maps
+
+#### OPTIC DISC SEGMENTATION
+
+OD_FILE=$RUN_DIR/optic_disc/od_all.csv
+
+#### SKELETONIZATION, CUTTING VESSELS AT BRANCHINGS AND CROSSINGS
+
+dir_ARIA_output=$RUN_DIR/skeletons_etc
+
+TYPE_OF_VESSEL_OF_INTEREST=all # ARIA legacy parameter
+AV_threshold=0.79 # segment score threshold
+
+# quality thresholds for ARIA
 min_QCthreshold_1=0
 max_QCthreshold_1=9000000
 min_QCthreshold_2=0
 max_QCthreshold_2=100000
 
-#### QUALITY THRESHOLDS OF LWNET ARTERY/VEIN CLASSIFICATION: 
-AV_threshold=0.79 # Add comment
+#### FUNDUS MEASUREMENTS
 
-#### configurations to adapt by user
-source $config_dir/config_personal.sh
+PHENOTYPE_OF_INTEREST='taa,tva,CRAE,CRVE,bifurcations,diameter_variability,aria_phenotypes,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins,ratios,ratios_CRAE_CRVE'
+phenotypes_dir=$RUN_DIR/image_phenotype
 
-# IMAGE TO PARTICIPANT
-PHENOFILE_ID=2022_06_27_multitrait_full_ventile5
-QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles5.txt
-PARTICIPANT_PHENO_DIR=/NVME/decrypted/multitrait/participant_phenotype # participant-level phenotyoes
-IMAGE_PHENO_DIR=/NVME/decrypted/multitrait/image_phenotype/current # image-level phenotypes
+#### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-# MAIN PHENOTYPES
+PARTICIPANT_STAT_ID=2022_07_08_ventile2
+QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles2.txt
+PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype # participant-level phenotyoes
+IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
+SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
+
+# COVARIATES, DISEASES
+
+##### MAIN PHENOTYPES
+
 # pass the unique labels as names
 MAIN_LABELS='DF_all,FD_all,VD_all,bifurcations'
 MAIN_NAMES='Distance factor,Fractal dimension, Bifurcations'
+
+#### PARALLEL COMPUTING
+
+#to run one by one, set n_cpu=1
+n_cpu=50
+step_size=$((n_img/n_cpu))
+batch_max=$((n_cpu * step_size))
+remainder=$(( n_img - step_size * n_cpu ))
+
+#### USER-SPECIFIC CONFIGURATIONS
+
+source $config_dir/config_personal.sh
+

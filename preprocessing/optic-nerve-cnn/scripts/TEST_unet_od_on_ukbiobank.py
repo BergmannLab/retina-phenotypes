@@ -499,13 +499,28 @@ def center_adjust_position(center_pos, resize_dict, scaling_param):
 for i in range(1,no_batches+1):
     # print(i)
     df = pd.read_pickle(outdir + "/OD_batch"+str(i)+".pkl")
+    df.index.name='index'
 
     df["width"] = df["width"] * scaling_param
     df['height'] = df['height'] * scaling_param
 
     df['area'] = df['area'] * scaling_param**2
     df['center_x_y'] = [center_adjust_position(i, resize_dict, scaling_param) for i in df['center_x_y']]
-    # print(df.shape)
+    
+    center_x = []
+    center_y = []
+    for j in df['center_x_y']:
+        if type(j) == tuple:
+            center_x.append(j[0])
+            center_y.append(j[1])
+        else:
+            center_x.append(np.nan)
+            center_y.append(np.nan)
+
+    df['x'] = center_x
+    df['y'] = center_y
+
+# print(df.shape)
     
     if i==1:
         df_out = df

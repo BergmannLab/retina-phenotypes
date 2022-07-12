@@ -1,6 +1,0 @@
-### Initialization:
-ukbb_files_dir <- '/NVME/decrypted/ukbb/labels/'
-diseases_pheno_cov_file <- '/NVME/decrypted/multitrait/diseases/Diseases_cov_phenotypes_both_eyes_'
-phenofiles_dir_both <- '/NVME/decrypted/multitrait/participant_phenotype/'
-name_phenofile <-"2022_06_27_multitrait_full_ventile2_with_ids.csv"
-QC_name<-'Ventile2'

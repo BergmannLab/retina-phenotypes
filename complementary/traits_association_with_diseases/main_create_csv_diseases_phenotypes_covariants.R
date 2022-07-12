@@ -3,11 +3,15 @@ library(dplyr)
 library(tidyr)
 
 ### Initialization:
-#ukbb_files_dir <- '/NVME/decrypted/ukbb/labels/'
+myargs = commandArgs(trailingOnly=TRUE)
+myargs
+
+ukbb_files_dir <- myargs[1] #'/NVME/decrypted/ukbb/labels/'
 ####phenofiles_dir <- '/NVME/decrypted/multitrait/image_phenotype/collection/'
-#diseases_pheno_cov_file <- '/NVME/decrypted/multitrait/diseases/Diseases_cov_phenotypes_both_eyes_'
-#name_phenofile <-"2022_06_27_multitrait_full_ventile2_with_ids.csv"
-#QC_name<-'Ventile2'
+phenofiles_dir_both <- myargs[2] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' #'/NVME/decrypted/multitrait/diseases/Diseases_cov_phenotypes_both_eyes_'
+diseases_pheno_cov_file <- myargs[3] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
+name_phenofile <- myargs[4] #"2022_07_08_ventile2_raw_with_instance.csv"
+csv_name<- myargs[5] #'2022_07_08_ventile2_diseases_cov'
 
 ## Create the phenofiles+diseases+covariants file ########################################
 ### Read disease data:
@@ -36,21 +40,21 @@ data_all["cylindrical_power_10"]= (data_all["cylindrical_power_R_10"]+data_all["
 
 
 ## Covariants select by instances
-data_all$instances <- ifelse(data_all$instances == 0 | data_all$instances == 1, NaN, 1)
+data_all$instance <- ifelse(data_all$instance == 0, NaN, 1)
 
-data_all["age_center"] = data_all["age_center_10"]/data_all["instances"] 
+data_all["age_center"] = data_all["age_center_10"]/data_all["instance"] 
 data_all$age_center <- ifelse(is.na(data_all$age_center), data_all$age_center_00, data_all$age_center)
 data_all["age_center_2"]= data_all["age_center"]^2
 data_all["age_center_3"]= data_all["age_center"]^3
 
-data_all["spherical_power"] = data_all["spherical_power_10"]/data_all["instances"] 
+data_all["spherical_power"] = data_all["spherical_power_10"]/data_all["instance"] 
 data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
 data_all["spherical_power_2"]= data_all["spherical_power"]^2
 data_all["spherical_power_3"]= data_all["spherical_power"]^3
 
-data_all["cylindrical_power"] = data_all["cylindrical_power_10"]/data_all["instances"] 
-data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
+data_all["cylindrical_power"] = data_all["cylindrical_power_10"]/data_all["instance"] 
+data_all$cylindrical_power <- ifelse(is.na(data_all$cylindrical_power), data_all$cylindrical_power_00, data_all$cylindrical_power)
 data_all["cylindrical_power_2"]= data_all["cylindrical_power"]^2
 data_all["cylindrical_power_3"]= data_all["cylindrical_power"]^3
 
-write.csv(data_all, paste(diseases_pheno_cov_file+ QC_name+'.csv', sep="") , row.names = FALSE)
+write.csv(data_all, paste(diseases_pheno_cov_file, csv_name,'.csv', sep="") , row.names = FALSE)

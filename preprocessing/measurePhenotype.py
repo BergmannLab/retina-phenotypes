@@ -996,9 +996,9 @@ if __name__ == '__main__':
             # only select the ratios
             df_data.drop(['medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein', 'DF_longestFifth_artery', 
                           'DF_longestFifth_vein', 'medianDiameter_longestFifth_artery', 'medianDiameter_longestFifth_vein', 'tau2_longestFifth_artery', 'tau2_longestFifth_vein',
-                          'tau3_longestFifth_artery', 'tau3_longestFifth_vein', 'tau4_longestFifth_artery', 'tau4_longestFifth_vein'], axis=1)
+                          'tau3_longestFifth_artery', 'tau3_longestFifth_vein', 'tau4_longestFifth_artery', 'tau4_longestFifth_vein'], axis=1, inplace=True)
             print(df_data)
-            df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',')#, index=True)
+            df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
             
         elif function_to_execute == 'ratios_CRAE_CRVE':
             df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')

@@ -244,10 +244,11 @@ def rank_to_normal(rank, c, n):
 if __name__ == '__main__':
         
         # command line arguments
-        EXPERIMENT_ID = sys.argv[1]
-        qcFile = sys.argv[2]
-        input_dir = sys.argv[3]
-        output_dir = sys.argv[4]
+        qcFile = sys.argv[1]
+        input_dir = sys.argv[2]
+        output_dir = sys.argv[3]
+        sample_file = sys.argv[4]
+        EXPERIMENT_ID = sys.argv[5] 
 
         os.chdir(input_dir)
 
@@ -265,13 +266,19 @@ if __name__ == '__main__':
         for i,measurement in enumerate(measurements):
                 if i==0:
                         stats = pd.read_csv(measurement, index_col=0)
+                        #print(stats)
                 else:
                         tmp = pd.read_csv(measurement, index_col=0)
+                        #print(tmp)
                         stats = stats.join(tmp)
+
+        # replacing potential infinites with nan
+        stats.replace([np.inf, -np.inf], np.nan, inplace=True)
 
         #QC
         imgs = pd.read_csv(qcFile, header=None) # images that pass QC of choice
         imgs = imgs[0].values
+        imgs = [i for i in imgs if i in stats.index]
         participants = sorted(list(set([i.split("_")[0] for i in imgs]))) # participants with at least one img passing QC
         
         #testing
@@ -296,18 +303,21 @@ if __name__ == '__main__':
         participants_stats.index = participants[0:nTest]
         print('Nb of images that pass QC:',len(imgs),'\nNb of participants with QCd images:',len(imgs_per_participant))
         # quick check of how many nans we picked up along the way
-        print('\nNans per phenotype\n',participants_stats.isna().sum())
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            print('\nNans per phenotype\n',participants_stats.isna().sum())
+        
+        print('\nNumber of phenotypes:', len(participants_stats.columns))
 
         # now that all is measured, we reorder to match sample file, then storing into phenofile
         # also saving rank-based INT version of phenotype and storing it
-        fundus_samples = pd.read_csv("/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample",\
+        fundus_samples = pd.read_csv(sample_file,\
 delimiter=" ",skiprows=2, header=None,dtype=str)
         phenofile_out = pd.DataFrame(index = fundus_samples[0], columns = participants_stats.columns, data=np.nan)
         instances_out = pd.DataFrame(index = fundus_samples[0], columns = ['instance']) 
 
         #creating phenofile, accounting for missing genotypes
         idx = [i for i in participants_stats.index if i in phenofile_out.index]
-        print(len(idx)) 
+        print("Number of remaining participants, accounting for missing genotypes:", len(idx)) 
         phenofile_out.loc[idx] = participants_stats.loc[idx]
         instances_out.loc[idx] = instance_df.loc[idx]
         
@@ -315,31 +325,32 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         #phenofile_out[phenofile_out.isna().any(axis=1)] = np.nan
         
         #creating rank-based INT phenofile
-        def apply_rank_INT(col):
-            return rank_INT(phenofile_out[col])
+        #def apply_rank_INT(col):
+        #    return rank_INT(phenofile_out[col])
         
-        phenofile_out.replace([np.inf, -np.inf], np.nan, inplace=True)
         cols=phenofile_out.columns
-        pool=Pool()
-        out=list(pool.map(apply_rank_INT, cols))
-        pool.close()
-        phenofile_out_rbINT = phenofile_out.copy()
-        for idx,i in enumerate(cols):
-            phenofile_out_rbINT[i] = out[idx]
+        #pool=Pool()
+        #out=list(pool.map(apply_rank_INT, cols))
+        #pool.close()
+        #phenofile_out_rbINT = phenofile_out.copy()
+        #for idx,i in enumerate(cols):
+        #    phenofile_out_rbINT[i] = out[idx]
         
-        phenofile_out_rbINT.replace([np.inf, -np.inf], np.nan, inplace=True)
-
+        #phenofile_out_rbINT.replace([np.inf, -np.inf], np.nan, inplace=True)
+        
+        # plotting distributions
         for i in cols:
             f=plt.figure()
             plt.hist(phenofile_out[i].dropna().values, 100)
             plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))
-            f.savefig(output_dir+"/distributions/"+EXPERIMENT_ID+"_"+i+".pdf")
+            os.makedirs(output_dir+"/distributions", exist_ok=True)
+            f.savefig(output_dir+"/distributions/"+EXPERIMENT_ID+"_"+i+"_raw.pdf")
             plt.close()
-            f=plt.figure()
-            plt.hist(phenofile_out_rbINT[i].dropna().values, 100)
-            plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))
-            f.savefig(output_dir+"/distributions/qqnorm_"+EXPERIMENT_ID+"_"+i+".pdf")
-            plt.close()
+            #f=plt.figure()
+            #plt.hist(phenofile_out_rbINT[i].dropna().values, 100)
+            #plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))
+            #f.savefig(output_dir+"/distributions/qqnorm_"+EXPERIMENT_ID+"_"+i+".pdf")
+            #plt.close()
 
         #phenofile_out_rbINT = phenofile_out.groupby(phenofile_out.index).parallel_apply(rank_INT, axis=1)
         #print(phenofile_out_rbINT)
@@ -347,20 +358,21 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         # saving both raw and rank-based INT, and instance list
         
         with_ids_out = phenofile_out.copy()
+        with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_raw.csv")
         with_ids_out['instance'] = instances_out['instance']
-        with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_with_ids.csv")
+        with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_raw_with_instance.csv")
         
-        phenofile_out = phenofile_out.astype(str)
-        phenofile_out = phenofile_out.replace('nan', '-999')
-        phenofile_out.to_csv(output_dir+EXPERIMENT_ID+".csv", index=False, sep=" ")
+        #phenofile_out = phenofile_out.astype(str)
+        #phenofile_out = phenofile_out.replace('nan', '-999')
+        #phenofile_out.to_csv(output_dir+EXPERIMENT_ID+".csv", index=False, sep=" ")
 
-        with_ids_out = phenofile_out_rbINT.copy()
-        with_ids_out['instance'] = instances_out['instance']
-        with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm_with_ids.csv")
+        #with_ids_out = phenofile_out_rbINT.copy()
+        #with_ids_out['instance'] = instances_out['instance']
+        #with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm_with_ids.csv")
         
-        phenofile_out_rbINT = phenofile_out_rbINT.astype(str)
-        phenofile_out_rbINT = phenofile_out_rbINT.replace('nan', '-999')
-        phenofile_out_rbINT.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm.csv", index=False, sep=" ")
+        #phenofile_out_rbINT = phenofile_out_rbINT.astype(str)
+        #phenofile_out_rbINT = phenofile_out_rbINT.replace('nan', '-999')
+        #phenofile_out_rbINT.to_csv(output_dir+EXPERIMENT_ID+"_qqnorm.csv", index=False, sep=" ")
 
         instances_out.to_csv(output_dir+EXPERIMENT_ID+"_instances.csv")
         print("END OF SCRIPT")

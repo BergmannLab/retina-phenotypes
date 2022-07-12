@@ -1001,17 +1001,17 @@ if __name__ == '__main__':
             
         elif function_to_execute == 'ratios_CRAE_CRVE':
             df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
-            df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "image" }, inplace = True)
+            df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "Unnamed: 0" }, inplace = True)
             df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
             
             df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
-            df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "image" }, inplace = True)
+            df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "Unnamed: 0" }, inplace = True)
             df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
-            df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='image')
+            df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='Unnamed: 0')
             df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
             df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
             print(df_merge)
-            df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',')#, index=False)
+            df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
             
         #Renaming column names
         if function_to_execute == 'taa': 

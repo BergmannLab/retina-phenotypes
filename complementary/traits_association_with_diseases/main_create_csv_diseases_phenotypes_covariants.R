@@ -6,12 +6,12 @@ library(tidyr)
 myargs = commandArgs(trailingOnly=TRUE)
 myargs
 
-ukbb_files_dir <- myargs[1] #'/NVME/decrypted/ukbb/labels/'
+ukbb_files_dir <-'/NVME/decrypted/ukbb/labels/'# myargs[1] #'/NVME/decrypted/ukbb/labels/'
 ####phenofiles_dir <- '/NVME/decrypted/multitrait/image_phenotype/collection/'
-phenofiles_dir_both <- myargs[2] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' #'/NVME/decrypted/multitrait/diseases/Diseases_cov_phenotypes_both_eyes_'
-diseases_pheno_cov_file <- myargs[3] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
-name_phenofile <- myargs[4] #"2022_07_08_ventile2_raw_with_instance.csv"
-csv_name<- myargs[5] #'2022_07_08_ventile2_diseases_cov'
+phenofiles_dir_both <- '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' # myargs[2] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' #'/NVME/decrypted/multitrait/diseases/Diseases_cov_phenotypes_both_eyes_'
+diseases_pheno_cov_file <- '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/' #myargs[3] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
+name_phenofile <- "2022_07_08_ventile2_raw_with_instance.csv" #myargs[4] #"2022_07_08_ventile2_raw_with_instance.csv"
+csv_name<- '2022_07_08_ventile2_diseases_cov_test' #myargs[5] #'2022_07_08_ventile2_diseases_cov'
 
 ## Create the phenofiles+diseases+covariants file ########################################
 ### Read disease data:
@@ -28,15 +28,24 @@ data_all = create_dataset_both_eyes(data_aux, phenofiles_dir_both, name_phenofil
 colnames(data_all)
 
 ## Average columns:
-data_all["SBP"]= (data_all["SBP_00"]+data_all["SBP_01"])/2
-data_all["DBP"]= (data_all["DBP_00"]+data_all["DBP_01"])/2
-data_all["PR"]= (data_all["PR_00"]+data_all["PR_01"])/2
+data_all$SBP <- apply(select(data_all, SBP_00, SBP_01),1,function(x) mean(na.omit(x)))
+data_all$DBP <- apply(select(data_all, DBP_00, DBP_01),1,function(x) mean(na.omit(x)))
+data_all$PR <- apply(select(data_all, PR_00, PR_01),1,function(x) mean(na.omit(x)))
+         
+data_all$spherical_power_00 <- apply(select(data_all, spherical_power_R_00, spherical_power_L_00),1,function(x) mean(na.omit(x)))
+data_all$spherical_power_10 <- apply(select(data_all, spherical_power_R_10, spherical_power_L_10),1,function(x) mean(na.omit(x)))
+data_all$cylindrical_power_00 <- apply(select(data_all, cylindrical_power_R_00, cylindrical_power_L_00),1,function(x) mean(na.omit(x)))
+data_all$cylindrical_power_10 <- apply(select(data_all, cylindrical_power_R_10, cylindrical_power_L_10),1,function(x) mean(na.omit(x)))
+                                     
+#data_all["SBP"]= (data_all["SBP_00"]+data_all["SBP_01"])/2
+#data_all["DBP"]= (data_all["DBP_00"]+data_all["DBP_01"])/2
+#data_all["PR"]= (data_all["PR_00"]+data_all["PR_01"])/2
 
-data_all["spherical_power_00"]= (data_all["spherical_power_R_00"]+data_all["spherical_power_L_00"])/2
-data_all["spherical_power_10"]= (data_all["spherical_power_R_10"]+data_all["spherical_power_L_10"])/2
+#data_all["spherical_power_00"]= (data_all["spherical_power_R_00"]+data_all["spherical_power_L_00"])/2
+#data_all["spherical_power_10"]= (data_all["spherical_power_R_10"]+data_all["spherical_power_L_10"])/2
 
-data_all["cylindrical_power_00"]= (data_all["cylindrical_power_R_00"]+data_all["cylindrical_power_L_00"])/2
-data_all["cylindrical_power_10"]= (data_all["cylindrical_power_R_10"]+data_all["cylindrical_power_L_10"])/2
+#data_all["cylindrical_power_00"]= (data_all["cylindrical_power_R_00"]+data_all["cylindrical_power_L_00"])/2
+#data_all["cylindrical_power_10"]= (data_all["cylindrical_power_R_10"]+data_all["cylindrical_power_L_10"])/2
 
 
 ## Covariants select by instances

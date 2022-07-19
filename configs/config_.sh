@@ -95,6 +95,11 @@ IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
 
 # COVARIATES, DISEASES
+ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
+phenofiles_dir_both='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' 
+diseases_pheno_cov_file='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
+name_phenofile="2022_07_08_ventile5_raw_with_instance.csv"
+csv_name='2022_07_08_ventile5_diseases_cov'
 
 ##### MAIN PHENOTYPES
 

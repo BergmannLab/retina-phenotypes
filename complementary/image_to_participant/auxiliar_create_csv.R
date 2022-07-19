@@ -242,10 +242,14 @@ create_dataset_both_eyes <- function(data_cov, phenofiles_dir, name_phenofile)
   
   pheno_df <- read.csv(file= paste(phenofiles_dir, name_phenofile, sep=""),
                                                header = TRUE, sep=",",check.names=FALSE)
-  names(pheno_df)[1] <- 'eid'
-  g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE) 
+  names(pheno_df)[1] <- "eid"
+  # Only select eids 
+  pheno_df <- pheno_df[, c("eid", "instance")]
+  #print(pheno_df)
+  print(nrow(data_cov))
+  print(nrow(pheno_df))
+  g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE, all.x=TRUE) 
   print(nrow(g))
-  #
   return(g)
                        
   # pheno_df <- read.csv(file= paste(phenofiles_dir, "participant_phenotype2022_06_21_multitrait_ventile2.csv", sep=""),

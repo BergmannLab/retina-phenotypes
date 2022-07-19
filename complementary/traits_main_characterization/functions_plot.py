@@ -120,7 +120,7 @@ def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal):
         ax.set_title( "N = " + str(size_1) + ", "  + str(size_2) + ", " +  str(size_3)
                      + ", " +  str(size_4)+ ", " +  str(size_5))
 
-    plt_py.savefig(save_dir + str(list_phenotypes) +'_ventile5_violin.png')
+    plt_py.savefig(save_dir + str(list_phenotypes) +'_ventile2_violin.png')
     plt_py.close()
 
 #def violin_plot_AV(df_data_completo, list_phenotypes, save_dir):

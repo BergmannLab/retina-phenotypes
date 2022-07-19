@@ -13,7 +13,7 @@ plot_violin=True
 
 
 phenofiles_dir='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/'
-phenofile_used_for_dist_plots="2022_07_08_ventile5_raw.csv"
+phenofile_used_for_dist_plots="2022_07_08_ventile2_raw.csv"
 save_dir='/SSD/home/sofia/retina-phenotypes/complementary/traits_main_characterization/results/'
 main_phenotypes_seaborn = ["bifurcations", "VD_orig_all", "slope", "mean_angle_taa", "mean_angle_tva", "eq_CRAE", "eq_CRVE", "medianDiameter_all", "DF_all"]
 

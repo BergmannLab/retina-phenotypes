@@ -357,7 +357,8 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
 
         # saving both raw and rank-based INT, and instance list
         
-        with_ids_out = phenofile_out.copy()
+        with_ids_out = phenofile_out[sorted(phenofile_out.columns)].copy()
+
         with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_raw.csv")
         with_ids_out['instance'] = instances_out['instance']
         with_ids_out.to_csv(output_dir+EXPERIMENT_ID+"_raw_with_instance.csv")

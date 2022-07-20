@@ -26,8 +26,8 @@ from matplotlib import pyplot as plt
 RUN_PATH = sys.argv[1]
 PHENO_PATH = RUN_PATH+"participant_phenotype/"
 ID = sys.argv[2]
-OUTID = ID+"_corrected.two.step.FINAL"
-CASE=sys.argv[3] #qqnorm or raw
+OUTID = ID+"_corrected"
+CASE=sys.argv[3] #qqnorm or z
 
 traitsfile = PHENO_PATH+ID+'_raw.csv'
 covarsfile = RUN_PATH+'diseases_cov/'+ID+"_diseases_cov.csv"
@@ -271,7 +271,7 @@ plt.savefig(PHENO_PATH+ID+"_correction_covar_distribution.pdf")
 # equalize participants
 
 index_intersect = traits.index.intersection(covar_z.index)
-#print(len(index_intersect))
+print(len(index_intersect))
 traits = traits.loc[index_intersect]
 covar = covar.loc[index_intersect]
 covar_z = covar_z.loc[index_intersect]
@@ -301,7 +301,7 @@ pcs = pd.DataFrame(pca.fit_transform(covar_z_nona), index=covar_z_nona.index, co
 
 # check size match
 
-print(len(traits),len(covar_z), len(pcs), len(covar_z_nona), len(traits_nona))
+len(traits),len(covar_z), len(pcs), len(covar_z_nona), len(traits_nona)
 
 
 # # Regressing out covariate effects
@@ -671,10 +671,18 @@ out = out.replace('nan', '-999')
 if CASE == 'qqnorm':
     out.to_csv(PHENO_PATH+OUTID+"_qqnorm.csv", index=False, sep=" ")
 else:
-    reg_corrected.to_csv(PHENO_PATH+OUTID+".csv")
+    reg_corrected.to_csv(PHENO_PATH+OUTID+"_z.csv")
     
     h = sns.clustermap(data=reg_corrected.corr(), figsize=(40,40), cmap='viridis')
     dgram=h.dendrogram_col.dendrogram
     D = np.array(dgram['dcoord'])
     I = np.array(dgram['icoord'])
     plt.savefig(PHENO_PATH+OUTID+"_clustermap.pdf")
+
+
+# In[ ]:
+
+
+
+
+

@@ -163,8 +163,10 @@ traits_hist.columns = cols
 
 traits_hist.hist(figsize=(40,40), bins=100);
 plt.tight_layout()
-plt.savefig(PHENO_PATH+ID+"_"+CASE+"_distribution.pdf")
-
+if CASE == 'qqnorm':
+    plt.savefig(PHENO_PATH+ID+"_"+CASE+"_distribution.pdf")
+else: # z
+    plt.savefig(PHENO_PATH+ID+"_raw_distribution.pdf")
 
 # In[41]:
 

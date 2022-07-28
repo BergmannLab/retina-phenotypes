@@ -46,10 +46,10 @@ Code: `bash run_measurePhenotype.sh'
 
 ## Disease association
 
-In complementary/disease_association, run `./run_disease_association.sh >> log 2&>1 &`
-1 - Cox
-Output: In `*RUN*/diseases_cov/` Cox hazard ratio and corresponding p-values for all trait-disease combinations.
-2 - Logistic regression
+In complementary/disease_association, run `./run_disease_association.sh >> log 2&>1 &` 
+1 - Cox 
+Output: In `*RUN*/diseases_cov/` Cox hazard ratio and corresponding p-values for all trait-disease combinations. 
+2 - Logistic regression 
 **Contemplate adding olga's scripts in the same folders**
 
 

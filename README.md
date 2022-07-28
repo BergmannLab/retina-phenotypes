@@ -54,15 +54,18 @@ Code: `bash run_measurePhenotype.sh'
 
 # CODE - COMPLEMENTARY ANALYSIS (only needed the folder: 'complementary'):  
 
-## Disease association
+## Disease association  
 
-`./run_disease_association.sh >> log 2&>1 &`  
+Run `./run_disease_association.sh >> log 2&>1 &`  
+
 Script directory: `*RUN_DIR*/complementary/disease_association`  
-Description  
+
+Output** directory: `*RUN*/diseases_cov`:Cox hazard ratio and corresponding p-values for all trait-disease combinations.  
+
+**Description**  
+Performs two distinct disease associations in one go:  
 1 - Cox  
-2 - Logistic regression  
-Olga's scripts could be added here  
-Output directory: `*RUN*/diseases_cov`:Cox hazard ratio and corresponding p-values for all trait-disease combinations.  
+2 - Logistic regression (not yet added, but Olga's scripts could be added here to automate)  
 
 ## GWAS postprocessing:
 This folder include code to plot the Manhattan and QQplots and to prepare: PascalX, LDSCR and LD prune input.

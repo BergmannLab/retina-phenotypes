@@ -44,14 +44,6 @@ Code: `bash MeasureVessels.sh`
 Output: Trait measurements. By default in the folder: `*RUN*/image_phenotype`
 Code: `bash run_measurePhenotype.sh'
 
-## Disease association
-
-In complementary/disease_association, run `./run_disease_association.sh >> log 2&>1 &`  
-1 - Cox  
-Output: In `*RUN*/diseases_cov/` Cox hazard ratio and corresponding p-values for all trait-disease combinations.  
-2 - Logistic regression  
-**Contemplate adding olga's scripts in the same folders**
-
 
 ### Some possible errors and reminders:
 * LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "your_python_dir/python -m pip install scikit-image==0.16.2" and python3
@@ -61,6 +53,16 @@ Output: In `*RUN*/diseases_cov/` Cox hazard ratio and corresponding p-values for
 * If you are not familiar with bash scripts and you want to change the code, the spaces are very imports!(Avoid when define variables, and use then for conditions)
 
 # CODE - COMPLEMENTARY ANALYSIS (only needed the folder: 'complementary'):  
+
+## Disease association
+
+`./run_disease_association.sh >> log 2&>1 &`  
+Script directory: `*RUN_DIR*/complementary/disease_association`  
+Description  
+1 - Cox  
+2 - Logistic regression  
+Olga's scripts could be added here  
+Output directory: `*RUN*/diseases_cov`:Cox hazard ratio and corresponding p-values for all trait-disease combinations.  
 
 ## GWAS postprocessing:
 This folder include code to plot the Manhattan and QQplots and to prepare: PascalX, LDSCR and LD prune input.

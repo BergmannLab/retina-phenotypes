@@ -35,7 +35,7 @@ dir_images2=/NVME/decrypted/ukbb/fundus/raw/CLRIS/ # folder containing raw fundu
 
 #### UNIQUE RUN LABEL
 
-RUN="$data_set"_TEST
+RUN="$data_set"_ZERO
 
 #### FOLDER STRUCTURE
 
@@ -55,7 +55,7 @@ fi
 
 #### LIST OF RAW IMAGES
 
-ls $dir_images | head -n 200 > $dir_input/all_raw_images.txt
+ls $dir_images > $dir_input/all_raw_images.txt
 ALL_IMAGES=$dir_input/all_raw_images.txt
 n_img=$(cat $ALL_IMAGES | wc -l)
 echo Number of raw fundus images to be processed: $n_img
@@ -88,8 +88,8 @@ phenotypes_dir=$RUN_DIR/image_phenotype/
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-PARTICIPANT_STAT_ID=2022_07_08_ventile2
-QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles2.txt
+PARTICIPANT_STAT_ID=2022_07_08_ventile5
+QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles5.txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
@@ -117,5 +117,5 @@ remainder=$(( n_img - step_size * n_cpu ))
 
 #### USER-SPECIFIC CONFIGURATIONS
 
-source $config_dir/config_brynhild.sh
+source $config_dir/config_personal.sh
 

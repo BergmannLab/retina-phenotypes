@@ -44,6 +44,15 @@ Code: `bash MeasureVessels.sh`
 Output: Trait measurements. By default in the folder: `*RUN*/image_phenotype`
 Code: `bash run_measurePhenotype.sh'
 
+## Disease association
+
+In complementary/disease_association, run `./run_disease_association.sh >> log 2&>1 &`
+1 - Cox
+Output: In `*RUN*/diseases_cov/` Cox hazard ratio and corresponding p-values for all trait-disease combinations.
+2 - Logistic regression
+**Contemplate adding olga's scripts in the same folders**
+
+
 ### Some possible errors and reminders:
 * LWNET, no image generated in DATASET_AV_maps:   AttributeError: module 'skimage.draw' has no attribute 'circle' . You need "your_python_dir/python -m pip install scikit-image==0.16.2" and python3
 

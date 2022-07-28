@@ -339,13 +339,13 @@ delimiter=" ",skiprows=2, header=None,dtype=str)
         #phenofile_out_rbINT.replace([np.inf, -np.inf], np.nan, inplace=True)
         
         # plotting distributions
-        for i in cols:
-            f=plt.figure()
-            plt.hist(phenofile_out[i].dropna().values, 100)
-            plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))
-            os.makedirs(output_dir+"/distributions", exist_ok=True)
-            f.savefig(output_dir+"/distributions/"+EXPERIMENT_ID+"_"+i+"_raw.pdf")
-            plt.close()
+        #for i in cols:
+        #    f=plt.figure()
+        #    plt.hist(phenofile_out[i].dropna().values, 100)
+        #    plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))
+        #    os.makedirs(output_dir+"/distributions", exist_ok=True)
+        #    f.savefig(output_dir+"/distributions/"+EXPERIMENT_ID+"_"+i+"_raw.pdf")
+        #    plt.close()
             #f=plt.figure()
             #plt.hist(phenofile_out_rbINT[i].dropna().values, 100)
             #plt.title(i + ", N = " + str(len(phenofile_out[i].dropna().values)))

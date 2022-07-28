@@ -40,9 +40,24 @@ RUN="$data_set"_ZERO
 #### FOLDER STRUCTURE
 
 RUN_DIR=$PROJECT_DIR/$RUN
-dir_input=$RUN_DIR/input && mkdir -p $dir_input
+dir_input=$RUN_DIR/input
 dir_images=$dir_input/$aria_processor
 
+
+folders=(
+        AV_maps
+        image_phenotype
+        image_phenotype/current
+        input
+	gwas
+        optic_disc
+        participant_phenotype
+        skeletons_etc
+)
+
+for i in "${folders[@]}"; do mkdir -p -m u=rwx,g=rwx,o=rx $RUN_DIR/$i; done # create folders if do not exist, exceptionally allow group write permissions, as this is a collaborative project
+
+# One additional folder, required for ARIA
 # If raw images are already in PNG format, dir_images is a symbolic link pointing to the raw images
 if [[ "$image_type" = *.png ]]; then
         rm $dir_input/$aria_processor # clean if pipeline was run before

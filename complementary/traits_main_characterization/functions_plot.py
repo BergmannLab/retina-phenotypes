@@ -2,10 +2,15 @@ import pandas as pd
 import seaborn as sns
 import os
 import glob
+from datetime import datetime
 import numpy as np
 import matplotlib as plt
 from matplotlib import figure
 import matplotlib.pyplot as plt_py
+
+
+DATE = datetime.now().strftime("%Y-%m-%d")
+
 
 # Function to calculate correlation coefficient between two arrays
 def corr(x, y, **kwargs):
@@ -24,7 +29,7 @@ def multiple_scatter_plots(df_data_completo, main_phenotypes, save_dir):
                             plot_kws={'scatter_kws': {'alpha': 0.8, 's': 0.5}}) # ,'line_kws':{'color':'red'}})
     sns.set(font_scale = 2)
     sns.set_context("paper", rc={"axes.labelsize":28})
-    sns_plot.savefig(save_dir + 'example_type1_seaborn.png')
+    sns_plot.savefig(save_dir + DATE +'_seaborn_type1.png')
 
                             
 ### Scatter plots with corr values in the first half and histogram in the diagonal
@@ -36,7 +41,7 @@ def multiple_scatter_plots_2(df_data_completo, main_phenotypes, save_dir):
     grid = grid.map_upper(corr)
     grid = grid.map_diag(plt.pyplot.hist, bins=10, edgecolor='k')
     grid = grid.map_lower(sns.scatterplot)
-    grid.savefig(save_dir + 'example_type2_seaborn.png')
+    grid.savefig(save_dir + DATE +'_seaborn_type2.png')
     
 ### Scatter plots with corr values in the first half, histogram in the diagonal, and maps in the second half
 def multiple_scatter_plots_3(df_data_completo, main_phenotypes, save_dir):    
@@ -52,7 +57,7 @@ def multiple_scatter_plots_3(df_data_completo, main_phenotypes, save_dir):
     grid = grid.map_lower(sns.scatterplot, alpha=0.2)
     grid = grid.map_lower(sns.kdeplot, cmap="Greys_d")
     #grid = grid.map_lower(sns.kdeplot, levels=5, color=".1")
-    grid.savefig(save_dir + 'example_type3_seaborn.png')
+    grid.savefig(save_dir + DATE +'_seaborn_type3.png')
 
     
 ### Violin plot
@@ -73,7 +78,6 @@ def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal):
         ax = sns.violinplot(x="phenotypes", y="distribution", data=df_data_completo, palette=my_pal, 
                             saturation=0.8)
         ax.set_title( "N = " + str(size_1) + ", "  + str(size_2))
-        # ax.set_title(str(var1) + " N=" + str(size_1) + ", " + str(var2) + " N=" + str(size_2))
 
     elif len(list_phenotypes)==3:
         var1=list_phenotypes[0]
@@ -86,9 +90,7 @@ def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal):
         ax = sns.violinplot(x="phenotypes", y="distribution", data=df_data_completo, palette=my_pal, 
                             saturation=0.8) 
         ax.set_title( "N = " + str(size_1) + ", "  + str(size_2) + ", " +  str(size_3))
-        #ax.set_title( str(var1) + " N=" + str(size_1) + ", " + str(var2) + " N=" + str(size_2) + ", " + 
-        #              str(var3) + " N=" +  str(size_3))
-    
+
     elif len(list_phenotypes)==4:
         var1=list_phenotypes[0]
         var2=list_phenotypes[1]
@@ -120,21 +122,11 @@ def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal):
         ax.set_title( "N = " + str(size_1) + ", "  + str(size_2) + ", " +  str(size_3)
                      + ", " +  str(size_4)+ ", " +  str(size_5))
 
-    plt_py.savefig(save_dir + str(list_phenotypes) +'_ventile2_violin.png')
+    plt_py.savefig(save_dir + DATE + '_'.join(list_phenotypes) +'_violinplot.png')
     plt_py.close()
 
-#def violin_plot_AV(df_data_completo, list_phenotypes, save_dir):
-#    df_data_completo=df_data_completo[list_phenotypes]
-#    df_data_completo = df_data_completo.melt(var_name='phenotypes', value_name='distribution')
-    #df_data_completo["Vesseltype"]= np.where(df_data_completo['phenotypes']==(list_phenotypes[0] or list_phenotypes[2]), 'Arteries', 'Veins')
-#    print(df_data_completo)
-    #var1=list_phenotypes[0]
-#    sns.set(style="whitegrid")
-    #sns.set_style("white")
-#    ax = sns.violinplot(hue="phenotypes", y="distribution", data=df_data_completo, palette="muted", split=True)
-#    plt_py.savefig(save_dir + str(list_phenotypes) +'violin.png')
-#    plt_py.close()
-    
+
+
 ### Histograms
 def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
     if len(list_phenotypes)==1:
@@ -146,7 +138,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var1], color="dimgray", label= str(var1) +" (N=" + str(size_1) + ")"
                      , alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + str(var1)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE +'_'.join(list_phenotypes) +'_histograms.png')
         plt_py.close()
         
     elif len(list_phenotypes)==2:
@@ -162,7 +154,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var2],color="cornflowerblue", label=str(var2) +" (N=" + str(size_2) + ")" 
                      , alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + str(var1)+'_'+ str(var2)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE +'_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()
     
     elif len(list_phenotypes)==3:
@@ -182,7 +174,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var1], color="dimgray", label= str(var1) +" (N=" + str(size_1) + ")", 
                      alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + str(var1)+'_'+ str(var2)+'_'+str(var3)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE +'_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()
     
     elif len(list_phenotypes)==4:
@@ -206,5 +198,5 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var4], color="mediumpurple", label= str(var4) +" (N=" + str(size_4) + ")", 
                      alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + str(var1)+'_'+ str(var2)+'_'+str(var3)+'_'+str(var4)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()

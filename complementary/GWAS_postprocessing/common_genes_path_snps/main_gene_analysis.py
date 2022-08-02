@@ -6,21 +6,17 @@ import csv
 import seaborn as sns
 
 
-input_dir = '/HDD/data/UKBiob/GWAS/2022_06_08_all_phenotypes_LWNet_Decile3/PascalX/'
+input_dir = '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gwas/2022_07_08_ventile5__FINAL/'
 save_results = '/SSD/home/sofia/retina-phenotypes/complementary/GWAS_postprocessing/common_genes_path_snps/'
 csv_name = 'intersections'
+csv_name_all = 'intersections_all'
 csv_genes_name = 'intersections_genes_name'
 csv_name_diagonal = 'intersections_diagonal'
+csv_name_count = 'genes_count'
 p_value_min = 5.7  # -math.log10(0.05/len(x))
 
-filenames= ['geneScores_bifurcations','geneScores_mean_angle_tva', 'geneScores_mean_angle_taa', 'geneScores_eq_CRVE', 'geneScores_eq_CRAE', 'geneScores_ratio_CRAE_CRVE', 'geneScores_medianDiameter_all', 'geneScores_medianDiameter_artery', 'geneScores_medianDiameter_vein', 'geneScores_ratio_AV_medianDiameter', 'geneScores_D_median_std', 'geneScores_D_std_std', 'geneScores_D_mean_std', 'geneScores_std_intensity', 
-'geneScores_VD_orig_all', 'geneScores_VD_orig_artery', 'geneScores_VD_orig_vein', 
-'geneScores_slope', 'geneScores_slope_artery', 'geneScores_slope_vein']
+filenames= ["AVScore_all", "AVScore_longestFifth_all", "tau1_longestFifth_all", "tau1_longestFifth_artery", "tau1_longestFifth_vein", "tau1_all", "tau1_artery", "tau1_vein", "tau2_longestFifth_all", "tau2_longestFifth_artery", "tau2_longestFifth_vein", "tau2_all", "tau2_artery", "tau2_vein", "tau4_longestFifth_all", "tau4_longestFifth_artery", "tau4_longestFifth_vein", "tau4_all", "tau4_artery", "tau4_vein", "D_A_std_std", "D_V_std_std", "D_median_CVMe", "N_median_main_arteries", "N_median_main_veins", "arcLength_longestFifth_artery", "arcLength_longestFifth_vein", "arcLength_artery", "arcLength_vein", "bifurcations", "VD_orig_all", "VD_orig_artery", "VD_orig_vein", "slope", "slope_artery", "slope_vein", "mean_angle_taa", "mean_angle_tva", "medianCenter1_longestFifth_artery", "medianCenter1_longestFifth_vein", "medianCenter1_artery", "medianCenter1_vein", "medianCenter2_longestFifth_artery", "medianCenter2_longestFifth_vein", "medianCenter2_artery", "medianCenter2_vein", "medianDiameter_longestFifth_artery", "medianDiameter_longestFifth_vein", "eq_CRAE", "eq_CRVE", "median_CRAE", "median_CRVE", "ratio_CRAE_CRVE", "ratio_median_CRAE_CRVE", "ratio_AV_medianDiameter", "ratio_medianDiameter_longest", "ratio_DF_longest", "ratio_tau2_longest", "ratio_tau4_longest"]
 
-filenames_all= ['geneScores_bifurcations','geneScores_mean_angle_tva', 'geneScores_mean_angle_taa', 'geneScores_eq_CRVE', 'geneScores_eq_CRAE', 'geneScores_ratio_CRAE_CRVE', 'geneScores_median_CRVE', 'geneScores_median_CRAE', 'geneScores_ratio_median_CRAE_CRVE', 'geneScores_medianDiameter_all', 'geneScores_medianDiameter_artery', 'geneScores_medianDiameter_vein', 'geneScores_ratio_AV_medianDiameter', 'geneScores_ratio_VA_medianDiameter', 'geneScores_D_median_std', 'geneScores_D_std_std', 'geneScores_D_mean_std', 'geneScores_std_intensity', 
-'geneScores_VD_orig_all', 'geneScores_VD_orig_artery', 'geneScores_VD_orig_vein', 
-'geneScores_slope', 'geneScores_slope_artery', 'geneScores_slope_vein',
-'geneScores_DF_all','geneScores_DF_artery', 'geneScores_DF_vein', 'geneScores_ratio_AV_DF', 'geneScores_ratio_VA_DF']
 
 def plot():
     df_pintar = pd.read_csv(save_results + csv_name + '.csv')
@@ -29,9 +25,9 @@ def plot():
     df_pintar=df_pintar.astype(int)
     #print(df_pintar.columns)
 
-    plt.subplots(figsize=(20,15))
-    sns.heatmap(df_pintar, annot=True)
-    plt.savefig(save_results+'/Heatmap.pdf', edgecolor='none')
+    plt.subplots(figsize=(40,35))
+    sns.heatmap(df_pintar, annot=True, cmap="YlGnBu")
+    plt.savefig(save_results+'/Heatmap_genes_intersection.pdf', edgecolor='none')
 
 
 
@@ -39,9 +35,9 @@ def compute_intersections_csv():
     l_aux = []
 
     for file in filenames:
-        print('file', file)
+        #print('file', file)
         # Read csvs
-        df = pd.read_csv(input_dir+file, delimiter='\t', names =['gen', 'p']) #, index_col=None, header=0)
+        df = pd.read_csv(input_dir+file+'__gene_scores', delimiter='\t', names =['gen', 'p']) #, index_col=None, header=0)
         df['file_col']=file
         l_aux.append(df)
 
@@ -53,6 +49,10 @@ def compute_intersections_csv():
     y = df_concat[df_concat['-log10(p)'] >= p_value_min]
     df_significant = y.sort_values('-log10(p)', ascending=False)
     #print(df_significant.head(5))
+    df_significant.to_csv(save_results + csv_name_all + '.csv')
+    df_count=df_significant['gen'].value_counts().to_frame()
+    df_count['ratio_N_pheno']=df_significant['gen'].value_counts().to_frame()/len(filenames)
+    df_count.to_csv(save_results + csv_name_count + '.csv')
 
     ## Save the number of significant genes per phenotype
     df_guardar = pd.DataFrame(df_significant.groupby(by=['file_col'])['gen'].apply(list))

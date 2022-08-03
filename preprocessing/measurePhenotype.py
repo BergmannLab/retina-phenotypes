@@ -116,7 +116,7 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
         if OD_position.empty:
             return {
                     'N_median_main': None,
-                    'N_std_main': None#,
+                    #'N_std_main': None#,
                     #'N_CVMe_main_'+str(trait_name): None,
                     #'N_CVP_main_'+str(trait_name): None
                     }
@@ -128,7 +128,7 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
 
             return {
                     'N_median_main': N_main_v,
-                    'N_std_main': N_std_v #,
+                    #'N_std_main': N_std_v #,
                     #'N_CVMe_main_'+str(trait_name): N_median_CVMe,
                     #'N_CVP_main_'+str(trait_name): N_median_CVP
                     }
@@ -137,7 +137,7 @@ def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
         print(imgname, e)
         return {
                 'N_median_main': np.nan,
-                'N_std_main': np.nan #,
+                #'N_std_main': np.nan #,
                 #'N_CVMe_main_'+str(trait_name): np.nan,
                 #'N_CVP_main_'+str(trait_name): np.nan
                 } 
@@ -291,28 +291,59 @@ def diameter_variability(imgname: str) -> dict:
         df_vasculature = read_data(imageID, diameter=True)
         df_vasculature['type'] = np.sign(df_vasculature['type'])
         # std of the diameters per index, i.e. std of each segment
-        std_values_vessels=df_vasculature.groupby(['index'])['Diameter'].std()
-        # median of the diameters per index, i.e. median of each segment
+        #std_values_vessels=df_vasculature.groupby(['index'])['Diameter'].std()
+        
+        ## For D_median_CVMe: # median of the diameters per index, i.e. median of each segment
         median_values_vessels = df_vasculature.groupby(['index'])['Diameter'].median()
         
-        Dev_median = sum(abs(median_values_vessels - 
+        Dev_median = np.sum(abs(median_values_vessels - 
                              median_values_vessels.median()))/(len(median_values_vessels)- 
-                                                               median_values_vessels.isnull().sum())
-        
+                                                            median_values_vessels.isnull().sum())
+        ## For D_A_std_std and D_V_std_std:
         type_std_values_vessels = df_vasculature.groupby(['type'])['Diameter'].std()
+        
+         ## For D_CVMe: # median of the diameters
+        diameters_vessels = df_vasculature['Diameter']
+        Dev = np.sum(abs(diameters_vessels - 
+                             diameters_vessels.median()))/(len(diameters_vessels)- 
+                                                            diameters_vessels.isnull().sum())
+        ## For D_CVMe_A and  D_CVMe_V: 
+        df_A =df_vasculature.query("type == 1")
+        A_diameters_vessels = df_A['Diameter']
+        Dev_A = np.sum(abs(A_diameters_vessels - A_diameters_vessels.median())) / (
+                    len(A_diameters_vessels) - A_diameters_vessels.isnull().sum())
+
+        df_V =df_vasculature.query("type == -1")
+        V_diameters_vessels = df_V['Diameter']
+        Dev_V = np.sum(abs(V_diameters_vessels - V_diameters_vessels.median())) / (
+                    len(V_diameters_vessels) - V_diameters_vessels.isnull().sum())
+
 
         return {'D_median_CVMe': Dev_median/abs(median_values_vessels.median()), 
+                'D_CVMe': Dev/abs(diameters_vessels.median()), 
+                'D_CVMe_A': Dev_A/abs(A_diameters_vessels.median()), 
+                'D_CVMe_V': Dev_V/abs(V_diameters_vessels.median()), 
+                'D_std': df_vasculature['Diameter'].std(),
                 #'D_median_CVP': median_values_vessels.std()/abs(median_values_vessels.mean()),
-                'D_std_median': std_values_vessels.median(), 'D_std_std': std_values_vessels.std(),
-                'D_A_std_std': type_std_values_vessels[1],'D_V_std_std': type_std_values_vessels[-1]
+                #'D_std_median': std_values_vessels.median(), 
+                #'D_std_std': std_values_vessels.std(),
+                'D_A_std': type_std_values_vessels[1],
+                'D_V_std': type_std_values_vessels[-1]
                }
     
-
     except Exception as e:
         print(imageID, e)
-        return {'D_median_CVMe': np.nan, #'D_median_CVP': np.nan,
-                'D_std_median': np.nan,  'D_std_std': np.nan,
-                'D_A_std_std': np.nan, 'D_V_std_std':np.nan}
+        return {'D_median_CVMe': np.nan, 
+                'D_CVMe': np.nan,
+                'D_CVMe_A': np.nan,
+                'D_CVMe_V': np.nan,
+                'D_std':  np.nan, 
+                #'D_median_CVP': np.nan,
+                #'D_std_median': np.nan,  
+                #'D_std_std': np.nan,
+                'D_A_std': np.nan, 
+                'D_V_std':np.nan
+               }
 
 
 
@@ -332,25 +363,6 @@ def baseline_traits(imgname: str) -> dict:
         print(imgname, e)
         return {'std_intensity': np.nan, 'mean_intensity': np.nan}#, 'median_intensity': np.nan}
 
-
-def main_neo_vascularization_od(imgname: str) -> dict:
-    """
-    :param imgname:
-    :return:
-    """
-    try:
-        imageID = imgname.split(".")[0]
-        df_vasculature = read_data(imageID)
-        df_vasculature['type'] = np.sign(df_vasculature['type'])
-        OD_position = df_OD[df_OD['image'] == imgname]
-        return ({'pixels_fraction': None}
-            if OD_position.empty
-            else compute_neo_vascularization_od(df_vasculature, OD_position)
-        )
-
-    except Exception as e:
-        print(imgname, e)
-        return {'pixels_fraction': np.nan}
 
 def main_aria_phenotypes(imgname):    # still need to modify it
     """
@@ -868,31 +880,6 @@ def compute_vessel_radius_pixels(df_vasculature, radius, od_position):
 
     return df_vasculature[df_vasculature['r_value'] <= radius].copy()
 
-
-def compute_od_pixels_fraction(df_vessel_pixels_OD, n_rows):
-    """
-    :param df_vessel_pixels_OD:
-    :param n_rows:
-    :return:
-    """
-    n_rows_pixels_fraction = df_vessel_pixels_OD.shape[0]
-    pixels_fraction = n_rows_pixels_fraction / n_rows
-    return {
-        'pixels_fraction': float(pixels_fraction)
-    }
-
-
-def compute_neo_vascularization_od(df_vasculature, OD_position):
-    """
-    :param df_vasculature:
-    :param OD_position:
-    :return:
-    """
-    radius = 280
-    n_rows = df_vasculature.shape[0]
-    df_vessel_pixels_OD = compute_vessel_radius_pixels(df_vasculature, radius, OD_position)
-    return compute_od_pixels_fraction(df_vessel_pixels_OD, n_rows)
-
 def create_output_(out, imgfiles, function_to_execute, imgfiles_length):
     """
     :param out:
@@ -969,14 +956,12 @@ if __name__ == '__main__':
         elif function_to_execute == 'vascular_density':
             out = pool.map(main_vascular_density, imgfiles[:imgfiles_length])
         elif function_to_execute == 'baseline':
-            out = pool.map(baseline_traits, imgfiles[:imgfiles_length])
-        elif function_to_execute == 'neo_vascularization': 
-            out = pool.map(main_neo_vascularization_od, imgfiles[:imgfiles_length])  
+            out = pool.map(baseline_traits, imgfiles[:imgfiles_length]) 
         else:
             out = None
 
         pool.close()
-        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print("WARNING Your function is ", function_to_execute, ".\nThis function does not exist. Options:taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins", sep='')
+        create_output_(out, imgfiles, function_to_execute, imgfiles_length) if out else print("WARNING Your function is ", function_to_execute, ".\nIf it is a ratio, it is al right, else, this function does not exist. Options:taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins", sep='')
         
         if function_to_execute == 'ratios':  # For measure ratios as qqnorm(ratio)
             df_data = pd.read_csv(phenotype_dir+DATE+"_aria_phenotypes.csv", sep=',')
@@ -991,12 +976,10 @@ if __name__ == '__main__':
             df_data['ratio_tau2_longest'] = df_data['tau2_longestFifth_artery'] / df_data['tau2_longestFifth_vein']
             df_data['ratio_tau3_longest'] = df_data['tau3_longestFifth_artery'] / df_data['tau3_longestFifth_vein']
             df_data['ratio_tau4_longest'] = df_data['tau4_longestFifth_artery'] / df_data['tau4_longestFifth_vein']
-            print(df_data)
             # only select the ratios
             df_data.drop(['medianDiameter_all', 'medianDiameter_artery', 'medianDiameter_vein', 'DF_all', 'DF_artery', 'DF_vein', 'DF_longestFifth_artery', 
                           'DF_longestFifth_vein', 'medianDiameter_longestFifth_artery', 'medianDiameter_longestFifth_vein', 'tau2_longestFifth_artery', 'tau2_longestFifth_vein',
                           'tau3_longestFifth_artery', 'tau3_longestFifth_vein', 'tau4_longestFifth_artery', 'tau4_longestFifth_vein'], axis=1, inplace=True)
-            print(df_data)
             df_data.to_csv(phenotype_dir + DATE + "_ratios_aria_phenotypes.csv", sep=',', index=False)
             
         elif function_to_execute == 'ratios_CRAE_CRVE':
@@ -1010,8 +993,14 @@ if __name__ == '__main__':
             df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='Unnamed: 0')
             df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
             df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
-            print(df_merge)
+
             df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
+        
+        elif function_to_execute == 'ratios_VD':
+            df_data_VD = pd.read_csv(phenotype_dir+DATE+"_vascular_density.csv", sep=',')
+            df_data_VD.rename(columns={ df_data_VD.columns[0]: "Unnamed: 0" }, inplace = True)
+            df_data_VD['ratio_VD'] = df_data_VD['VD_orig_artery'] / df_data_VD['VD_orig_vein']
+            df_data_VD.to_csv(phenotype_dir + DATE + "_ratios_VD.csv", sep=',', index=False)
             
         #Renaming column names
         if function_to_execute == 'taa': 

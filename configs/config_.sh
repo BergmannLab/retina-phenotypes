@@ -116,9 +116,12 @@ diseases_pheno_cov_file='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/dise
 name_phenofile="2022_07_08_ventile5_raw_with_instance.csv"
 csv_name='2022_07_08_ventile5_diseases_cov'
 
-##### MAIN PHENOTYPES
-
+##### SUPPLEMENTARY PHENOTYPES
 # pass the unique labels as names
+SUPPLEMENTARY_LABELS='DF_all,FD_all,VD_all,bifurcations'
+SUPPLEMENTARY_NAMES='Distance factor,Fractal dimension, Bifurcations'
+
+##### MAIN PHENOTYPES
 MAIN_LABELS='DF_all,FD_all,VD_all,bifurcations'
 MAIN_NAMES='Distance factor,Fractal dimension, Bifurcations'
 

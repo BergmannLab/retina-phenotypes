@@ -295,32 +295,55 @@ def diameter_variability(imgname: str) -> dict:
         
         ## For D_median_CVMe: # median of the diameters per index, i.e. median of each segment
         median_values_vessels = df_vasculature.groupby(['index'])['Diameter'].median()
-        Dev_median = sum(abs(median_values_vessels - 
+        
+        Dev_median = np.sum(abs(median_values_vessels - 
                              median_values_vessels.median()))/(len(median_values_vessels)- 
                                                             median_values_vessels.isnull().sum())
         ## For D_A_std_std and D_V_std_std:
         type_std_values_vessels = df_vasculature.groupby(['type'])['Diameter'].std()
+        
+         ## For D_CVMe: # median of the diameters
+        diameters_vessels = df_vasculature['Diameter']
+        Dev = np.sum(abs(diameters_vessels - 
+                             diameters_vessels.median()))/(len(diameters_vessels)- 
+                                                            diameters_vessels.isnull().sum())
+        ## For D_CVMe_A and  D_CVMe_V: 
+        df_A =df_vasculature.query("type == 1")
+        A_diameters_vessels = df_A['Diameter']
+        Dev_A = np.sum(abs(A_diameters_vessels - A_diameters_vessels.median())) / (
+                    len(A_diameters_vessels) - A_diameters_vessels.isnull().sum())
+
+        df_V =df_vasculature.query("type == -1")
+        V_diameters_vessels = df_V['Diameter']
+        Dev_V = np.sum(abs(V_diameters_vessels - V_diameters_vessels.median())) / (
+                    len(V_diameters_vessels) - V_diameters_vessels.isnull().sum())
+
 
         return {'D_median_CVMe': Dev_median/abs(median_values_vessels.median()), 
+                'D_CVMe': Dev/abs(diameters_vessels.median()), 
+                'D_CVMe_A': Dev_A/abs(A_diameters_vessels.median()), 
+                'D_CVMe_V': Dev_V/abs(V_diameters_vessels.median()), 
                 'D_std': df_vasculature['Diameter'].std(),
                 #'D_median_CVP': median_values_vessels.std()/abs(median_values_vessels.mean()),
                 #'D_std_median': std_values_vessels.median(), 
                 #'D_std_std': std_values_vessels.std(),
-                'D_A_std_std': type_std_values_vessels[1],
-                'D_V_std_std': type_std_values_vessels[-1]
+                'D_A_std': type_std_values_vessels[1],
+                'D_V_std': type_std_values_vessels[-1]
                }
     
     except Exception as e:
         print(imageID, e)
         return {'D_median_CVMe': np.nan, 
+                'D_CVMe': np.nan,
+                'D_CVMe_A': np.nan,
+                'D_CVMe_V': np.nan,
                 'D_std':  np.nan, 
                 #'D_median_CVP': np.nan,
                 #'D_std_median': np.nan,  
                 #'D_std_std': np.nan,
-                'D_A_std_std': np.nan, 
-                'D_V_std_std':np.nan
+                'D_A_std': np.nan, 
+                'D_V_std':np.nan
                }
-
 
 
 

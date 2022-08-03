@@ -46,6 +46,7 @@ dir_images=$dir_input/$aria_processor
 
 folders=(
         AV_maps
+	diseases_cov
         image_phenotype
         image_phenotype/current
         input
@@ -103,8 +104,10 @@ phenotypes_dir=$RUN_DIR/image_phenotype/
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-PARTICIPANT_STAT_ID=2022_07_08_ventile5
-QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles5.txt
+VENTILE=5 # Vascular density threshold (every image with values below will be removed)
+
+PARTICIPANT_STAT_ID=2022_08_03_ventile"$VENTILE"
+QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
@@ -113,8 +116,8 @@ SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file d
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
 phenofiles_dir_both='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' 
 diseases_pheno_cov_file='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
-name_phenofile="2022_07_08_ventile5_raw_with_instance.csv"
-csv_name='2022_07_08_ventile5_diseases_cov'
+name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
+csv_name="$PARTICIPANT_STAT_ID"_diseases_cov
 
 ##### SUPPLEMENTARY PHENOTYPES
 # pass the unique labels as names

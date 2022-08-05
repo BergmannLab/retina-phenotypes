@@ -104,7 +104,7 @@ phenotypes_dir=$RUN_DIR/image_phenotype/
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-VENTILE=5 # Vascular density threshold (every image with values below will be removed)
+VENTILE=2 # Vascular density threshold (every image with values below will be removed)
 
 PARTICIPANT_STAT_ID=2022_08_03_ventile"$VENTILE"
 QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles"$VENTILE".txt
@@ -125,8 +125,16 @@ SUPPLEMENTARY_LABELS='DF_all,FD_all,VD_all,bifurcations'
 SUPPLEMENTARY_NAMES='Distance factor,Fractal dimension, Bifurcations'
 
 ##### MAIN PHENOTYPES
-MAIN_LABELS='DF_all,FD_all,VD_all,bifurcations'
-MAIN_NAMES='Distance factor,Fractal dimension, Bifurcations'
+MAIN_LABELS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_orig_artery,VD_orig_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
+MAIN_NAMES='tau1_artery,tau1_vein,ratio_DF,D_A_std,D_V_std,bifurcations,VD_artery,VD_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_medianDiameter'
+
+##### PLOTS
+plot_violin=True
+plot_histograms=False
+plot_seaborn=True
+save_dist_dir="$phenofiles_dir_both"/figures/
+
+
 
 #### PARALLEL COMPUTING
 

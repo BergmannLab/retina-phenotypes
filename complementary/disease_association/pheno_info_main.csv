@@ -1,0 +1,14 @@
+name,dtype
+DBP,con
+SBP,con
+PR,con
+alcohol_intake_frequency_00,cat
+pulse_wave_arterial_stiffness_index_00,con
+BMI,con
+Pack_year_smok,con
+HDL_cholesterol,con
+LDL_direct,con
+Triglycerides,con
+HbA1c,con
+skin_colour,cat
+hair_colour,cat

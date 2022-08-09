@@ -4,7 +4,7 @@ SBP,con
 PR,con
 birth_weight,con
 age_current_smoker_00,bin
-alcohol_intake_frequency_00,bin
+alcohol_intake_frequency_00,cat
 pulse_wave_arterial_stiffness_index_00,con
 date_death,bin
 BMI,con
@@ -29,10 +29,6 @@ eye_myopia_00,bin
 eye_astigmatism_00,bin
 eye_diabetes_00,bin
 age_other_serious_eye_condition_00,bin
-vascular_heart_problems_00,bin
-vascular_heart_problems_01,bin
-vascular_heart_problems_02,bin
-vascular_heart_problems_03,bin
 skin_colour,cat
 hair_colour,cat
 mothers_Age,con

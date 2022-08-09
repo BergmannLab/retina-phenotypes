@@ -13,13 +13,17 @@ config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) 
 data_set=UK_BIOBANK #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
 
 #image_type options: *.jpg, *.tif, *.png, ...
-if [[ data_set == UK_BIOBANK ]]; then
+if [[ $data_set = UK_BIOBANK ]]; then
 	image_type=*.png
-elif [[ data_set == DRIVE ]]; then
+elif [[ $data_set = DRIVE ]]; then
 	image_type=*.tif
 else
 	image_type=*.png
 fi
+
+echo Data set: $data_set
+echo Image type: $image_type
+
 # ARIA processor
 # needs to be specified now already, for the repo to remain compatible with ARIA nomenclature:
 # DRIVE has its own processor, UK_BIOBANK we allocate to CLRIS
@@ -63,18 +67,20 @@ for i in "${folders[@]}"; do mkdir -p -m u=rwx,g=rwx,o=rx $RUN_DIR/$i; done # cr
 if [[ "$image_type" = *.png ]]; then
         rm $dir_input/$aria_processor # clean if pipeline was run before
 	ln -s $dir_images2 $dir_input/$aria_processor
-else
+#else
         # clean, and regenerate directory
-        rm -rf $dir_input/$aria_processor
-        mkdir -p $dir_input/$aria_processor
+        #rm -rf $dir_input/$aria_processor
+        #mkdir -p $dir_input/$aria_processor
 fi
 
-#### LIST OF RAW IMAGES
+#### COUNT RAW IMAGES, STORE LABELS
 
-ls $dir_images > $dir_input/all_raw_images.txt
+for i in $(ls $dir_images2 | cut -f1 -d.); do echo $i.png; done > $dir_input/all_raw_images.txt
 ALL_IMAGES=$dir_input/all_raw_images.txt
 n_img=$(cat $ALL_IMAGES | wc -l)
 echo Number of raw fundus images to be processed: $n_img
+
+
 
 #### PIXEL-WISE, ARTERY-VEIN SPECIFIC VESSEL SEGMENTATION
 

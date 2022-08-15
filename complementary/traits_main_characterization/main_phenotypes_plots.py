@@ -6,9 +6,9 @@ import numpy as np
 import matplotlib as plt
 import functions_plot as f_plot
 
-phenofiles_dir ='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' #sys.argv[1] 
-phenofile_used_for_dist_plots = "2022_07_08_ventile2_raw.csv" # sys.argv[2]
-save_dir ='/SSD/home/sofia/retina-phenotypes/complementary/traits_main_characterization/results/' #sys.argv[3]
+phenofiles_dir = sys.argv[1] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/'
+phenofile_used_for_dist_plots = sys.argv[2]  #"2022_07_08_ventile2_raw.csv"
+save_dir = sys.argv[3] #'/SSD/home/sofia/retina-phenotypes/complementary/traits_main_characterization/results/'
 main_phenotypes_rawname = list(sys.argv[4].split(",")) #["bifurcations", "VD_orig_all", "slope", "mean_angle_taa", "mean_angle_tva", "eq_CRAE", "eq_CRVE", "medianDiameter_all", "DF_all"]
 plot_violin = sys.argv[5] #True
 plot_histograms = sys.argv[6] # False

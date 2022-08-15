@@ -58,6 +58,7 @@ folders=(
         optic_disc
         participant_phenotype
         skeletons_etc
+	qc
 )
 
 for i in "${folders[@]}"; do mkdir -p -m u=rwx,g=rwx,o=rx $RUN_DIR/$i; done # create folders if do not exist, exceptionally allow group write permissions, as this is a collaborative project
@@ -110,10 +111,10 @@ phenotypes_dir=$RUN_DIR/image_phenotype/
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-VENTILE=2 # Vascular density threshold (every image with values below will be removed)
+VENTILE=2 # Vascular density threshold (every image with values below the treshold will be removed)
 
 PARTICIPANT_STAT_ID=2022_08_03_ventile"$VENTILE"
-QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles"$VENTILE".txt
+QC=$RUN_DIR/qc/ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS

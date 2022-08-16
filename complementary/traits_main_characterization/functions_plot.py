@@ -8,7 +8,7 @@ import matplotlib as plt
 from matplotlib import figure
 import matplotlib.pyplot as plt_py
 
-
+n_bins = 12
 DATE = datetime.now().strftime("%Y-%m-%d")
 
 
@@ -62,7 +62,7 @@ def multiple_scatter_plots_3(df_data_completo, main_phenotypes, save_dir):
 
     
 ### Violin plot
-def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal, outlier1=False):
+def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal, VENTILE, outlier1=False):
     df_data_completo2 = df_data_completo
     df_data_completo=df_data_completo[list_phenotypes]
     df_data_completo = df_data_completo.melt(var_name='phenotypes', value_name='distribution')
@@ -144,13 +144,13 @@ def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal, outlier1=Fa
     if outlier1!=False:
         plt_py.savefig(save_dir + DATE + '_'.join(list_phenotypes) +'_violinplot_outliers_mod.png')
     else:
-        plt_py.savefig(save_dir + DATE + '_'.join(list_phenotypes) +'_violinplot.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'.join(list_phenotypes) +'_violinplot.png')
     plt_py.close()
 
 
 
 ### Histograms
-def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
+def multiple_histograms(df_data_completo, list_phenotypes, save_dir, VENTILE):
     if len(list_phenotypes)==1:
         var1=list_phenotypes[0]
 
@@ -160,7 +160,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var1], color="dimgray", label= str(var1) +" (N=" + str(size_1) + ")"
                      , alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + DATE +'_'.join(list_phenotypes) +'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE) +'_'.join(list_phenotypes) +'_histograms.png')
         plt_py.close()
         
     elif len(list_phenotypes)==2:
@@ -176,7 +176,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var2],color="cornflowerblue", label=str(var2) +" (N=" + str(size_2) + ")" 
                      , alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + DATE +'_'.join(list_phenotypes)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()
     
     elif len(list_phenotypes)==3:
@@ -196,7 +196,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var1], color="dimgray", label= str(var1) +" (N=" + str(size_1) + ")", 
                      alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + DATE +'_'.join(list_phenotypes)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE) +'_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()
     
     elif len(list_phenotypes)==4:
@@ -220,5 +220,5 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir):
         sns.histplot(df_data_completo[var4], color="mediumpurple", label= str(var4) +" (N=" + str(size_4) + ")", 
                      alpha=0.75)
         plt_py.legend()
-        plt_py.savefig(save_dir + DATE + '_'.join(list_phenotypes)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()

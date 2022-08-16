@@ -115,8 +115,8 @@ SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file d
 
 # COVARIATES, DISEASES
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
-phenofiles_dir_both='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' 
-diseases_pheno_cov_file='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
+phenofiles_dir_both="$RUN_DIR"/participant_phenotype/
+diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/
 name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
 csv_name="$PARTICIPANT_STAT_ID"_diseases_cov
 
@@ -130,9 +130,6 @@ MAIN_LABELS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_o
 MAIN_NAMES='tau1_artery,tau1_vein,ratio_DF,D_A_std,D_V_std,bifurcations,VD_artery,VD_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_medianDiameter'
 
 ##### PLOTS
-plot_violin=True
-plot_histograms=False
-plot_seaborn=True
 save_dist_dir="$phenofiles_dir_both"/figures/
 
 #### GENES

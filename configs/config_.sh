@@ -119,6 +119,7 @@ phenofiles_dir_both="$RUN_DIR"/participant_phenotype/
 diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/
 name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
 csv_name="$PARTICIPANT_STAT_ID"_diseases_cov
+csv_z_name="$PARTICIPANT_STAT_ID"_corrected_z.csv
 
 ##### SUPPLEMENTARY PHENOTYPES
 # pass the unique labels as names

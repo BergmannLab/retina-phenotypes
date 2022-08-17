@@ -111,9 +111,9 @@ phenotypes_dir=$RUN_DIR/image_phenotype/
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-VENTILE=2 # Vascular density threshold (every image with values below the treshold will be removed)
+VENTILE=4 # Vascular density threshold (every image with values below the treshold will be removed)
 
-PARTICIPANT_STAT_ID=2022_08_03_ventile"$VENTILE"
+PARTICIPANT_STAT_ID=2022_08_16_ventile"$VENTILE"
 QC=$RUN_DIR/qc/ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes

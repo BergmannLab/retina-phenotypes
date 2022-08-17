@@ -5,7 +5,7 @@ begin=$(date +%s)
 
 ####
 
-nice python3.8 main_gene_analysis.py $VENTILE $genes_input $genes_results $What_type_phenotype $MAIN_LABELS $MAIN_NAMES $SUPPLEMENTARY_LABELS $SUPPLEMENTARY_NAMES
+nice python3.8 main_gene_analysis.py $VENTILE $gwas_dir $FIGURES_DIR $What_type_phenotype $MAIN_LABELS $MAIN_NAMES $SUPPLEMENTARY_LABELS $SUPPLEMENTARY_NAMES
 
 
 

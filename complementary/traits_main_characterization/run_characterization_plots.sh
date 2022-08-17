@@ -5,7 +5,7 @@ begin=$(date +%s)
 
 #### 1) Violin plots, seaborn, histograms plots
 
-nice python3.8 main_phenotypes_plots.py $phenofiles_dir_both $name_phenofile $save_dist_dir $MAIN_LABELS $MAIN_NAMES $What_type_phenotype $SUPPLEMENTARY_LABELS $SUPPLEMENTARY_NAMES $VENTILE
+nice python3.8 main_phenotypes_plots.py $phenofiles_dir_both $name_phenofile $FIGURES_DIR $MAIN_LABELS $MAIN_NAMES $What_type_phenotype $SUPPLEMENTARY_LABELS $SUPPLEMENTARY_NAMES $VENTILE
 
 
 

@@ -13,13 +13,17 @@ config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) 
 data_set=UK_BIOBANK #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
 
 #image_type options: *.jpg, *.tif, *.png, ...
-if [[ data_set == UK_BIOBANK ]]; then
+if [[ $data_set = UK_BIOBANK ]]; then
 	image_type=*.png
-elif [[ data_set == DRIVE ]]; then
+elif [[ $data_set = DRIVE ]]; then
 	image_type=*.tif
 else
 	image_type=*.png
 fi
+
+echo Data set: $data_set
+echo Image type: $image_type
+
 # ARIA processor
 # needs to be specified now already, for the repo to remain compatible with ARIA nomenclature:
 # DRIVE has its own processor, UK_BIOBANK we allocate to CLRIS
@@ -54,6 +58,7 @@ folders=(
         optic_disc
         participant_phenotype
         skeletons_etc
+	qc
 )
 
 for i in "${folders[@]}"; do mkdir -p -m u=rwx,g=rwx,o=rx $RUN_DIR/$i; done # create folders if do not exist, exceptionally allow group write permissions, as this is a collaborative project
@@ -63,18 +68,20 @@ for i in "${folders[@]}"; do mkdir -p -m u=rwx,g=rwx,o=rx $RUN_DIR/$i; done # cr
 if [[ "$image_type" = *.png ]]; then
         rm $dir_input/$aria_processor # clean if pipeline was run before
 	ln -s $dir_images2 $dir_input/$aria_processor
-else
+#else
         # clean, and regenerate directory
-        rm -rf $dir_input/$aria_processor
-        mkdir -p $dir_input/$aria_processor
+        #rm -rf $dir_input/$aria_processor
+        #mkdir -p $dir_input/$aria_processor
 fi
 
-#### LIST OF RAW IMAGES
+#### COUNT RAW IMAGES, STORE LABELS
 
-ls $dir_images > $dir_input/all_raw_images.txt
+for i in $(ls $dir_images2 | cut -f1 -d.); do echo $i.png; done > $dir_input/all_raw_images.txt
 ALL_IMAGES=$dir_input/all_raw_images.txt
 n_img=$(cat $ALL_IMAGES | wc -l)
 echo Number of raw fundus images to be processed: $n_img
+
+
 
 #### PIXEL-WISE, ARTERY-VEIN SPECIFIC VESSEL SEGMENTATION
 
@@ -104,38 +111,37 @@ phenotypes_dir=$RUN_DIR/image_phenotype/
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-VENTILE=2 # Vascular density threshold (every image with values below will be removed)
-What_type_phenotype='main' #suplementary
+VENTILE=2 # Vascular density threshold (every image with values below the treshold will be removed)
 
 PARTICIPANT_STAT_ID=2022_08_03_ventile"$VENTILE"
-QC=/HDD/data/ukbb/fundus/qc/ageCorrected_ventiles"$VENTILE".txt
+QC=$RUN_DIR/qc/ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
 
 # COVARIATES, DISEASES
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
-phenofiles_dir_both="$RUN_DIR"/participant_phenotype/
-diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/
+phenofiles_dir_both='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' 
+diseases_pheno_cov_file='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
 name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
 csv_name="$PARTICIPANT_STAT_ID"_diseases_cov
-csv_z_name="$PARTICIPANT_STAT_ID"_corrected_z.csv
 
 ##### SUPPLEMENTARY PHENOTYPES
 # pass the unique labels as names
-SUPPLEMENTARY_LABELS='tau1_all,tau1_artery,tau1_vein,ratio_AV_DF,tau2_all,tau2_artery,tau2_vein,tau4_all,tau4_artery,tau4_vein,D_std,D_A_std,D_V_std,D_CVMe,D_CVMe_A,D_CVMe_V,N_median_main_arteries,N_median_main_veins,arcLength_artery,arcLength_vein,bifurcations,VD_orig_all,VD_orig_artery,VD_orig_vein,ratio_VD,slope,slope_artery,slope_vein,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,median_CRAE,median_CRVE,ratio_CRAE_CRVE,ratio_median_CRAE_CRVE,medianDiameter_all,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
-SUPPLEMENTARY_NAMES='Tortuosity,Tortuosity A,Tortuosity V,Tortuosity ratio,Tortuosity2,Tortuosity2 A,Tortuosity2 V,tortuosity3,Tortuosity3 A,Tortuosity3 V,Std diameter,Std diameter A,Std diameter V,CVMe diameter,CVMe diameter A,CVMe diameter V,N main artery,N main vein,Arc length A,Arc length V,Bifurcations,Vascular density,Vascular density A,Vascular density V,Vascular density ratio,Fractal dimension,Fractal dimension A,Fractal dimension V,tAA,tVA,CRAE,CRVE,Median CRAE,Median CRVE,CRAE CRVE ratio,Median CRAE CRVE ratio,Median diameter,Median diameter A,Median diameter V,Median diameter ratio'
+SUPPLEMENTARY_LABELS='DF_all,FD_all,VD_all,bifurcations'
+SUPPLEMENTARY_NAMES='Distance factor,Fractal dimension, Bifurcations'
 
 ##### MAIN PHENOTYPES
 MAIN_LABELS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_orig_artery,VD_orig_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
-MAIN_NAMES='Tortuosity A,Tortuosity V,Tortuosity ratio,Std diameter A,Std diameter V,Bifurcations,Vascular density A,Vascular density V,Vascular density ratio,tAA,tVA,CRAE,CRVE,CRAE CRVE ratio,Median diameter A,Median diameter V,Median diameter ratio'
+MAIN_NAMES='tau1_artery,tau1_vein,ratio_DF,D_A_std,D_V_std,bifurcations,VD_artery,VD_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_medianDiameter'
 
 ##### PLOTS
+plot_violin=True
+plot_histograms=False
+plot_seaborn=True
 save_dist_dir="$phenofiles_dir_both"/figures/
 
-#### GENES
-genes_input="$RUN_DIR"/gwas/"$PARTICIPANT_STAT_ID"/
-genes_results="$RUN_DIR"/genes/
+
 
 #### PARALLEL COMPUTING
 

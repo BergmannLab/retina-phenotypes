@@ -129,6 +129,8 @@ csv_z_name="$PARTICIPANT_STAT_ID"_corrected_z.csv
 
 #### GWAS
 gwas_dir="$RUN_DIR"/gwas/"$PARTICIPANT_STAT_ID"/
+diseases_ss_raw="/HDD/data/ukbb/disease_sumstats/files_modified/"
+diseases_gwas_dir="$gwas_dir"/gcorr_diseases/
 
 #### SUPPLEMENTARY PHENOTYPES
 SUPPLEMENTARY_LABELS='tau1_all,tau1_artery,tau1_vein,ratio_AV_DF,tau2_all,tau2_artery,tau2_vein,tau4_all,tau4_artery,tau4_vein,D_std,D_A_std,D_V_std,D_CVMe,D_CVMe_A,D_CVMe_V,N_median_main_arteries,N_median_main_veins,arcLength_artery,arcLength_vein,bifurcations,VD_orig_all,VD_orig_artery,VD_orig_vein,ratio_VD,slope,slope_artery,slope_vein,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,median_CRAE,median_CRVE,ratio_CRAE_CRVE,ratio_median_CRAE_CRVE,medianDiameter_all,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'

@@ -51,6 +51,7 @@ dir_images=$dir_input/$aria_processor
 folders=(
         AV_maps
 	diseases_cov
+	figures
         image_phenotype
         image_phenotype/current
         input
@@ -121,26 +122,25 @@ SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file d
 
 # COVARIATES, DISEASES
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
-phenofiles_dir_both='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' 
-diseases_pheno_cov_file='/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
+diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/
 name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
 csv_name="$PARTICIPANT_STAT_ID"_diseases_cov
+csv_z_name="$PARTICIPANT_STAT_ID"_corrected_z.csv
 
-##### SUPPLEMENTARY PHENOTYPES
-# pass the unique labels as names
-SUPPLEMENTARY_LABELS='DF_all,FD_all,VD_all,bifurcations'
-SUPPLEMENTARY_NAMES='Distance factor,Fractal dimension, Bifurcations'
+#### GWAS
+gwas_dir="$RUN_DIR"/gwas/"$PARTICIPANT_STAT_ID"/
+
+#### SUPPLEMENTARY PHENOTYPES
+SUPPLEMENTARY_LABELS='tau1_all,tau1_artery,tau1_vein,ratio_AV_DF,tau2_all,tau2_artery,tau2_vein,tau4_all,tau4_artery,tau4_vein,D_std,D_A_std,D_V_std,D_CVMe,D_CVMe_A,D_CVMe_V,N_median_main_arteries,N_median_main_veins,arcLength_artery,arcLength_vein,bifurcations,VD_orig_all,VD_orig_artery,VD_orig_vein,ratio_VD,slope,slope_artery,slope_vein,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,median_CRAE,median_CRVE,ratio_CRAE_CRVE,ratio_median_CRAE_CRVE,medianDiameter_all,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
+SUPPLEMENTARY_NAMES='Tortuosity,Tortuosity A,Tortuosity V,Tortuosity ratio,Tortuosity2,Tortuosity2 A,Tortuosity2 V,tortuosity3,Tortuosity3 A,Tortuosity3 V,Std diameter,Std diameter A,Std diameter V,CVMe diameter,CVMe diameter A,CVMe diameter V,N main artery,N main vein,Arc length A,Arc length V,Bifurcations,Vascular density,Vascular density A,Vascular density V,Vascular density ratio,Fractal dimension,Fractal dimension A,Fractal dimension V,tAA,tVA,CRAE,CRVE,Median CRAE,Median CRVE,CRAE CRVE ratio,Median CRAE CRVE ratio,Median diameter,Median diameter A,Median diameter V,Median diameter ratio'
 
 ##### MAIN PHENOTYPES
 MAIN_LABELS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_orig_artery,VD_orig_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
-MAIN_NAMES='tau1_artery,tau1_vein,ratio_DF,D_A_std,D_V_std,bifurcations,VD_artery,VD_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_medianDiameter'
+MAIN_NAMES='Tortuosity A,Tortuosity V,Tortuosity ratio,Std diameter A,Std diameter V,Bifurcations,Vascular density A,Vascular density V,Vascular density ratio,tAA,tVA,CRAE,CRVE,CRAE CRVE ratio,Median diameter A,Median diameter V,Median diameter ratio'
 
-##### PLOTS
-plot_violin=True
-plot_histograms=False
-plot_seaborn=True
-save_dist_dir="$phenofiles_dir_both"/figures/
-
+##### FIGURES
+FIGURES_DIR=$PARTICIPANT_PHENO_DIR/figures/
+What_type_phenotype='main' #suplementary # fror MLR, Violin, Histogram, Genes
 
 
 #### PARALLEL COMPUTING

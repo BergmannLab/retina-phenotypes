@@ -58,6 +58,7 @@ folders=(
 	gwas
         optic_disc
         participant_phenotype
+            gcorr_diseases
         skeletons_etc
 	qc
 )

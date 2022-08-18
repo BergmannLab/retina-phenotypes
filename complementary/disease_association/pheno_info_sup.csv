@@ -1,38 +1,35 @@
-name,dtype
-DBP,con
-SBP,con
-PR,con
-birth_weight,con
-age_current_smoker_00,bin
-alcohol_intake_frequency_00,cat
-pulse_wave_arterial_stiffness_index_00,con
-date_death,bin
-BMI,con
-N_cigarettes_curr_daily,con
-Pack_year_smok,con
-date_AD,bin
-HDL_cholesterol,con
-LDL_direct,con
-Triglycerides,con
-HbA1c,con
-age_diabetes_00,bin
-age_angina_00,bin
-age_heartattack_00,bin
-age_DVT_00,bin
-age_stroke_00,bin
-age_glaucoma_00,bin
-age_cataract_00,bin
-eye_amblyopia_00,bin
-eye_presbyopia_00,bin
-eye_hypermetropia_00,bin
-eye_myopia_00,bin
-eye_astigmatism_00,bin
-eye_diabetes_00,bin
-age_other_serious_eye_condition_00,bin
-skin_colour,cat
-hair_colour,cat
-mothers_Age,con
-fathers_Age,con
-age_pulmonary_embolism_00,bin
-date_reported_atherosclerosis,bin
-date_disorders_arteries_arterioles,bin
+name,dtype,final_name,datafield,,,
+DBP,con,DBP,4079,,,
+SBP,con,SBP,4080,,,
+PR,con,PR,102,,,
+birth_weight,con,Birth weight,20022,,,
+alcohol_intake_frequency_00,cat,Alcohol intake frequency,1558,,,
+pulse_wave_arterial_stiffness_index_00,con,Pulse wave ASI,21021,,,
+age_death,bin,Mortality,40007,,,
+BMI,con,BMI,21001,,,
+N_cigarettes_curr_daily,con,Cigarettes per day,3456,,,
+Pack_year_smok,con,Pack smoked per year,20161,,,
+date_AD,bin,Date AD,42020,,,
+HDL_cholesterol,con,HDL cholesterol,30760,,,
+LDL_direct,con,LDL direct,30780,,,
+Triglycerides,con,Triglycerides,30870,,,
+HbA1c,con,HbA1c,30750,,,
+age_diabetes_00,bin,Diabetes,2976,,,
+age_angina_00,bin,Angina,3627,,,
+age_heartattack_00,bin,Heart attack,3894,,,
+age_DVT_00,bin,DVT,4012,,,
+age_stroke_00,bin,Sroke,4056,,,
+age_glaucoma_00,bin,Glaucoma,4689,,,
+age_cataract_00,bin,Cataract,4700,,,
+eye_amblyopia_00,bin,Amblyopia,5408,,,
+eye_presbyopia_00,bin,Presbyopia,5610,,,
+eye_hypermetropia_00,bin,Hypermetropia,5832,,,
+eye_myopia_00,bin,Myopia,5843,,,
+eye_astigmatism_00,bin,Astigmatism,5855,,,
+eye_diabetes_00,bin,Diabetes eye,5890,,,
+age_other_serious_eye_condition_00,bin,Other eye diseases,5945,,,
+skin_colour,cat,Skin colour,1717,,,
+hair_colour,cat,Hair colour,1747,,,
+age_pulmonary_embolism_00,bin,Pulmonary embolism,4022,,,
+date_reported_atherosclerosis,bin,Atherosclerosis,131380,,,
+date_disorders_arteries_arterioles,bin,Other artery diseases,131390,,,

@@ -49,17 +49,17 @@ dir_images=$dir_input/$aria_processor
 
 
 folders=(
-        AV_maps
+	AV_maps
 	diseases_cov
 	figures
-        image_phenotype
-        image_phenotype/current
-        input
+	image_phenotype
+	image_phenotype/current
+	input
 	gwas
-        optic_disc
-        participant_phenotype
-        "$PARTICIPANT_STAT_ID"/gcorr_diseases
-        skeletons_etc
+	optic_disc
+	participant_phenotype
+	gwas/"$PARTICIPANT_STAT_ID"/gcorr_diseases
+	skeletons_etc
 	qc
 )
 

@@ -17,11 +17,11 @@ from datetime import datetime
 
 DATE = datetime.now().strftime("%Y-%m-%d")
 
-ventile_num= sys.argv[1]
-save_dir=sys.argv[2]
+ventile_num= 5 #sys.argv[1]
+save_dir= '/SSD/home/sofia/retina-phenotypes/complementary/GWAS_postprocessing/ldsr_correlation/' #sys.argv[2]
 traits_phenos = list(sys.argv[3].split(","))
-traits_phenos_new = list(sys.argv[4].split(","))
-path = sys.argv[5] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gwas/2022_08_03_ventile5/main_phenos/gcorr_diseases/' #'/HDD/data/ukbb/disease_sumstats/files_modified/'
+traits_phenos_new = list(sys.argv[4].split(",")) #list(sys.argv[4].split(","))
+path = '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gwas/2022_08_03_ventile5/gcorr_diseases/' #sys.argv[5] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gwas/2022_08_03_ventile5/main_phenos/gcorr_diseases/' #'/HDD/data/ukbb/disease_sumstats/files_modified/'
 
 reduced_diseases_traits = {
 '4079':'DBP ',
@@ -34,10 +34,12 @@ reduced_diseases_traits = {
 
 traits_reduced = list(reduced_diseases_traits.keys())
 
-
+print(traits_phenos)
+print(traits_phenos_new)
 #irnt is the normalized
 datafields_irnt = [ dat + "_irnt.gwas.imputed_v3.both_sexes.tsv.sumstats.gz" for dat in traits_reduced] 
 datafields_pheno = [ dat + "__munged.sumstats.gz" for dat in traits_phenos]
+print(datafields_pheno)
 
 traits_col_index = traits_phenos + traits_reduced
 traits_names = datafields_pheno + datafields_irnt
@@ -47,6 +49,7 @@ traits_names = datafields_pheno + datafields_irnt
 def read_ldsr(traits_files, traits_col_index):
     df_cov=pd.DataFrame(columns =traits_col_index, index=traits_col_index)
     df_corr=pd.DataFrame(columns =traits_col_index, index=traits_col_index)
+    df_std=pd.DataFrame(columns =traits_col_index, index=traits_col_index)
     #2976_irnt.gwas.imputed_v3.both_sexes.tsv.sumstats.gz_4700_irnt.gwas.imputed_v3.both_sexes.tsv.sumstats.gz.log
     #2976_irnt.gwas.imputed_v3.both_sexes.tsv.sumstats.gz_D_A_std__munged.sumstats.gz.log
 
@@ -76,15 +79,22 @@ def read_ldsr(traits_files, traits_col_index):
                         #print(split )
                         #print( df_corr.iloc[i][j], float(split[ split.index('Correlation:') +1 ]) )
                         #print( df_corr.iloc[j][i], float(split[ split.index('Correlation:') +1 ]))
-    return df_cov, df_corr
+                        df_std.iloc[i][j] = split[3]
+                        df_std.iloc[j][i] = split[3]
+    return df_cov, df_corr, df_std
 
-df_cov, df_corr = read_ldsr(traits_names, traits_col_index)
+df_cov, df_corr, df_std = read_ldsr(traits_names, traits_col_index)
 #df_corr
 
 
 df_corr = df_corr.astype(float)
 df_reducida = df_corr[traits_reduced]
 df_reducida= df_reducida.drop(index=traits_reduced) 
+
+df_std= df_std[traits_reduced]
+df_std= df_std.drop(index=traits_reduced)
+df_std.rename(columns=dict(zip(list(reduced_diseases_traits.keys()), list(reduced_diseases_traits.values()))), inplace=True)
+df_std.rename(index=dict(zip(traits_phenos, traits_phenos_new)), inplace=True)
 
 df_reducida.rename(columns=dict(zip(list(reduced_diseases_traits.keys()), list(reduced_diseases_traits.values()))), inplace=True)
 df_reducida.rename(index=dict(zip(traits_phenos, traits_phenos_new)), inplace=True)
@@ -93,7 +103,7 @@ df_reducida= df_reducida.round(2)
 #df_reducida
 
 
-df = df_reducida
+df = df_reducida.astype(str) + ' ' + df_std.astype(str)
 
 rcolors = plt.cm.Greys(np.full(len(df.index), 0.15))
 ccolors = plt.cm.Greys(np.full(len(df.columns), 0.15))
@@ -114,7 +124,7 @@ table = ax.table(cellText=df.values,
                  rowLoc='center',
                  colLoc='center',
                  cellLoc='center',
-                 cellColours=plt.cm.coolwarm(df.values, alpha=0.2),
+                 #cellColours=plt.cm.coolwarm(df.values, alpha=0.2),
                  loc='center',
                  fontsize=16,
                  colWidths=[0.12 for x in df_reducida.columns])
@@ -124,9 +134,10 @@ table.scale(3.7, 3.5) # make table a little bit larger
 fig.tight_layout()
 #plt.show()
 fig.savefig(save_dir+str(DATE)+'_'+'ventile'+str(ventile_num)+'_diseases_gcorr.pdf', bbox_inches='tight',
-            dpi=150)
+            dpi=250)
 
-
+print('todo ok')
+print(save_dir+str(DATE)+'_'+'ventile'+str(ventile_num)+'_diseases_gcorr.pdf')
 ### replace nan by 0
 def replace_nans_by_zeros(df_corr):
     df_corr = df_corr.replace(np.nan, 0)

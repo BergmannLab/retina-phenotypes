@@ -5,9 +5,9 @@ begin=$(date +%s)
 
 ####
  
-cp $diseases_ss_raw * $diseases_gwas_dir
+#cp $diseases_ss_raw * $diseases_gwas_dir
 
-nice python3.8 main_diseases_ldsr_output.py $VENTILE $FIGURES_DIR $MAIN_LABELS $MAIN_NAMES $diseases_gwas_dir
+nice python3.8 main_diseases_ldsr_output.py $VENTILE $FIGURES_DIR $MAIN_LABELS $MAIN_LABELS $diseases_gwas_dir
 
 
 echo FINISHED

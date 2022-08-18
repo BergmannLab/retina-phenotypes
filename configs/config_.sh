@@ -58,7 +58,7 @@ folders=(
 	gwas
         optic_disc
         participant_phenotype
-            gcorr_diseases
+        "$PARTICIPANT_STAT_ID"/gcorr_diseases
         skeletons_etc
 	qc
 )

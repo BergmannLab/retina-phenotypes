@@ -5,13 +5,13 @@ library(tidyr)
 ### Initialization:
 myargs = commandArgs(trailingOnly=TRUE)
 
-
 ukbb_files_dir <- myargs[1] #'/NVME/decrypted/ukbb/labels/'
 ####phenofiles_dir <- '/NVME/decrypted/multitrait/image_phenotype/collection/'
-phenofiles_dir_both <- myargs[2] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' #'/NVME/decrypted/multitrait/diseases/Diseases_cov_phenotypes_both_eyes_'
+phenofiles_dir_both <- myargs[2] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/' 
+#'/NVME/decrypted/multitrait/diseases/Diseases_cov_phenotypes_both_eyes_'
 diseases_pheno_cov_file <- myargs[3] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/diseases_cov/'
 name_phenofile <- myargs[4] #"2022_07_08_ventile2_raw_with_instance.csv"
-csv_name<- myargs[5] #'2022_07_08_ventile2_diseases_cov'
+csv_name <- myargs[5] #'2022_07_08_ventile2_diseases_cov'
 
 ## Create the phenofiles+diseases+covariants file ########################################
 ### Read disease data:
@@ -49,24 +49,35 @@ data_all$cylindrical_power_10 <- apply(select(data_all, cylindrical_power_R_10, 
 
 
 ## Covariants select by instances
-data_all$instance2 <- data_all$instance
-data_all$instance2 <- ifelse(data_all$instance2 == 0, NaN, 1)
+#data_all$instance2 <- data_all$instance
+#data_all$instance2 <- ifelse(data_all$instance2 == 0, NaN, 1)
 
-data_all["age_center"] = data_all["age_center_10"]/data_all["instance2"] 
-data_all$age_center <- ifelse(is.na(data_all$age_center), data_all$age_center_00, data_all$age_center)
+#data_all["age_center"] = data_all["age_center_10"]/data_all["instance2"] 
+#data_all$age_center <- ifelse(is.na(data_all$age_center), data_all$age_center_00, data_all$age_center)
+data_all$age_center <- apply(select(data_all, age_center_00, age_center_10),1,function(x) mean(na.omit(x)))
 data_all["age_center_2"]= data_all["age_center"]^2
 data_all["age_center_3"]= data_all["age_center"]^3
 
-data_all["spherical_power"] = data_all["spherical_power_10"]/data_all["instance2"] 
-data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
+#data_all["spherical_power"] = data_all["spherical_power_10"]/data_all["instance2"] 
+#data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
+data_all$spherical_power <- apply(select(data_all, spherical_power_00, spherical_power_10),1,function(x) mean(na.omit(x)))
 data_all["spherical_power_2"]= data_all["spherical_power"]^2
 data_all["spherical_power_3"]= data_all["spherical_power"]^3
 
-data_all["cylindrical_power"] = data_all["cylindrical_power_10"]/data_all["instance2"] 
-data_all$cylindrical_power <- ifelse(is.na(data_all$cylindrical_power), data_all$cylindrical_power_00, data_all$cylindrical_power)
+#data_all["cylindrical_power"] = data_all["cylindrical_power_10"]/data_all["instance2"] 
+#data_all$cylindrical_power <- ifelse(is.na(data_all$cylindrical_power), data_all$cylindrical_power_00, data_all$cylindrical_power)
+data_all$cylindrical_power <- apply(select(data_all, cylindrical_power_00, cylindrical_power_10),1,function(x) mean(na.omit(x)))
 data_all["cylindrical_power_2"]= data_all["cylindrical_power"]^2
 data_all["cylindrical_power_3"]= data_all["cylindrical_power"]^3
 
-data_all$instance2 <- NULL
+#data_all$instance2 <- NULL
+
+print('Number of nans of PC2, PC5, sex, age_center, spherical_power and cylindrical_power')
+print(sum(is.na(data_all$PC2)))
+print(sum(is.na(data_all$PC5)))
+print(sum(is.na(data_all$sex)))
+print(sum(is.na(data_all$age_center)))
+print(sum(is.na(data_all$spherical_power)))
+print(sum(is.na(data_all$cylindrical_power)))
                                        
-write.csv(data_all, paste(diseases_pheno_cov_file, csv_name,'.csv', sep="") , row.names = FALSE)
+write.csv(data_all, paste(diseases_pheno_cov_file, csv_name, sep="") , row.names = FALSE)

@@ -125,7 +125,7 @@ SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file d
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
 diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/
 name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
-csv_name="$PARTICIPANT_STAT_ID"_diseases_cov
+csv_name="$PARTICIPANT_STAT_ID"_diseases_cov.csv
 csv_z_name="$PARTICIPANT_STAT_ID"_corrected_z.csv
 
 #### GWAS

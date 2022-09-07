@@ -225,12 +225,12 @@ read_disease_data <- function(ukbb_files_dir)
   data_8 <- data_8[, c('20262-0.0', 'eid')]
   names(data_8)  <- c('myopia', 'eid')
   
-  data_all = merge(gwas_covar, data_1, by = "eid") 
-  data_all = merge(data_all, data_2, by = "eid") 
-  data_all = merge(data_all, data_4, by = "eid") 
-  data_all = merge(data_all, data_5, by = "eid") 
-  data_all = merge(data_all, data_6, by = "eid") 
-  data_all = merge(data_all, data_8, by = "eid") 
+  data_all = merge(gwas_covar, data_1, by = "eid", no.dups = TRUE, all.x=TRUE) 
+  data_all = merge(data_all, data_2, by = "eid", no.dups = TRUE, all.x=TRUE) 
+  data_all = merge(data_all, data_4, by = "eid", no.dups = TRUE, all.x=TRUE) 
+  data_all = merge(data_all, data_5, by = "eid", no.dups = TRUE, all.x=TRUE) 
+  data_all = merge(data_all, data_6, by = "eid", no.dups = TRUE, all.x=TRUE) 
+  data_all = merge(data_all, data_8, by = "eid", no.dups = TRUE, all.x=TRUE) 
   
   return(data_all)
 }
@@ -239,16 +239,14 @@ read_disease_data <- function(ukbb_files_dir)
 create_dataset_both_eyes <- function(data_cov, phenofiles_dir, name_phenofile) 
   { 
   ################# Read phenofiles data ############################
-  
   pheno_df <- read.csv(file= paste(phenofiles_dir, name_phenofile, sep=""),
                                                header = TRUE, sep=",",check.names=FALSE)
   names(pheno_df)[1] <- "eid"
-  # Only select eids 
   pheno_df <- pheno_df[, c("eid", "instance")]
   #print(pheno_df)
   print(nrow(data_cov))
   print(nrow(pheno_df))
-  g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE, all.x=TRUE) 
+  g = merge(pheno_df, data_cov, by = "eid", no.dups = TRUE, all.x=TRUE)
   print(nrow(g))
   return(g)
                        

@@ -93,10 +93,10 @@ def plot_violin_hist():
     f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
     f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
     
-    list_phenotypes = ["ratio_AV_medianDiameter", "ratio_CRAE_CRVE", "ratio_AV_DF"]
-    my_pal= {"ratio_AV_medianDiameter": "g", "ratio_CRAE_CRVE": "b", "ratio_AV_DF": "m"}
-    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
-    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
+    #list_phenotypes = ["ratio_AV_medianDiameter", "ratio_CRAE_CRVE", "ratio_AV_DF"]
+    #my_pal= {"ratio_AV_medianDiameter": "g", "ratio_CRAE_CRVE": "b", "ratio_AV_DF": "m"}
+    #f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
+    #f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
         
     ## correct for outlier
     #df_data_completo_ = df_data_completo.sort_values(by=['ratio_medianDiameter'],  ascending=False)
@@ -104,6 +104,21 @@ def plot_violin_hist():
     #df_data_completo__ = df_data_completo.sort_values(by=['ratio_DF'],  ascending=False)
     #print(df_data_completo__['ratio_DF'].head(7))
     #f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal, 4)
+    
+    list_phenotypes = ['ratio_AV_medianDiameter']
+    my_pal="Set3"
+    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
+    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
+    
+    list_phenotypes = ['ratio_CRAE_CRVE']
+    my_pal="Set3"
+    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
+    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
+    
+    list_phenotypes = ['ratio_AV_DF']
+    my_pal="Set3"
+    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
+    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
     
     list_phenotypes = ['ratio_VD']
     my_pal="Set3"

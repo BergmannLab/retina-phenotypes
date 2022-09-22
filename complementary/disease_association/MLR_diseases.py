@@ -18,8 +18,9 @@ DATE = datetime.now().strftime("%Y-%m-%d")
 ventile='ventile'+str(sys.argv[1])
 What_type_phenotype=sys.argv[2]
 output_dir = sys.argv[3]
-diseases_file = sys.argv[3] + sys.argv[4]+'.csv' 
+diseases_file = sys.argv[3] + sys.argv[4] 
 pheno_file =  sys.argv[5] + sys.argv[6]
+#print('hiiiiiiiiiiiiii ',sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6] )
 
 if What_type_phenotype == 'main':
     file_info_name='pheno_info_main.csv'
@@ -169,9 +170,11 @@ for var in list_diseases_con:
 # ##### Check the type of variables and convert objects to numeric:
 
 ### convert to type numeric the columns that are not
+df_pheno_dise['date_reported_atherosclerosis'] = pd.to_numeric(df_pheno_dise['date_reported_atherosclerosis'])
+df_pheno_dise['date_disorders_arteries_arterioles'] = pd.to_numeric(df_pheno_dise['date_disorders_arteries_arterioles'])
+
 if file_info_name=='pheno_info_sup.csv':
-    df_pheno_dise['date_reported_atherosclerosis'] = pd.to_numeric(df_pheno_dise['date_reported_atherosclerosis'])
-    df_pheno_dise['date_disorders_arteries_arterioles'] = pd.to_numeric(df_pheno_dise['date_disorders_arteries_arterioles'])
+
     df_pheno_dise['date_AD'] = pd.to_numeric(df_pheno_dise['date_AD']) 
     df_pheno_dise['date_death'] = pd.to_numeric(df_pheno_dise['date_death']) 
     #print(df_pheno_dise.info())

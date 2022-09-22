@@ -2,16 +2,21 @@ name,dtype,final_name,datafield
 DBP,con,DBP,4079
 SBP,con,SBP,4080
 PR,con,PR,102
-alcohol_intake_frequency_00,cat,Alcohol intake frequency,1558
+date_reported_atherosclerosis,bin,Atherosclerosis,131380
+date_disorders_arteries_arterioles,bin,Other artery diseases,131390
 pulse_wave_arterial_stiffness_index_00,con,Pulse wave ASI,21021
-BMI,con,BMI,21001
-Pack_year_smok,con,Pack smoked per year,20161
 HDL_cholesterol,con,HDL cholesterol,30760
 LDL_direct,con,LDL direct,30780
 Triglycerides,con,Triglycerides,30870
 HbA1c,con,HbA1c,30750
+alcohol_intake_frequency_00,cat,Alcohol intake frequency,1558
+Pack_year_smok,con,Pack smoked per year,20161
+eye_amblyopia_00,bin,Amblyopia,5408
+eye_presbyopia_00,bin,Presbyopia,5610
+eye_hypermetropia_00,bin,Hypermetropia,5832
+eye_myopia_00,bin,Myopia,5843
+eye_astigmatism_00,bin,Astigmatism,5855
+eye_diabetes_00,bin,Diabetes eye,5890
+BMI,con,BMI,21001
 skin_colour,cat,Skin colour,1717
 hair_colour,cat,Hair colour,1747
-date_reported_atherosclerosis,bin,Atherosclerosis,131380
-date_disorders_arteries_arterioles,bin,Other artery diseases,131390
-date_AD,bin,Date AD,42020

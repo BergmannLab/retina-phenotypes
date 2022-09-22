@@ -9,7 +9,7 @@ from matplotlib import figure
 import matplotlib.pyplot as plt_py
 
 n_bins = 12
-DATE = datetime.now().strftime("%Y-%m-%d")
+DATE = datetime.now().strftime("%Y_%m_%d")
 
 
 # Function to calculate correlation coefficient between two arrays
@@ -143,9 +143,9 @@ def violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal, VENTILE, ou
                      + ", " +  str(size_4)+ ", " +  str(size_5))
 
     if outlier1!=False:
-        plt_py.savefig(save_dir + DATE + '_'.join(list_phenotypes) +'_violinplot_outliers_mod.png')
+        plt_py.savefig(save_dir + DATE + '_'+ '_'.join(list_phenotypes) +'_violinplot_outliers_mod.png')
     else:
-        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'.join(list_phenotypes) +'_violinplot.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'+ '_'.join(list_phenotypes) +'_violinplot.png')
     plt_py.close()
 
 
@@ -163,7 +163,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir, VENTILE):
         plt_py.legend()
         plt_py.xlabel(None)
         plt_py.ylabel(None)
-        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE) +'_'.join(list_phenotypes) +'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE) +'_'+ '_'.join(list_phenotypes) +'_histograms.png')
         plt_py.close()
         
     elif len(list_phenotypes)==2:
@@ -181,7 +181,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir, VENTILE):
         plt_py.legend()
         plt_py.xlabel(None)
         plt_py.ylabel(None)
-        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'.join(list_phenotypes)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'+ '_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()
     
     elif len(list_phenotypes)==3:
@@ -203,7 +203,7 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir, VENTILE):
         plt_py.legend()
         plt_py.xlabel(None)
         plt_py.ylabel(None)
-        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE) +'_'.join(list_phenotypes)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE) +'_'+ '_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()
     
     elif len(list_phenotypes)==4:
@@ -229,5 +229,5 @@ def multiple_histograms(df_data_completo, list_phenotypes, save_dir, VENTILE):
         plt_py.legend()
         plt_py.xlabel(None)
         plt_py.ylabel(None)
-        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'.join(list_phenotypes)+'_histograms.png')
+        plt_py.savefig(save_dir + DATE + '_ventile' +str(VENTILE)+ '_'+ '_'.join(list_phenotypes)+'_histograms.png')
         plt_py.close()

@@ -16,29 +16,6 @@ from multiprocessing import Pool
 from PIL import Image
 from matplotlib import cm
 
-
-## Parameters for temporal angle
-delta = 10 #also for N_main_vessels
-R_0 = 240 #also for N_main_vessels
-radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
-min_ta = 75
-max_ta = 200
-lower_accept = 15 
-upper_accept = 2
-
-## Parameters for main_N_main_vessels
-radius_N_main_v = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta]
-    
-## Parameters for bifurcations
-norm_acceptance=7.5
-cte = 3.5
-
-## N main vessels
-limit_diameter_main = 10 # Select it better 
-
-## Vascular density, fractal dimension
-mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
-
 ## Command line argumetns
 aria_measurements_dir = sys.argv[3]
 qcFile = sys.argv[1]
@@ -47,6 +24,23 @@ lwnet_dir = sys.argv[4]
 OD_POSITIONS = sys.argv[5]
 df_OD = pd.read_csv(OD_POSITIONS, sep=',')
 traits = sys.argv[6].split(',')
+
+## Parameters for temporal angle
+delta = sys.argv[7] 
+R_0 = sys.argv[8] 
+radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
+min_ta = sys.argv[9] 
+max_ta = sys.argv[10] 
+lower_accept = sys.argv[11] 
+upper_accept = sys.argv[12] 
+## Parameters for bifurcations
+norm_acceptance = sys.argv[13] 
+neighborhood_cte = sys.argv[14] 
+## Parameter for N main vessels
+limit_diameter_main = sys.argv[15] 
+## Parameter for Vascular Density
+mask_radius=sys.argv[16]  # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
+
 
 def main_bifurcations(imgname: str) -> dict:
     """
@@ -258,12 +252,12 @@ def get_intersections(df_vasculature, OD_position, filter_type, imageID):
         #limit_diameter = 2 # Select it better 
         #df_specific_vessel_type_intersection = df_specific_vessel_type_intersection[df_specific_vessel_type_intersection['Diameter']>limit_diameter]
         if filter_type==-1: 
-            cte=0.95
+            factor_cte=0.95 # From literature 
             X ='V'
         else: 
-            cte=0.88
+            factor_cte=0.88 # From literature
             X ='A'
-        equation_CRA = cte*((df_specific_vessel_type_intersection['Diameter'].iloc[0])**2 + (df_specific_vessel_type_intersection['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
+        equation_CRA = factor_cte*((df_specific_vessel_type_intersection['Diameter'].iloc[0])**2 + (df_specific_vessel_type_intersection['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
         data_eq = {'CRE': equation_CRA}
         aux_eq.append(data_eq)
 
@@ -648,13 +642,13 @@ def bifurcation_counter(df_segments, imageID):
     for s in range(number_rows):
         for j in range(number_rows - s):
             j = j + s
-            # For X and Y: X[s] - cte <= X[j] <= X[s]
+            # For X and Y: X[s] - neighborhood_cte <= X[j] <= X[s]
             # Both arteries or both veins and != type 0
             if (
-                (x[j] >= x[s] - cte)
-                and (x[j] <= x[s] + cte)
-                and (y[j] >= y[s] - cte)
-                and (y[j] <= y[s] + cte)
+                (x[j] >= x[s] - neighborhood_cte)
+                and (x[j] <= x[s] + neighborhood_cte)
+                and (y[j] >= y[s] - neighborhood_cte)
+                and (y[j] <= y[s] + neighborhood_cte)
                 and index_v[j] != index_v[s]
                 and (dis_type[j] == dis_type[s])
                 and (dis_type[j] != 0 and dis_type[s] != 0)

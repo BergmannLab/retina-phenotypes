@@ -8,6 +8,20 @@ PROJECT_DIR=/NVME/decrypted/scratch/multitrait
 
 config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # returns parent directory of this file
 
+#### PARALLEL COMPUTING 
+
+#to run one by one, set n_cpu=1
+n_cpu=50
+step_size=$((n_img/n_cpu))
+batch_max=$((n_cpu * step_size))
+remainder=$(( n_img - step_size * n_cpu ))
+
+#### USER-SPECIFIC CONFIGURATIONS
+
+source $config_dir/config_personal.sh
+
+############################## FROM IMAGES TO PHENOTYPES ##############################
+
 #### DATASET OF CHOICE
 
 data_set=UK_BIOBANK #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
@@ -24,9 +38,7 @@ fi
 echo Data set: $data_set
 echo Image type: $image_type
 
-# ARIA processor
-# needs to be specified now already, for the repo to remain compatible with ARIA nomenclature:
-# DRIVE has its own processor, UK_BIOBANK we allocate to CLRIS
+
 if [[ $data_set == UK_BIOBANK ]]; then
         aria_processor=CLRIS
 else
@@ -46,7 +58,6 @@ RUN="$data_set"_ZERO
 RUN_DIR=$PROJECT_DIR/$RUN
 dir_input=$RUN_DIR/input
 dir_images=$dir_input/$aria_processor
-
 
 folders=(
 	AV_maps
@@ -97,19 +108,64 @@ OD_FILE=$RUN_DIR/optic_disc/od_all.csv
 
 dir_ARIA_output=$RUN_DIR/skeletons_etc
 
-TYPE_OF_VESSEL_OF_INTEREST=all # ARIA legacy parameter
-AV_threshold=0.79 # segment score threshold
+# ARIA parameter to decide if you analize arteries, veins or both(=all)
+TYPE_OF_VESSEL_OF_INTEREST=all
 
-# quality thresholds for ARIA
-min_QCthreshold_1=0
-max_QCthreshold_1=9000000
-min_QCthreshold_2=0
-max_QCthreshold_2=100000
+#AV_threshold parameter is used when we only looked at arteries or veins. Segments with lower artery/vein scores than 0.79 were ignored. In this project we use the TYPE_OF_VESSEL_OF_INTEREST='all' option, so the 0.79 value is ignored.
+AV_threshold=0.79 # segment score threshold 
+
+
+### quality thresholds for ARIA (in this project we select very extrem values(-1, 999999), so we do not filter)
+# Minumun total vessel accepted length and number of vessels
+min_QCthreshold_1=-1
+
+# Maximum total vessel accepted length
+max_QCthreshold_1=999999
+
+#Maximum total number of vessels accepted
+min_QCthreshold_2=-1
+
+#Maximum total number of vessels accepted
+max_QCthreshold_2=999999
 
 #### FUNDUS MEASUREMENTS
 
 PHENOTYPE_OF_INTEREST='taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins'
 phenotypes_dir=$RUN_DIR/image_phenotype/
+
+### PHENOTYPES PARAMETERS:
+## Parameters for temporal angle
+# R_0 is the initial radius. This value was selected base on the UKBB images
+R_0=240 #also used for N_main_vessels  #Need to be tested if the dataset is different
+# Distance between 2 concentrical radius. This value was selected base on the UKBB images
+delta=10 #also usedfor N_main_vessels  #Need to be tested if the dataset is different
+
+#Minor temporal value angle accepted (≈75° based on opthalmological advise)
+min_ta=75
+
+#Maximun temporal value angle accepted (≈200° based on opthalmological advise)
+max_ta=200 
+
+#The following values are selected to make a 'majority vote'. Since we are working with Real numbers, we accept they vote for the same if the new values is: upper_accept <= x <= lower_accept (please go to the article/documentation for more detail)
+lower_accept=15 #Need to be tested if the dataset is different
+upper_accept=2 #Need to be tested if the dataset is different
+
+## Parameters for bifurcations
+# neighborhood_cte define the maximal distance to decide if two end points are continuous segments
+neighborhood_cte=3.5 #Need to be tested if the dataset is different
+
+# Bifurcations with a distance > than 'norm_acceptance' are going to be delete to avoid overcounting
+norm_acceptance=7.5 #Need to be tested if the dataset is different
+
+## N main vessels
+# min diameter accepted as a possible value for a main diamter (≈10 based on opthalmological advise)
+limit_diameter_main=10 
+
+## Vascular density, fractal dimension
+mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
+
+
+###################### COMPLEMENTARY ANALYSIS: association with diseases, GWAS, ...  ##############################
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
@@ -144,17 +200,3 @@ MAIN_NAMES='Tortuosity A,Tortuosity V,Tortuosity ratio,Std diameter A,Std diamet
 ##### FIGURES
 FIGURES_DIR=$PARTICIPANT_PHENO_DIR/figures/
 What_type_phenotype='main' #suplementary # fror MLR, Violin, Histogram, Genes
-
-
-#### PARALLEL COMPUTING
-
-#to run one by one, set n_cpu=1
-n_cpu=50
-step_size=$((n_img/n_cpu))
-batch_max=$((n_cpu * step_size))
-remainder=$(( n_img - step_size * n_cpu ))
-
-#### USER-SPECIFIC CONFIGURATIONS
-
-source $config_dir/config_personal.sh
-

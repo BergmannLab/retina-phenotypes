@@ -16,5 +16,5 @@ mkdir -p $phenotypes_dir
 
 #echo $ALL_IMAGES $phenotypes_dir $dir_ARIA_output $classification_output_dir $OD_FILE $PHENOTYPE_OF_INTEREST
 
-nice $python_dir measurePhenotype.py $ALL_IMAGES $phenotypes_dir/ $dir_ARIA_output/ $classification_output_dir/ $OD_FILE $PHENOTYPE_OF_INTEREST &
+nice $python_dir measurePhenotype.py $ALL_IMAGES $phenotypes_dir/ $dir_ARIA_output/ $classification_output_dir/ $OD_FILE $PHENOTYPE_OF_INTEREST $delta $R_0 $min_ta $max_ta $lower_accept $upper_accept $norm_acceptance $neighborhood_cte $limit_diameter_main $mask_radius &
 wait

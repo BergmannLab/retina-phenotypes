@@ -1,3 +1,5 @@
+### Rename the LWNET output to work for ARIA  
+
 from PIL import Image
 import os
 import sys

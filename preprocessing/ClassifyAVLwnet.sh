@@ -1,15 +1,13 @@
 #!/bin/bash
-#SBATCH --account=sbergman_retina
-#SBATCH --job-name=⚡lwnet⚡
-#SBATCH --output=helpers/ClassifyAVUncertain/slurm_runs/slurm-%x_%j.out
-#SBATCH --error=helpers/ClassifyAVUncertain/slurm_runs/slurm-%x_%j.err
-#SBATCH --nodes 1
-#SBATCH --ntasks 1
-#SBATCH --cpus-per-task 1
-#SBATCH --mem 12GB
-#SBATCH --partition normal
-#SBATCH --time 01:30:00
-#SBATCH --array=1-582
+
+######################################################################################################
+# GOAL: From raw images to AV segemented images computed in a parallel fashion
+#
+# INPUT: fundus images and config_.sh values
+# OUTPUT: Artery - Vein segmented images
+# EXTERNAL SOFTWARES: LWNET (Python) (https://github.com/agaldran/lwnet)
+# PROGRAMMING LANGUAGES USED: Python
+######################################################################################################
 
 #### Read the vairables requiered from config.sh:
 source ../configs/config_.sh
@@ -21,9 +19,8 @@ mkdir -p $RUN_DIR
 if [[ "$image_type" != *.png ]]; then
 	mkdir $dir_images
 fi
-# TO DO: Add a step to can avoid this step if needed:
-#### Preprocessing: .png format, avoid spaces in names, and create file with images names:
 
+#### Preprocessing: change to .png format, avoid spaces in names, and create file with images names:
 $python_dir basic_preprocessing.py $dir_images2 $dir_images $dir_input $image_type
 
 #### Create the folder where the AV maps are going to be located (for the dataset selected):
@@ -48,6 +45,7 @@ cd $lwnet_dir
 readarray -t raw_imgs < $ALL_IMAGES
 #echo $raw_imgs | head -n10
 
+#### Parallel computation
 #for i in $(seq 1 20); do echo ${raw_imgs[i]}; done
 echo lwnet input $dir_images
 for i in $(seq 1 $(( $n_cpu + 1 )) ); do #n_cpu + 1 to force a remainder iteration
@@ -62,7 +60,7 @@ done
 
 wait
 
-### Rename the LWnet output (for ARIA you need the raw_image and the AV_image to have the same name):
+### Rename the LWnet output to be in the format that ARIA requires:
 $python_dir $config_dir/../preprocessing/Change_the_name_LWNEToutput.py $classification_output_dir 
 
 echo FINISHED: Images have been classified, and written to $classification_output_dir

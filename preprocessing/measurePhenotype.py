@@ -203,8 +203,8 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
             #median_CRE = compute_CRE(df_vasculature, OD_position, filter_type)
             median_CRE, eq_CRE = compute_CRE(df_vasculature, OD_position, filter_type, imageID)
             return {
-                'median_CRE': median_CRE.round(0),
-                'eq_CRE': eq_CRE.round(0)}
+                'median_CRE': median_CRE,
+                'eq_CRE': eq_CRE}
 
     except Exception as e:
         print(imgname, e)

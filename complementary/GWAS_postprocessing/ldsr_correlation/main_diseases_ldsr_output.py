@@ -23,14 +23,15 @@ traits_phenos = list(sys.argv[3].split(","))
 traits_phenos_new = list(sys.argv[4].split(",")) #list(sys.argv[4].split(","))
 path = '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gwas/2022_08_03_ventile5/gcorr_diseases/' #sys.argv[5] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gwas/2022_08_03_ventile5/main_phenos/gcorr_diseases/' #'/HDD/data/ukbb/disease_sumstats/files_modified/'
 
-reduced_diseases_traits = {
-'4079':'DBP ',
-'4080':'SBP',    
-'2976':'Age diabetes',
-'3627':'Age angina',
-'3894':'Age heart attack',
-#'4689':'Age glaucoma',
-'4700':'Age cataract'}
+reduced_diseases_traits ={
+        '4079':'DBP ',
+        '4080':'SBP',
+        '30760':'HDL cholesterol',
+        '1558':'Alcohol intake freq',
+        '21021':'Pulse wave arterial stiffness',
+        '30780':'LDL direct',
+        '30870':'Triglycerides'
+        }
 
 traits_reduced = list(reduced_diseases_traits.keys())
 

@@ -15,7 +15,7 @@ nice Rscript cox_full.R $RUN_DIR $PARTICIPANT_STAT_ID FALSE
 
 
 #### run MLR
-nice python3.8 MLR_diseases.py $VENTILE $What_type_phenotype $diseases_pheno_cov_file $csv_name $PARTICIPANT_PHENO_DIR $csv_z_name $SUPPLEMENTARY_LABELS $MAIN_LABELS
-
+nice python3.8 MLR_diseases.py $VENTILE $What_type_phenotype $diseases_pheno_cov_file $csv_name $PARTICIPANT_PHENO_DIR $csv_z_name $SUPPLEMENTARY_LABELS $MAIN_LABELS $SUPPLEMENTARY_NAMES $MAIN_NAMES
+echo $main
 date
 echo End `basename $0`

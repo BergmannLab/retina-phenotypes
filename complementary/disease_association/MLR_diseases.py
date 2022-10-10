@@ -40,9 +40,11 @@ display_info=True
 
 if file_info_name=='pheno_info_sup.csv':
     list_phenotypes=list(sys.argv[7].split(","))
+    list_phenotypes_new=list(sys.argv[9].split(","))
     
 if file_info_name=='pheno_info_main.csv':
     list_phenotypes=list(sys.argv[8].split(","))
+    list_phenotypes_new=list(sys.argv[10].split(","))
 
 
 ####################### 1 - Read diseases:
@@ -209,8 +211,6 @@ betas.to_csv(output_dir+'reg_betas_'+ventile+'.csv')
 log10p.to_csv(output_dir+'reg_log10p_'+ventile+'.csv')
 
 
-
-
 # Regression heatmaps
 ## NB: infinite -log10(p) are arbitrarily replaced by a fixed value ('inf_val') for visualisation
 #inf_val = 310
@@ -222,6 +222,17 @@ betas = betas.astype('float64') # in case betas was coded as object type
 #fig = plt.figure(figsize=(20, 16))
 #sns.heatmap(log10p.replace(np.inf, inf_val), annot=betas.round(2), cmap='Blues', vmin=0, cbar_kws={'label': '-log10(p)'})
 #plt.close()
+
+
+##Change the name of the columns and index in beta and log10:
+def rename_col_index(df_, l_diseases_old, l_diseases_new, l_pehos_old, l_phenos_new):
+    df_.rename(columns=dict(zip(l_diseases_old, l_diseases_new)), inplace=True)
+    df_.rename(index=dict(zip(l_pehos_old, l_phenos_new)), inplace=True)
+    return df_
+
+
+betas = rename_col_index(betas, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
+log10p = rename_col_index(log10p, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
 
 
 ## This colours by beta and annotates Bonferroni-significant models with an asterisk

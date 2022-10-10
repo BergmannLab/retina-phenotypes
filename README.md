@@ -1,21 +1,4 @@
-# Bryhnild directories (to avoid duplications):
-Sensitive data (i.e. with eid) is going to be located on '/NVME/decrypted/' and not sensitive is going to be located on '/HDD/data/':
 
-* All the coordinates values (with centerlines) and the ARIA diameters for different QC can be found in: '/NVME/decrypted/ukbb/fundus/2021_10_rawMeasurements/'
-* All the QC files can be found in: '/NVME/decrypted/ukbb/fundus/qc/'
-
-* All the files with the phenotypes measurement (with images names) can be found in: '/NVME/decrypted/ukbb/fundus/phenotypes/'
-* All the phenofiles and the phenofiles_qqnorm can be found in: '/HDD/data/UKBiob/phenofiles/'
-
-* All the GWAS results can be found in: '/HDD/data/UKBiob/GWAS/' 
-* * All the Manhatan, and qqplots an results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/Manhattan_QQplots/'
-* * All the PascalX results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/PascalX/'
-* * All the ldsr results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/ldscr/'
-
-* All the UKBB data can be found in: '/NVME/decrypted/ukbb/labels/'
-* A merge file between the diseases and the phenotypes of interest for the MLR can be also found in: '/NVME/decrypted/ukbb/labels/'
-
-* Drive Ground Truth for bifurcations, crossings, and end points can be found in: '/HDD/data/Other_datasets/DRIVE/RetinalFeatures_bif_cross'
 
 # CODE - FROM RETINA IMAGES TO TRAITS (only needed the folders: 'configs', 'input' and 'preprocessing'): 
 
@@ -24,8 +7,24 @@ Sensitive data (i.e. with eid) is going to be located on '/NVME/decrypted/' and 
 * Matlab licence (if you have not acess there are still some traits you can measure)
 * TO DO: Create a file with all the packages needed
 
+
 ## Pipeline:
-1- Modify `configs/config_local.sh`
+
+```mermaid
+flowchart TD
+    M(Modified config_.sh) -->A
+    M(Modified config_.sh) -->B
+    M(Modified config_.sh) -->C
+    M(Modified config_.sh) -->D
+    I(Input: raw images)-->A
+    A[`bash ClassifyAVLwnet.sh`] -- vessel type --> B[`bash MeasureVessels.sh`]
+    B -- vessel measures --> D[`bash run_measurePhenotype.sh`]
+    I(Input: raw images)-->C
+    C[`bash predict_optic_disc.sh`] -- OD measures --> D
+    D --> E(Output: phenotypes/per image files)
+```
+
+1- Modify `configs/config_local.sh` and `configs/config_.sh`
 Particularly: Define path of the research repository, and name the RUN.
 
 2 - Run `preprocessing/ClassifyAVLwnet.sh`. 
@@ -43,6 +42,26 @@ Code: `bash MeasureVessels.sh`
 5 - Run `preprocessing/run_measurePhenotype.sh`. 
 Output: Trait measurements. By default in the folder: `*RUN*/image_phenotype`
 Code: `bash run_measurePhenotype.sh'
+
+
+# PHENOTYPES (TRAITS) MEASURED 
+## Main traits measured:
+* Median diameter of: all the vessels, only arteries, only veins (' ')
+* Median tortuosity (DF) of: all the vessels, only arteries, only veins (' ')
+* Ratio between the diameters of the arteies and the diameters of the veins (' ')
+* Ratio between the tortuosity of the arteies and the tortuosity of the veins (' ')
+* Number of bifurcations and branching ('bifurcations')
+* Main Temporal Venular Angle ('tva') and Main Temporal Arteriolar Angle ('taa') 
+* CRAE and CRVE 
+* Variability on the diameter and on the tortuosity
+* Fractal Dimensionality ()
+* Vascular Density () 
+* Vascular Density () 
+
+## Baseline traits measured:
+* Intensity variability
+* others?
+* The follow are probably to delete:  N_green_pixels, N_green_segments, OD_segments, etc
 
 
 ### Some possible errors and reminders:
@@ -97,21 +116,26 @@ In here you can find code to obtain histograms and pairplots of your phenotypes.
 HOW to run it?:
 
 
-# PHENOTYPES (TRAITS) MEASURED 
-## Main traits measured:
-* Median diameter of: all the vessels, only arteries, only veins (' ')
-* Median tortuosity (DF) of: all the vessels, only arteries, only veins (' ')
-* Ratio between the diameters of the arteies and the diameters of the veins (' ')
-* Ratio between the tortuosity of the arteies and the tortuosity of the veins (' ')
-* Number of bifurcations and branching ('bifurcations')
-* Main Temporal Venular Angle ('tva') and Main Temporal Arteriolar Angle ('taa') 
-* CRAE and CRVE 
-* Variability on the diameter and on the tortuosity
-* Fractal Dimensionality ()
-* Vascular Density () 
-* Vascular Density () 
 
-## Baseline traits measured:
-* Intensity variability
-* others?
-* The follow are probably to delete:  N_green_pixels, N_green_segments, OD_segments, etc
+
+##################################################################################################################################################################
+
+
+# Bryhnild directories (to avoid duplications):
+Sensitive data (i.e. with eid) is going to be located on '/NVME/decrypted/' and not sensitive is going to be located on '/HDD/data/':
+
+* All the coordinates values (with centerlines) and the ARIA diameters for different QC can be found in: '/NVME/decrypted/ukbb/fundus/2021_10_rawMeasurements/'
+* All the QC files can be found in: '/NVME/decrypted/ukbb/fundus/qc/'
+
+* All the files with the phenotypes measurement (with images names) can be found in: '/NVME/decrypted/ukbb/fundus/phenotypes/'
+* All the phenofiles and the phenofiles_qqnorm can be found in: '/HDD/data/UKBiob/phenofiles/'
+
+* All the GWAS results can be found in: '/HDD/data/UKBiob/GWAS/' 
+* * All the Manhatan, and qqplots an results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/Manhattan_QQplots/'
+* * All the PascalX results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/PascalX/'
+* * All the ldsr results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/ldscr/'
+
+* All the UKBB data can be found in: '/NVME/decrypted/ukbb/labels/'
+* A merge file between the diseases and the phenotypes of interest for the MLR can be also found in: '/NVME/decrypted/ukbb/labels/'
+
+* Drive Ground Truth for bifurcations, crossings, and end points can be found in: '/HDD/data/Other_datasets/DRIVE/RetinalFeatures_bif_cross'

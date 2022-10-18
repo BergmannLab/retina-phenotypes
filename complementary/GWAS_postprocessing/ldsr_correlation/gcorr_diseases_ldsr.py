@@ -226,7 +226,7 @@ table = ax.table(cellText=df.values,
                  rowLoc='center',
                  colLoc='center',
                  cellLoc='center',
-                 cellColours=plt.cm.coolwarm(df_corr_simpl.values, alpha=0.2),
+                 cellColours=plt.cm.Oranges(df_corr_simpl_aux.values, alpha=0.5),
                  loc='center',
                  fontsize=16,
                  colWidths=[0.15 for x in df.columns])

@@ -18,5 +18,3 @@ eye_myopia_00,bin,Myopia,5843
 eye_astigmatism_00,bin,Astigmatism,5855
 eye_diabetes_00,bin,Diabetes eye,5890
 BMI,con,BMI,21001
-skin_colour,cat,Skin colour,1717
-hair_colour,cat,Hair colour,1747

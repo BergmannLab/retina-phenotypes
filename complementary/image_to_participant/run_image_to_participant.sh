@@ -20,5 +20,5 @@ echo "execution time: $tottime sec"
 
 #### 3) Correct phenotypes for covariates
 
-nice python3.8 correct_phenotype_two_step.py $RUN_DIR/ $PARTICIPANT_STAT_ID z
-nice python3.8 correct_phenotype_two_step.py $RUN_DIR/ $PARTICIPANT_STAT_ID qqnorm 
+nice python3.8 correct_phenotype_one_step.py $RUN_DIR/ $PARTICIPANT_STAT_ID z
+nice python3.8 correct_phenotype_one_step.py $RUN_DIR/ $PARTICIPANT_STAT_ID qqnorm 

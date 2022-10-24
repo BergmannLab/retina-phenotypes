@@ -148,18 +148,18 @@ def main_CRAE_CRVE(imgname_and_filter: str and int) -> dict:
         if OD_position.empty:
             return {
             'median_CRE': None,
-            'eq_CRE': None
+            'eq_CRE': None,
+            'CRE': None
             }
-
-        #median_CRE = compute_CRE(df_vasculature, OD_position, filter_type)
         median_CRE, eq_CRE = compute_CRE(df_vasculature, OD_position, filter_type, imageID)
         return {
             'median_CRE': median_CRE,
-            'eq_CRE': eq_CRE}
+            'eq_CRE': eq_CRE,
+            'CRE': CRE}
 
     except Exception as e:
         print(imgname, e)
-        return {'median_CRE': np.nan, 'eq_CRE': np.nan} 
+        return {'median_CRE': np.nan, 'eq_CRE': np.nan, 'CRE': np.nan} 
 
 
 def main_N_main_vessels(imgname_and_filter: str and int) -> dict:
@@ -458,12 +458,12 @@ def compute_CRE(df_vasculature, OD_position, filter_type, imageID):
     :param filter_type:
     :return:
     """
-    df_specific_vessel_type_intersection, CRE_eq = get_intersections(df_vasculature, OD_position, filter_type, imageID)
+    df_specific_vessel_type_intersection, CRE_eq, CRE_standard = get_intersections(df_vasculature, OD_position, filter_type, imageID)
 
     df_specific_vessel_type_intersection_median =df_specific_vessel_type_intersection.median()
-    CRE_eq_median =CRE_eq.median()
+    CRE_eq_median = CRE_eq.median()
     #print('statistics.median(df_specific_vessel_type_intersection)', statistics.median(df_specific_vessel_type_intersection))
-    return df_specific_vessel_type_intersection_median[0], CRE_eq_median[0]
+    return df_specific_vessel_type_intersection_median[0], CRE_eq_median[0], CRE_standard
 
 
 def get_intersections(df_vasculature, OD_position, filter_type):
@@ -476,10 +476,38 @@ def get_intersections(df_vasculature, OD_position, filter_type):
     angle = np.arange(0, 360, 0.01)
     aux = []
     aux_eq = []
+
+    num_segments_selected=3 ## We only select 3 because we only analyze temporal
+
+    if filter_type==-1: 
+        factor_cte=0.95 # From literature 
+    else: 
+        factor_cte=0.88 # From literature
+
     df_vasculature['X'] = df_vasculature['X'].round(0)
     df_vasculature['Y'] = df_vasculature['Y'].round(0)
     r1 = (OD_position['width'] + OD_position['height'])/4
     radius_r1 = [2*r1.iloc[0], 2.1*r1.iloc[0], 2.2*r1.iloc[0], 2.3*r1.iloc[0], 2.4*r1.iloc[0], 2.5*r1.iloc[0]]
+
+    ## Compute the most common definition of CRAE and CRAE
+    radius1 =  radius_r1[-1]
+    radius0 = radius_r1[0]
+
+    df_intersection_radius0 = circular_df_filter(radius0, angle, OD_position, df_vasculature)
+    df_specific_vessel_type_intersection_radius0 = df_intersection_radius0[df_intersection_radius0["type"] == filter_type].copy()
+    df_specific_vessel_type_intersection_radius0.sort_values(by=['Diameter'], ascending=False, inplace=True)
+
+    df_specific_vessel_type_intersection_radius0 = df_specific_vessel_type_intersection_radius0.head(num_segments_selected) 
+    df_vasculature_index = df_vasculature[df_vasculature['index'].isin(list(df_specific_vessel_type_intersection_radius0['index']))]
+    df_vasculature_annulus = compute_vessel_radius_pixels(df_vasculature_index, radius1,  radius0, OD_position)
+    #print(df_pintar_annulus)
+    #plt.scatter(df_vasculature_annulus['X'], df_vasculature_annulus['Y'], color='pink', s=20)
+    df_annulus_diameter = df_vasculature_annulus.groupby(['index'])['Diameter'].median()
+    df_annulus_diameter.sort_values(ascending=False, inplace=True)
+    equation_standard_CRE = factor_cte*((df_annulus_diameter.iloc[0])**2 + (df_annulus_diameter.iloc[num_segments_selected-1])**2)**(1/2)
+
+
+    ## Compute alternative definition of CRAE and CRAE
     for p in radius_r1: 
         df_intersection = circular_df_filter(p, angle, OD_position, df_vasculature)
         df_specific_vessel_type_intersection = df_intersection[df_intersection["type"] == filter_type].copy()
@@ -492,10 +520,6 @@ def get_intersections(df_vasculature, OD_position, filter_type):
         aux.append(data)
         #limit_diameter = 2 # Option 2
         #df_specific_vessel_type_intersection = df_specific_vessel_type_intersection[df_specific_vessel_type_intersection['Diameter']>limit_diameter]
-        if filter_type==-1: 
-            factor_cte=0.95 # From literature 
-        else: 
-            factor_cte=0.88 # From literature
         equation_CRA = factor_cte*((df_specific_vessel_type_intersection['Diameter'].iloc[0])**2 + (df_specific_vessel_type_intersection['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
         data_eq = {'CRE': equation_CRA}
         aux_eq.append(data_eq)
@@ -509,7 +533,7 @@ def get_intersections(df_vasculature, OD_position, filter_type):
     #    os.mkdir(dir_CRE_position)
     #df_save.to_csv(dir_CRE_position +'/' + imageID + '_CR'+X+'E_position.csv', index=False)
 
-    return pd.DataFrame(aux), pd.DataFrame(aux_eq) #,statistics.median(auxiliar_values_eq) #pd.DataFrame(auxiliar_values)#, statistics.median(auxiliar_values_eq)
+    return pd.DataFrame(aux), pd.DataFrame(aux_eq), equation_standard_CRE #,statistics.median(auxiliar_values_eq) #pd.DataFrame(auxiliar_values)#, statistics.median(auxiliar_values_eq)
 
 
 def mask_image(img, to_gray=False, mask_radius=mask_radius):
@@ -810,7 +834,7 @@ def compute_mean_angle(df_vasculature, OD_position, filter_type): #filter_type=-
     return compute_mean_angle_with_mode(df_final_vote)
 
 
-def compute_vessel_radius_pixels(df_vasculature, radius, od_position):
+def compute_vessel_radius_pixels(df_vasculature, radius, radius0, od_position):
     """
     :param df_vasculature:
     :param radius:
@@ -821,7 +845,9 @@ def compute_vessel_radius_pixels(df_vasculature, radius, od_position):
     df_vasculature['DeltaY'] = df_vasculature['Y'] - od_position['y'].iloc[0]
     df_vasculature['r2_value'] = df_vasculature['DeltaX'] * df_vasculature['DeltaX'] + df_vasculature['DeltaY'] * df_vasculature['DeltaY']
     df_vasculature['r_value'] = (df_vasculature['r2_value']) ** (1 / 2)
-    return df_vasculature[df_vasculature['r_value'] <= radius].copy()
+    df_inside_radius = df_vasculature[df_vasculature['r_value'] <= radius].copy()
+    
+    return df_inside_radius[df_inside_radius['r_value'] >= radius0]
 
 
 
@@ -955,14 +981,15 @@ if __name__ == '__main__':
         elif function_to_execute == 'ratios_CRAE_CRVE':
             df_data_CRAE = pd.read_csv(phenotype_dir+DATE+"_CRAE.csv", sep=',')
             df_data_CRAE.rename(columns={ df_data_CRAE.columns[0]: "Unnamed: 0" }, inplace = True)
-            df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE'}, inplace=True)
+            df_data_CRAE.rename(columns={'median_CRE': 'median_CRAE', 'eq_CRE': 'eq_CRAE', 'CRE': 'CRAE'}, inplace=True)
             
             df_data_CRVE = pd.read_csv(phenotype_dir+DATE+"_CRVE.csv", sep=',')
             df_data_CRVE.rename(columns={ df_data_CRVE.columns[0]: "Unnamed: 0" }, inplace = True)
-            df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE'}, inplace=True)
+            df_data_CRVE.rename(columns={'median_CRE': 'median_CRVE', 'eq_CRE': 'eq_CRVE', 'CRE': 'CRVE'}, inplace=True)
             df_merge=df_data_CRAE.merge(df_data_CRVE, how='inner', on='Unnamed: 0')
             df_merge['ratio_median_CRAE_CRVE'] = df_merge['median_CRAE'] / df_merge['median_CRVE']
             df_merge['ratio_CRAE_CRVE'] = df_merge['eq_CRAE'] / df_merge['eq_CRVE']
+            df_merge['ratio_standard_CRE'] = df_merge['CRAE'] / df_merge['CRVE']
 
             df_merge.to_csv(phenotype_dir + DATE + "_ratios_CRAE_CRVE.csv", sep=',', index=False)
         

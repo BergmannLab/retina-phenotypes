@@ -269,6 +269,11 @@ class Measure_IDVP():
             V_diameters_vessels = df_V['Diameter']
             Dev_V = np.sum(abs(V_diameters_vessels - V_diameters_vessels.median())) / (
                         len(V_diameters_vessels) - V_diameters_vessels.isnull().sum())
+            ## For sd_mean_size = sum(std_i/mean_i*len_i)/sum(len_i):
+            type_mean_values_vessels = df_vasculature.groupby(['type'])['Diameter'].mean()
+            size_values_vessels = df_vasculature.groupby(['type']).size()
+            sd_mean_size = np.sum(type_std_values_vessels/type_mean_values_vessels*size_values_vessels)/np.sum(size_values_vessels)
+
             return {'D_median_CVMe': Dev_median/abs(median_values_vessels.median()), 
                     'D_CVMe': Dev/abs(diameters_vessels.median()), 
                     'D_CVMe_A': Dev_A/abs(A_diameters_vessels.median()), 
@@ -278,7 +283,8 @@ class Measure_IDVP():
                     #'D_std_median': std_values_vessels.median(), 
                     #'D_std_std': std_values_vessels.std(),
                     'D_A_std': type_std_values_vessels[1],
-                    'D_V_std': type_std_values_vessels[-1]
+                    'D_V_std': type_std_values_vessels[-1],
+                    'sd_mean_size': sd_mean_size
                 }
         
         except Exception as e:
@@ -292,7 +298,8 @@ class Measure_IDVP():
                     #'D_std_median': np.nan,  
                     #'D_std_std': np.nan,
                     'D_A_std': np.nan, 
-                    'D_V_std':np.nan
+                    'D_V_std':np.nan,
+                    'sd_mean_size': np.nan
                 }
 
 

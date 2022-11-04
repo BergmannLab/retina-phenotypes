@@ -47,9 +47,10 @@ print("Sample size: ", len(df_data_completo))
 #else:
 #    df_data_completo.rename(columns=dict(zip(main_phenotypes_rawname, main_phenotypes_new_names)), inplace=True)
 
-
-
-    
+### Plot individual:
+list_double_phenotypes = ["medianDiameter_artery", "medianDiameter_vein", "mean_angle_taa", "mean_angle_tva", "eq_CRAE", "eq_CRVE", "DF_artery", "DF_vein", "VD_orig_artery", "VD_orig_vein",'D_A_std', 'D_V_std']
+list_individual_phenotype = [item for item in main_phenotypes_rawname if item not in list_double_phenotypes]
+print('Individual phenotypes: ',list_individual_phenotype)
 
 ################### Violin plots: #############################
 # Relevant documents to create new versions: https://www.oreilly.com/library/view/python-data-science/9781491912126/ch04.html
@@ -57,6 +58,7 @@ print("Sample size: ", len(df_data_completo))
 # Relevant documents to create new versions: https://www.oreilly.com/library/view/python-data-science/9781491912126/ch04.html
 
 def plot_violin_hist():
+    ### Plots ensamble:
     
     list_phenotypes = ["medianDiameter_artery", "medianDiameter_vein"]
     my_pal= {"medianDiameter_artery": "lightcoral", "medianDiameter_vein": "cornflowerblue"}
@@ -105,34 +107,13 @@ def plot_violin_hist():
     #print(df_data_completo__['ratio_DF'].head(7))
     #f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal, 4)
     
-    list_phenotypes = ['ratio_AV_medianDiameter']
-    my_pal="Set3"
-    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
-    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
-    
-    list_phenotypes = ['ratio_CRAE_CRVE']
-    my_pal="Set3"
-    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
-    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
-    
-    list_phenotypes = ['ratio_AV_DF']
-    my_pal="Set3"
-    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
-    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
-    
-    list_phenotypes = ['ratio_VD']
-    my_pal="Set3"
-    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
-    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
-    ## correct for outlier ## it looks more slim (?)
-    #df_data_completo_2 = df_data_completo.sort_values(by=['ratio_VD'],  ascending=False)
-    #print(df_data_completo_2['ratio_VD'].head(15))
-    #f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal, 10)
-    
-    list_phenotypes = ['bifurcations']
-    my_pal="Set3"
-    f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
-    f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
+
+    ### Plot individual:
+    for pheno_ind in list_individual_phenotype:
+        list_phenotypes = [pheno_ind]
+        my_pal="Set3"
+        f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
+        f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
 
 
     if What_type_of_phenotypes=='suplementary':
@@ -171,6 +152,13 @@ def plot_violin_hist():
         my_pal= {"N_median_main_arteries": "lightcoral", "N_median_main_veins": "cornflowerblue"}
         f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
         f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
+
+        ### Plot individual:
+        for pheno_ind in list_individual_phenotype:
+            list_phenotypes = [pheno_ind]
+            my_pal="Set3"
+            f_plot.violin_plot(df_data_completo, list_phenotypes, save_dir, my_pal,VENTILE)
+            f_plot.multiple_histograms(df_data_completo, list_phenotypes, save_dir,VENTILE)
 
 
 plot_violin_hist()

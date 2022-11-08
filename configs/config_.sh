@@ -8,19 +8,7 @@ PROJECT_DIR=/NVME/decrypted/scratch/multitrait
 
 config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # returns parent directory of this file
 
-#### PARALLEL COMPUTING 
-
-#to run one by one, set n_cpu=1
-n_cpu=50
-step_size=$((n_img/n_cpu))
-batch_max=$((n_cpu * step_size))
-remainder=$(( n_img - step_size * n_cpu ))
-
-#### USER-SPECIFIC CONFIGURATIONS
-
-source $config_dir/config_personal.sh
-
-############################## FROM IMAGES TO PHENOTYPES ##############################
+############################# FROM IMAGES TO PHENOTYPES ##############################
 
 #### DATASET OF CHOICE
 
@@ -200,3 +188,15 @@ MAIN_NAMES='A tortuosity,V tortuosity,ratio tortuosity,A std diameter,V std diam
 ##### FIGURES
 FIGURES_DIR=$PARTICIPANT_PHENO_DIR/figures/
 What_type_phenotype='main' #suplementary # fror MLR, Violin, Histogram, Genes
+
+#### PARALLEL COMPUTING 
+
+#to run one by one, set n_cpu=1
+n_cpu=50
+step_size=$((n_img/n_cpu))
+batch_max=$((n_cpu * step_size))
+remainder=$(( n_img - step_size * n_cpu ))
+
+#### USER-SPECIFIC CONFIGURATIONS
+
+source $config_dir/config_personal.sh

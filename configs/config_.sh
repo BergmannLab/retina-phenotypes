@@ -51,7 +51,7 @@ dir_images2=/NVME/decrypted/ukbb/fundus/raw/CLRIS/ # folder containing raw fundu
 
 #### UNIQUE RUN LABEL
 
-RUN="$data_set"_ZERO
+RUN="$data_set"_PREPRINT
 
 #### FOLDER STRUCTURE
 
@@ -169,10 +169,10 @@ mask_radius=660 # works for UKBB, may be adapted in other datasets, though only 
 
 #### IMAGE MEASUREMENTS TO PARTICIPANT MEASUREMENTS
 
-VENTILE=4 # Vascular density threshold (every image with values below the treshold will be removed)
+#VENTILE=4 # Vascular density threshold (every image with values below the treshold will be removed)
 
-PARTICIPANT_STAT_ID=2022_08_16_ventile"$VENTILE"
-QC=$RUN_DIR/qc/ageCorrected_ventiles"$VENTILE".txt
+PARTICIPANT_STAT_ID=2022_11_08_preprint_candidate
+QC=$RUN_DIR/qc/zekavat.txt #ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS

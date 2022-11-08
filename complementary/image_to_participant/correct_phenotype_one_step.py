@@ -26,8 +26,14 @@ from matplotlib import pyplot as plt
 RUN_PATH = sys.argv[1]
 PHENO_PATH = RUN_PATH+"participant_phenotype/"
 ID = sys.argv[2]
-OUTID = ID+"_corrected"
 CASE=sys.argv[3] #qqnorm or z
+OUTID = ID+"_corrected"
+
+# required to jibe with Jura GWAS scripts. I'm already correcting rbINT phenotypes for covariates here (for historical reasons), technically we could leave it to GWAS software fully and simply perform rbINT and store, without any covar removal
+if CASE=='qqnorm':
+    OUTID = ID+"_corrected"
+else:
+    OUTID = ID
 
 traitsfile = PHENO_PATH+ID+'_raw.csv'
 covarsfile = RUN_PATH+'diseases_cov/'+ID+"_diseases_cov.csv"

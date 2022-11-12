@@ -31,7 +31,8 @@ cd $script_dir
 if (( $batch_max > 0 )); then
     for i in $(seq 1 $step_size $batch_max); do (nice $matlab_dir -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW $dir_input $classification_output_dir $TYPE_OF_VESSEL_OF_INTEREST $AV_threshold $script_dir $i $step_size $min_QCthreshold_1 $max_QCthreshold_1 $min_QCthreshold_2 $max_QCthreshold_2 $dir_ARIA_output $aria_processor $ALL_IMAGES" > $helper_dir/batch$i.txt &); done
 fi
-nice $matlab_dir -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW $dir_input $classification_output_dir $TYPE_OF_VESSEL_OF_INTEREST $AV_threshold $script_dir $(($batch_max + 1)) $remainder $min_QCthreshold_1 $max_QCthreshold_1 $min_QCthreshold_2 $max_QCthreshold_2 $dir_ARIA_output $aria_processor $ALL_IMAGES" > $helper_dir/batch$(($batch_max + 1 )).txt &
+wait
+nice $matlab_dir -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW $dir_input $classification_output_dir $TYPE_OF_VESSEL_OF_INTEREST $AV_threshold $script_dir $(($batch_max + 1)) $remainder $min_QCthreshold_1 $max_QCthreshold_1 $min_QCthreshold_2 $max_QCthreshold_2 $dir_ARIA_output $aria_processor $ALL_IMAGES" > $helper_dir/batch$(($batch_max + 1 )).txt
 
 ## OPTION 2: (Recomended!) TO DO: there are many 'warning' errors when running Matlab
 #cd $script_dir && /Applications/MATLAB_R2020b.app/bin/matlab -nodisplay -nosplash -nodesktop -r "addpath(genpath('/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/'));ARIA_run_tests $script_parmeters ;quit;"

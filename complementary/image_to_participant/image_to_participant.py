@@ -274,6 +274,23 @@ if __name__ == '__main__':
 
         # replacing potential infinites with nan
         stats.replace([np.inf, -np.inf], np.nan, inplace=True)
+        
+        # removing outliers
+        # outlier is defined as being further from the mean as 1/count quantile, assuming normality
+        for i in stats.columns:
+            mean=stats[i].mean()
+            std=stats[i].std()
+            count=stats[i].count() # number of non-nan images
+
+            quantile = ss.norm.ppf(1-1/count, loc=mean,scale=std)
+
+            n_removed = len(stats[i].loc[abs(stats[i])>mean+10*std])
+
+            print(f"Number of outliers removed for phenotype {i}: {n_removed}")
+
+            stats[i].loc[abs(stats[i])>mean+10*std] = np.nan
+
+
 
         #QC
         imgs = pd.read_csv(qcFile, header=None) # images that pass QC of choice

@@ -391,8 +391,8 @@ class Measure_IDVP():
             gray=np.maximum(img[:,:,0], img[:,:,2])
             gray=np.stack((gray,gray,gray),axis=2)
             #print(gray.shape)
-            img_mskd = self.mask_image(img, to_gray=False)
-            img_mskd_gray = self.mask_image(gray, to_gray=False)
+            img_mskd = self.mask_image(img, to_gray=False, mask_radius=self.mask_radius)
+            img_mskd_gray = self.mask_image(gray, to_gray=False, mask_radius = self.mask_radius)
             #print([round(i * scale_factor) for i in img_mskd.shape[0:2]])
             img_small = cv2.resize(img, [round(i * scale_factor) for i in img_mskd.shape[1::-1]])
             gray_small = cv2.resize(gray, [round(i * scale_factor) for i in img_mskd.shape[1::-1]])
@@ -565,12 +565,12 @@ class Measure_IDVP():
         return pd.DataFrame(aux), pd.DataFrame(aux_eq), equation_standard_CRE #,statistics.median(auxiliar_values_eq) #pd.DataFrame(auxiliar_values)#, statistics.median(auxiliar_values_eq)
 
 
-    def mask_image(self, img, to_gray=False):
+    def mask_image(self, img, mask_radius, to_gray=False):
         hh,ww = img.shape[:2]
         #print(hh//2,ww//2)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         mask = np.zeros_like(gray)
-        mask = cv2.circle(mask, (ww//2,hh//2), self.mask_radius, (255,255,255), -1)
+        mask = cv2.circle(mask, (ww//2,hh//2), mask_radius, (255,255,255), -1)
         #mask = np.invert(mask.astype(bool))
         #result = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
         #result[:, :] = mask[:,:]

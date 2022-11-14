@@ -39,7 +39,7 @@ def extract_class_init():
     ## Parameter for N main vessels
     limit_diameter_main = sys.argv[15] 
     ## Parameter for Vascular Density
-    mask_radius=sys.argv[16]  # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
+    mask_radius=np.int(sys.argv[16])  # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
     return phenotype_dir,aria_measurements_dir,OD_POSITIONS,delta,R_0,min_ta,max_ta,lower_accept,upper_accept,norm_acceptance,neighborhood_cte,limit_diameter_main,mask_radius
 
 

@@ -4,7 +4,7 @@ source ../../configs/config_.sh
 
 #### 1) Image to participant
 
-nice -n 1 python3.8 image_to_participant.py $QC $IMAGE_PHENO_DIR/ $PARTICIPANT_PHENO_DIR/ $SAMPLE_FILE $PARTICIPANT_STAT_ID
+nice -n 1 python3.8 image_to_participant.py $QC $IMAGE_PHENO_DIR/ $PARTICIPANT_PHENO_DIR/ $SAMPLE_FILE $PARTICIPANT_STAT_ID $n_std
 
 
 #### 2) Create disease & covar df

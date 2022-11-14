@@ -165,6 +165,9 @@ PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenot
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
 
+# OUTLIER REMOVAL
+n_std=10 # all abs(measurements)>mean+n_std*std are removed from analysis
+
 # COVARIATES, DISEASES
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
 diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/

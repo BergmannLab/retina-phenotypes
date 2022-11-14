@@ -249,6 +249,7 @@ if __name__ == '__main__':
         output_dir = sys.argv[3]
         sample_file = sys.argv[4]
         EXPERIMENT_ID = sys.argv[5] 
+        n_std = int(sys.argv[6])
 
         os.chdir(input_dir)
 
@@ -276,7 +277,10 @@ if __name__ == '__main__':
         stats.replace([np.inf, -np.inf], np.nan, inplace=True)
         
         # removing outliers
-        # outlier is defined as being further from the mean as 1/count quantile, assuming normality
+        # outliers could be defined in multiple ways
+        # 1) as being further from the mean as 1/count quantile, assuming normality
+        # 2) as a fix number of stds away from the mean
+        # # we currently use 2)
         for i in stats.columns:
             mean=stats[i].mean()
             std=stats[i].std()
@@ -284,7 +288,7 @@ if __name__ == '__main__':
 
             quantile = ss.norm.ppf(1-1/count, loc=mean,scale=std)
 
-            n_removed = len(stats[i].loc[abs(stats[i])>mean+10*std])
+            n_removed = len(stats[i].loc[abs(stats[i])>mean+n_std*std])
 
             print(f"Number of outliers removed for phenotype {i}: {n_removed}")
 

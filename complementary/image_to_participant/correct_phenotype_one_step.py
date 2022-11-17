@@ -539,6 +539,8 @@ if CASE == 'qqnorm':
 else:
     reg_corrected.to_csv(PHENO_PATH+OUTID+"_z.csv")
     
+    trait_correlations = pd.DataFrame(reg_corrected.corr())
+    trait_correlations.to_csv(PHENO_PATH+OUTID+"_z_corrs.csv")
     h = sns.clustermap(data=reg_corrected.corr(), figsize=(40,40), cmap='viridis')
     dgram=h.dendrogram_col.dendrogram
     D = np.array(dgram['dcoord'])

@@ -27,19 +27,19 @@ def extract_class_init():
     OD_POSITIONS = sys.argv[5]
 
     ## Parameters for temporal angle
-    delta = sys.argv[7] 
-    R_0 = sys.argv[8] 
-    min_ta = sys.argv[9] 
-    max_ta = sys.argv[10] 
-    lower_accept = sys.argv[11] 
-    upper_accept = sys.argv[12] 
+    delta = float(sys.argv[7]) 
+    R_0 = float(sys.argv[8])
+    min_ta = float(sys.argv[9])
+    max_ta = float(sys.argv[10]) 
+    lower_accept = float(sys.argv[11]) 
+    upper_accept = float(sys.argv[12]) 
     ## Parameters for bifurcations
-    norm_acceptance = sys.argv[13] 
-    neighborhood_cte = sys.argv[14] 
+    norm_acceptance = float(sys.argv[13]) 
+    neighborhood_cte = float(sys.argv[14])
     ## Parameter for N main vessels
-    limit_diameter_main = sys.argv[15] 
+    limit_diameter_main = float(sys.argv[15]) 
     ## Parameter for Vascular Density
-    mask_radius=np.int(sys.argv[16])  # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
+    mask_radius=int(sys.argv[16])  # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
     return phenotype_dir,aria_measurements_dir,OD_POSITIONS,delta,R_0,min_ta,max_ta,lower_accept,upper_accept,norm_acceptance,neighborhood_cte,limit_diameter_main,mask_radius
 
 

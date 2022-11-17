@@ -77,7 +77,14 @@ fi
 
 #### COUNT RAW IMAGES, STORE LABELS
 
-for i in $(ls $dir_images2 | cut -f1 -d.); do echo $i.png; done > $dir_input/all_raw_images.txt
+if [ ! -f "$dir_input"/all_raw_images.txt ]; then
+	for i in $(ls $dir_images2 | cut -f1 -d.); do
+		echo $i.png > "$dir_input"/all_raw_images.txt
+	done
+else
+	echo "all_raw_images.txt" already exists
+fi
+
 ALL_IMAGES=$dir_input/all_raw_images.txt
 n_img=$(cat $ALL_IMAGES | wc -l)
 echo Number of raw fundus images to be processed: $n_img
@@ -159,8 +166,8 @@ mask_radius=660 # works for UKBB, may be adapted in other datasets, though only 
 
 #VENTILE=4 # Vascular density threshold (every image with values below the treshold will be removed)
 
-PARTICIPANT_STAT_ID=2022_11_13_preprint_candidate
-QC=$RUN_DIR/qc/zekavat_centercropped_percentile25.txt #ageCorrected_ventiles"$VENTILE".txt
+PARTICIPANT_STAT_ID=2022_11_17_test
+QC=$RUN_DIR/qc/zekavat_centercropped_percentile25 #ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS

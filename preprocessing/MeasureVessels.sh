@@ -18,21 +18,18 @@ begin=$(date +%s)
 ### Create a folder to save the results
 mkdir -p $dir_ARIA_output
 
-### Set up the directories
-base_dir=$PWD
-script_dir=$PWD/helpers/MeasureVessels/src/petebankhead-ARIA-328853d/ARIA_tests
-helper_dir=$base_dir/helpers/MeasureVessels
-
 ### Depending if you use the interpreter or not you have different options. These are commented below
 ## OPTION by default
 rm -rf $dir_ARIA_output # clear old ARIA output
 mkdir -p $dir_ARIA_output
-cd $script_dir
 if (( $batch_max > 0 )); then
-    for i in $(seq 1 $step_size $batch_max); do (nice $matlab_dir -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW $dir_input $classification_output_dir $TYPE_OF_VESSEL_OF_INTEREST $AV_threshold $script_dir $i $step_size $min_QCthreshold_1 $max_QCthreshold_1 $min_QCthreshold_2 $max_QCthreshold_2 $dir_ARIA_output $aria_processor $ALL_IMAGES" > $helper_dir/batch$i.txt &); done
+	for i in $(seq 1 $step_size $batch_max); do # i: batch start, step_size: batch size
+		./aria_batch.sh $i $step_size & # if don't set to background, Matlab will run in an endless loop
+	done
+	wait
 fi
+./aria_batch.sh $(($batch_max + 1)) $remainder & # if I don't set to background, Matlab will run in an endless loop
 wait
-nice $matlab_dir -nodisplay -nosplash -nodesktop -r "ARIA_run_tests 0 REVIEW $dir_input $classification_output_dir $TYPE_OF_VESSEL_OF_INTEREST $AV_threshold $script_dir $(($batch_max + 1)) $remainder $min_QCthreshold_1 $max_QCthreshold_1 $min_QCthreshold_2 $max_QCthreshold_2 $dir_ARIA_output $aria_processor $ALL_IMAGES" > $helper_dir/batch$(($batch_max + 1 )).txt
 
 ## OPTION 2: (Recomended!) TO DO: there are many 'warning' errors when running Matlab
 #cd $script_dir && /Applications/MATLAB_R2020b.app/bin/matlab -nodisplay -nosplash -nodesktop -r "addpath(genpath('/Users/sortinve/Desktop/Vascular_shared_genetics_in_the_retina/__CODIGO/retina-phenotypes/'));ARIA_run_tests $script_parmeters ;quit;"

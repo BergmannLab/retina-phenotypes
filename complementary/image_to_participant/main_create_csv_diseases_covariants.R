@@ -28,9 +28,13 @@ data_all = create_dataset_both_eyes(data_aux, phenofiles_dir_both, name_phenofil
 colnames(data_all)
 
 ## Average columns:
-data_all$SBP <- apply(select(data_all, SBP_00, SBP_01),1,function(x) mean(na.omit(x)))
-data_all$DBP <- apply(select(data_all, DBP_00, DBP_01),1,function(x) mean(na.omit(x)))
-data_all$PR <- apply(select(data_all, PR_00, PR_01),1,function(x) mean(na.omit(x)))
+data_all$SBP_00 <- apply(select(data_all, SBP_00, SBP_01),1,function(x) mean(na.omit(x)))
+data_all$DBP_00 <- apply(select(data_all, DBP_00, DBP_01),1,function(x) mean(na.omit(x)))
+data_all$PR_00 <- apply(select(data_all, PR_00, PR_01),1,function(x) mean(na.omit(x)))
+
+data_all$SBP_10 <- apply(select(data_all, SBP_10, SBP_11),1,function(x) mean(na.omit(x)))
+data_all$DBP_10 <- apply(select(data_all, DBP_10, DBP_11),1,function(x) mean(na.omit(x)))
+data_all$PR_10 <- apply(select(data_all, PR_10, PR_11),1,function(x) mean(na.omit(x)))
          
 data_all$spherical_power_00 <- apply(select(data_all, spherical_power_R_00, spherical_power_L_00),1,function(x) mean(na.omit(x)))
 data_all$spherical_power_10 <- apply(select(data_all, spherical_power_R_10, spherical_power_L_10),1,function(x) mean(na.omit(x)))
@@ -60,15 +64,15 @@ data_all["age_center_3"]= data_all["age_center"]^3
 
 #data_all["spherical_power"] = data_all["spherical_power_10"]/data_all["instance2"] 
 #data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
-data_all$spherical_power <- apply(select(data_all, spherical_power_00, spherical_power_10),1,function(x) mean(na.omit(x)))
-data_all["spherical_power_2"]= data_all["spherical_power"]^2
-data_all["spherical_power_3"]= data_all["spherical_power"]^3
+#data_all$spherical_power_0 <- apply(select(data_all, spherical_power_00, spherical_power_10),1,function(x) mean(na.omit(x)))
+#data_all["spherical_power_0_2"]= data_all["spherical_power"]^2
+#data_all["spherical_power_0_3"]= data_all["spherical_power"]^3
 
 #data_all["cylindrical_power"] = data_all["cylindrical_power_10"]/data_all["instance2"] 
 #data_all$cylindrical_power <- ifelse(is.na(data_all$cylindrical_power), data_all$cylindrical_power_00, data_all$cylindrical_power)
-data_all$cylindrical_power <- apply(select(data_all, cylindrical_power_00, cylindrical_power_10),1,function(x) mean(na.omit(x)))
-data_all["cylindrical_power_2"]= data_all["cylindrical_power"]^2
-data_all["cylindrical_power_3"]= data_all["cylindrical_power"]^3
+#data_all$cylindrical_power_0 <- apply(select(data_all, cylindrical_power_00, cylindrical_power_10),1,function(x) mean(na.omit(x)))
+#data_all["cylindrical_power_0_2"]= data_all["cylindrical_power"]^2
+#data_all["cylindrical_power_0_3"]= data_all["cylindrical_power"]^3
 
 #data_all$instance2 <- NULL
 
@@ -81,3 +85,4 @@ print(sum(is.na(data_all$spherical_power)))
 print(sum(is.na(data_all$cylindrical_power)))
                                        
 write.csv(data_all, paste(diseases_pheno_cov_file, csv_name, sep="") , row.names = FALSE)
+#write.csv(data_all, paste('/SSD/home/sofia/retina-phenotypes/complementary/image_to_participant/', csv_name, sep="") , row.names = FALSE)

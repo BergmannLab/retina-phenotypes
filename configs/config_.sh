@@ -166,14 +166,14 @@ mask_radius=660 # works for UKBB, may be adapted in other datasets, though only 
 
 #VENTILE=4 # Vascular density threshold (every image with values below the treshold will be removed)
 
-PARTICIPANT_STAT_ID=2022_11_17_test
-QC=$RUN_DIR/qc/zekavat_centercropped_percentile25 #ageCorrected_ventiles"$VENTILE".txt
+PARTICIPANT_STAT_ID=2022_11_18_preprint_lwnet
+QC=$RUN_DIR/qc/zekavat_centercropped_percentile25.txt #ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
 SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
 
 # OUTLIER REMOVAL
-n_std=10 # all abs(measurements)>mean+n_std*std are removed from analysis
+n_std=10 # all measurement>mean+n_std*std | measurement<mean-n_std*std are removed from analysis
 
 # COVARIATES, DISEASES
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'

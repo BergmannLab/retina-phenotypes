@@ -4,12 +4,13 @@ source ../../configs/config_.sh
 begin=$(date +%s)
 
 #### 1) Violin plots, seaborn, histograms plots
+nice python3.8 main_phenotypes_plots.py $PARTICIPANT_PHENO_DIR $name_phenofile $FIGURES_DIR $MAIN_LABELS "$MAIN_NAMES" #$What_type_phenotype $SUPPLEMENTARY_LABELS $SUPPLEMENTARY_NAMES 
 
-nice python3.8 main_phenotypes_plots.py $PARTICIPANT_PHENO_DIR $name_phenofile $FIGURES_DIR $VENTILE $MAIN_LABELS "$MAIN_NAMES" #$What_type_phenotype $SUPPLEMENTARY_LABELS $SUPPLEMENTARY_NAMES 
+#### 2) Baselines (table)
+nice python3.8 baselines.py $diseases_pheno_cov_file $csv_name $describe_baselines_file
 
 
-
-#### 2) PCA
+#### 3) PCA
 
 
 echo FINISHED

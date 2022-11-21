@@ -166,7 +166,7 @@ mask_radius=660 # works for UKBB, may be adapted in other datasets, though only 
 
 #VENTILE=4 # Vascular density threshold (every image with values below the treshold will be removed)
 
-PARTICIPANT_STAT_ID=2022_11_17_test
+PARTICIPANT_STAT_ID=2022_11_13_preprint_candidate
 QC=$RUN_DIR/qc/zekavat_centercropped_percentile25 #ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
@@ -181,6 +181,7 @@ diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/
 name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
 csv_name="$PARTICIPANT_STAT_ID"_diseases_cov.csv
 csv_z_name="$PARTICIPANT_STAT_ID"_corrected_z.csv
+describe_baselines_file="$PARTICIPANT_STAT_ID"_describe_baselines.csv
 
 #### GWAS
 gwas_dir="$RUN_DIR"/gwas/"$PARTICIPANT_STAT_ID"/
@@ -196,7 +197,7 @@ MAIN_LABELS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_o
 MAIN_NAMES='A tortuosity,V tortuosity,ratio tortuosity,A std diameter,V std diameter,bifurcations,A vascular density,V vascular density,ratio vascular density,A temporal angle,V temporal angle,A central retinal eq,V central retinal eq,ratio central retinal eq,A median diameter,V median diameter,ratio median diameter'
 
 ##### FIGURES
-FIGURES_DIR=$PARTICIPANT_PHENO_DIR/figures/
+FIGURES_DIR=$RUN_DIR//figures/
 What_type_phenotype='main' #suplementary # fror MLR, Violin, Histogram, Genes
 
 #### PARALLEL COMPUTING 

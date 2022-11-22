@@ -58,9 +58,9 @@ data_all$cylindrical_power_10 <- apply(select(data_all, cylindrical_power_R_10, 
 
 #data_all["age_center"] = data_all["age_center_10"]/data_all["instance2"] 
 #data_all$age_center <- ifelse(is.na(data_all$age_center), data_all$age_center_00, data_all$age_center)
-data_all$age_center <- apply(select(data_all, age_center_00, age_center_10),1,function(x) mean(na.omit(x)))
-data_all["age_center_2"]= data_all["age_center"]^2
-data_all["age_center_3"]= data_all["age_center"]^3
+#data_all$age_center <- apply(select(data_all, age_center_00, age_center_10),1,function(x) mean(na.omit(x)))
+#data_all["age_center_2"]= data_all["age_center"]^2
+#data_all["age_center_3"]= data_all["age_center"]^3
 
 #data_all["spherical_power"] = data_all["spherical_power_10"]/data_all["instance2"] 
 #data_all$spherical_power <- ifelse(is.na(data_all$spherical_power), data_all$spherical_power_00, data_all$spherical_power)
@@ -80,7 +80,7 @@ print('Number of nans of PC2, PC5, sex, age_center, spherical_power and cylindri
 print(sum(is.na(data_all$PC2)))
 print(sum(is.na(data_all$PC5)))
 print(sum(is.na(data_all$sex)))
-print(sum(is.na(data_all$age_center)))
+#print(sum(is.na(data_all$age_center)))
 print(sum(is.na(data_all$spherical_power)))
 print(sum(is.na(data_all$cylindrical_power)))
                                        

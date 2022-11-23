@@ -14,32 +14,31 @@ from scipy.stats import zscore
 from matplotlib import pyplot as plt
 
 
-# In[8]:
+# In[2]:
 
 
-# RUN_PATH = "/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/"
+# RUN_PATH = "/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT/"
 # PHENO_PATH = RUN_PATH+"participant_phenotype/"
-# ID = "2022_07_08_ventile2"
-# OUTID = ID+"_corrected_one_step_explore"
-# CASE='qqnorm' #qqnorm or raw
+# ID = "2022_11_23_covar_fix"
+# CASE='qqnorm' #qqnorm or z
+# MAIN_TRAITS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_orig_artery,VD_orig_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'.split(',')
+# MAIN_LABELS='A tortuosity,V tortuosity,ratio tortuosity,A std diameter,V std diameter,bifurcations,A vascular density,V vascular density,ratio vascular density,A temporal angle,V temporal angle,A central retinal eq,V central retinal eq,ratio central retinal eq,A median diameter,V median diameter,ratio median diameter'.split(',')
 
 RUN_PATH = sys.argv[1]
 PHENO_PATH = RUN_PATH+"participant_phenotype/"
 ID = sys.argv[2]
-CASE=sys.argv[3] #qqnorm or z
 OUTID = ID+"_corrected"
+CASE=sys.argv[3] #qqnorm or z
+MAIN_TRAITS=sys.argv[4].split(',')
+MAIN_LABELS=sys.argv[5].split(',')
 
-# required to jibe with Jura GWAS scripts. I'm already correcting rbINT phenotypes for covariates here (for historical reasons), technically we could leave it to GWAS software fully and simply perform rbINT and store, without any covar removal
-if CASE=='qqnorm':
-    OUTID = ID+"_corrected"
-else:
-    OUTID = ID
+OUTID = ID+"_"+CASE+"_corrected"
 
 traitsfile = PHENO_PATH+ID+'_raw.csv'
 covarsfile = RUN_PATH+'diseases_cov/'+ID+"_diseases_cov.csv"
 
 
-# In[9]:
+# In[3]:
 
 
 # rbINT
@@ -123,13 +122,13 @@ def rank_to_normal(rank, c, n):
     return ss.norm.ppf(x)
 
 
-# In[10]:
+# In[4]:
 
 
 traits = pd.read_csv(traitsfile, index_col=0)
 
 
-# In[11]:
+# In[5]:
 
 
 # apply rank-based inverse normal transform
@@ -157,7 +156,7 @@ else: # raw
     pass
 
 
-# In[12]:
+# In[6]:
 
 
 # plot and save raw histograms
@@ -175,16 +174,17 @@ plt.tight_layout()
 plt.savefig(PHENO_PATH+ID+"_"+CASE+"_distribution.pdf")
 
 
-# In[51]:
+# In[7]:
 
 
 # load covar
 
-covar = pd.read_csv(covarsfile, index_col=0, parse_dates=['date_AD'])
+covar = pd.read_csv(covarsfile, index_col='eid', parse_dates=['date_AD'])
 instance = covar['instance']
-        
-covar['sex_by_age'] = covar['age_center'] * covar['sex']
-covar['sex_by_age_2'] = covar['age_center_2'] * covar['sex']
+
+covar['age_center_both_2'] = covar['age_center_both'].pow(2)
+covar['sex_by_age'] = covar['age_center_both'] * covar['sex']
+covar['sex_by_age_2'] = covar['age_center_both_2'] * covar['sex']
 
 # covars['age2'] = covars['age'].pow(2)
 # # covars['age3'] = covars['age'].pow(3)
@@ -205,31 +205,13 @@ covar['PC5_squared'] = covar['PC5'].pow(2)
 # covars['cylindrical_power_3'] = covars['cylindrical_power'].pow(3)
 
 
-# In[14]:
+# In[8]:
 
 
 len(traits), len(covar)
 
 
-# In[15]:
-
-
-traits.index[0:10]
-
-
-# In[16]:
-
-
-traits.isna().sum().min()
-
-
-# In[17]:
-
-
-covar.index[0:10]
-
-
-# In[52]:
+# In[9]:
 
 
 # filter covar
@@ -239,7 +221,7 @@ covar.index[0:10]
 # usecovars = usecovars + ['PC5', 'PC5_squared']
 # usecovars = usecovars + ["PC"+str(i) for i in range(6,41)] # dropping PC21-40, none are individually significant
 
-usecovars = ['sex','age_center','age_center_2','sex_by_age','sex_by_age_2','spherical_power','spherical_power_2','cylindrical_power','cylindrical_power_2','PC1']
+usecovars = ['sex','age_center_both','age_center_both_2','sex_by_age','sex_by_age_2','spherical_power_both','spherical_power_both_2','cylindrical_power_both','cylindrical_power_both_2','instance','PC1']
 usecovars = usecovars + ["PC"+str(i) for i in range(2,5)]
 usecovars = usecovars + ['PC5']
 usecovars = usecovars + ["PC"+str(i) for i in range(6,21)] # dropping PC21-40, none are individually significant
@@ -247,10 +229,11 @@ usecovars = usecovars + ["PC"+str(i) for i in range(6,21)] # dropping PC21-40, n
 step1_covars = usecovars # we now perform only one step
 # step1_covars = ['sex','age_center','age_center_2','spherical_power','spherical_power_2','cylindrical_power','cylindrical_power_2'] + ["PC"+str(i) for i in range(1,11)]
 
+covar_full = covar.copy()
 covar = covar[usecovars]
 
 
-# In[53]:
+# In[10]:
 
 
 #z-scoring of raw traits, and covar
@@ -266,7 +249,7 @@ covar_z = covar.apply(zscore, nan_policy='omit')
 # covar_z.dropna(inplace=True) # TEMPORARY, to remove missing spherical values
 
 
-# In[54]:
+# In[11]:
 
 
 # covar clustermap
@@ -274,10 +257,24 @@ h = sns.clustermap(data=covar_z.corr(), cmap='viridis')
 dgram=h.dendrogram_col.dendrogram
 D = np.array(dgram['dcoord'])
 I = np.array(dgram['icoord'])
-plt.savefig(PHENO_PATH+ID+"_correction_covar_distribution.pdf")
+plt.savefig(PHENO_PATH+ID+"_covar_distribution.pdf")
 
 
-# In[55]:
+# In[12]:
+
+
+# adding categorical variables
+
+usecategorical = ['assessment_centre_both','genotype_measurement_batch','instance']
+
+covar_z['assessment_centre_both'] = covar_full['assessment_centre_both']
+covar_z['genotype_measurement_batch'] = covar_full['genotype_measurement_batch']
+covar_z['instance'] = covar_full['instance']
+covar_z.loc[covar_z['genotype_measurement_batch']<0, 'genotype_measurement_batch'] = 0
+covar_z.loc[covar_z['genotype_measurement_batch']>0, 'genotype_measurement_batch'] = 1
+
+
+# In[13]:
 
 
 # equalize participants
@@ -290,7 +287,7 @@ covar_z = covar_z.loc[index_intersect]
 instance = instance.loc[index_intersect]
 
 
-# In[56]:
+# In[14]:
 
 
 # PCA (not used finally, but I'm still removing some nans)
@@ -308,7 +305,7 @@ traits_nona = traits.loc[covar_z_nona.index]
 pcs = pd.DataFrame(pca.fit_transform(covar_z_nona), index=covar_z_nona.index, columns=['covPC'+str(i) for i in range(1,npcs+1)])
 
 
-# In[57]:
+# In[15]:
 
 
 # check size match
@@ -318,238 +315,339 @@ len(traits),len(covar_z), len(pcs), len(covar_z_nona), len(traits_nona)
 
 # # Regressing out covariate effects
 
-# In[58]:
+# In[16]:
 
 
-def mlr2(X, y):
+# def mlr2(X, y):
     
-    import pandas as pd
-    import numpy as np
-    from sklearn import datasets, linear_model
-    from sklearn.linear_model import LinearRegression
-    import statsmodels.api as sm
-    from scipy import stats
+#     import pandas as pd
+#     import numpy as np
+#     from sklearn import datasets, linear_model
+#     from sklearn.linear_model import LinearRegression
+#     import statsmodels.api as sm
+#     from scipy import stats
 
-    nani = np.argwhere(~np.isnan(y.values))
-    nani = [i[0] for i in nani]
+#     nani = np.argwhere(~np.isnan(y.values))
+#     nani = [i[0] for i in nani]
     
-#     print(X.shape, len(y), len(nani))
+# #     print(X.shape, len(y), len(nani))
     
-    X = X.iloc[nani]
-    y = list(y.iloc[nani])
+#     X = X.iloc[nani]
+#     y = list(y.iloc[nani])
 
-#     print(X.shape, len(y))
+# #     print(X.shape, len(y))
     
-    X2 = sm.add_constant(X)
-    est = sm.OLS(y, X2)
-    est2 = est.fit()
-#     print(est2.summary())
+#     X2 = sm.add_constant(X)
+#     est = sm.OLS(y, X2)
+#     est2 = est.fit()
+# #     print(est2.summary())
     
-    return est2
+#     return est2
 
 
-# In[59]:
+# In[17]:
 
 
-# regression, step 1
+# Visualization model
+# * contains only linear covariates
+# * adjusts only main traits
 
-reg_covar = covar_z_nona[step1_covars].copy()
-reg_response = traits_nona.copy()
+from statsmodels.formula.api import ols
 
-covar_pval = pd.DataFrame(columns = reg_response.columns, index=reg_covar.columns)
-covar_effects = pd.DataFrame(columns = reg_response.columns, index=reg_covar.columns)
-reg_corrected = reg_response.copy()
+viz_traits_corrected = traits_nona[MAIN_TRAITS].copy()
 
-for i in reg_response.columns:
-    notna = reg_response[i].notna()
+for i,trait in enumerate(MAIN_TRAITS):
+
+
+    regdf = covar_z_nona.copy()
+    regdf['response'] = traits_nona[trait]
     
-    regr = mlr2(reg_covar.loc[notna], reg_response[i].loc[notna])
-    covar_pval[i] = regr.pvalues[1:]
-    covar_effects[i] = regr.params[1:]
+    print(trait)
+    regdf['assessment_centre_both'].replace(11024.0, 0, inplace=True)
+    regdf.dropna(inplace=True)
+    # print(len(regdf))
+    
+    # potential two-step
+    # fit = ols('response ~ age_center_both', data=regdf).fit()
+    # regdf['response'] = regdf['response'] - fit.params[1] * regdf['age_center_both']
+
+    fit = ols('response ~  sex + age_center_both + sex_by_age + spherical_power_both + cylindrical_power_both + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20 + C(assessment_centre_both) + C(genotype_measurement_batch) + C(instance)', data=regdf).fit() 
+    # fit = ols('response ~ C(assessment_centre_both) + C(genotype_measurement_batch) + age_center_both + age_center_both_2 + sex + sex_by_age + sex_by_age_2 + spherical_power_both + spherical_power_both_2 + cylindrical_power_both + cylindrical_power_both_2 + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
+    # fit = ols('response ~ age_center_both + sex + sex_by_age + spherical_power_both + cylindrical_power_both + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
 
     
+    viz_traits_corrected[trait] = fit.resid
+
+    if i == 0:
+        covar_pval = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_coefs.loc[trait] = fit.params[1:].values
+    else:
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs.loc[trait] = fit.params[1:].values
+        
 covar_pval[covar_pval == 0] = 8.984227e-308
 
 
-# In[60]:
-
-
-# correct each phenotype (first step, we correct all, because important)
-
-significant_effects=covar_effects.copy()
-# significant_effects[np.invert(significant)] = 0
-# significant_effects = significant_effects.transpose()
-
-for i in reg_response.columns:
-#     print(i)
-    notna = reg_response[i].notna()
-    
-    reg_corrected[i] = reg_response[i] - list(reg_covar.dot(pd.Series(significant_effects[i])))
-#     print(np.corrcoef(reg_corrected[i].loc[notna],reg_response[i].loc[notna]))
-
-
-# In[61]:
-
-
-# p-values to logscale, remove infinites
-
-covar_pval.replace(0.0,np.min(covar_pval[covar_pval != 0.0]), inplace=True)
-covar_pval = -covar_pval.applymap(np.log10)
-covar_pval = covar_pval.transpose()
-# covar_pval = covar_pval.loc[sorted(covar_pval.index)]
-
-covar_effects = covar_effects.transpose()
-
-
-# In[76]:
+# In[18]:
 
 
 # significance df
 
-significant = covar_pval > -np.log10(0.05 / len(covar.columns))
+significant = covar_pval < 0.05 #/ len(covar_pval)
 
 asterisks = significant.applymap(str)
 asterisks = asterisks.replace('False', "")
 asterisks = asterisks.replace('True', "*")
 
 
-# In[77]:
+# In[19]:
 
 
-selected_traits=['DF_all','tau2_all','tau3_all','tau4_all','mean_angle_taa','mean_angle_tva','VD_orig_all','eq_CRAE','eq_CRVE','ratio_CRAE_CRVE','D_std_std','slope']
+label_dict = {'C(assessment_centre_both)[T.11014.0]': 'Sheffield AC', 'C(assessment_centre_both)[T.11016.0]': 'Liverpool AC', 'C(assessment_centre_both)[T.11018.0]': 'Hounslow AC', 'C(assessment_centre_both)[T.11020.0]': 'Croydon AC', 'C(assessment_centre_both)[T.11021.0]': 'Birmingham AC',  'C(assessment_centre_both)[T.11022.0]': 'Swansea AC', 'C(genotype_measurement_batch)[T.1]':'SNP array', 'C(instance)[T.1.0]':"instance", 'age_center_both':'age', 'sex_by_age':'sex * age', 'spherical_power_both':'spherical power', 'cylindrical_power_both':'cylindrical power'}
+
+replaced_list = [x if x not in label_dict else label_dict[x] for x in covar_coefs.columns]
+covar_coefs.columns=replaced_list
 
 
-# In[78]:
+# In[20]:
 
 
-cmap = sns.color_palette("viridis", as_cmap=True)
+if CASE == 'z':
 
-plt.figure(figsize=(8,30))
-sns.heatmap(covar_pval, annot=asterisks, fmt='', cmap=cmap);
-plt.title("P-values",fontweight='bold')
-plt.tight_layout()
-plt.savefig(PHENO_PATH+ID+"_correction_step_1_pval.pdf")
+    cmap = sns.color_palette("viridis", as_cmap=True)
 
+    plt.figure(figsize=(14,6))
+    sns.heatmap(covar_coefs.loc[MAIN_TRAITS], annot=asterisks.loc[MAIN_TRAITS], fmt='', cmap=cmap, yticklabels=MAIN_LABELS, cbar_kws={"aspect": 40, 'label':"Standardized effect size"});
+    plt.title("Covariate effects on main traits",fontweight='bold')
+    plt.tight_layout()
+    plt.xticks(rotation=45, ha='right')
+    plt.savefig(RUN_PATH+"/figures/covariate_effects_on_main_traits_" + ID + ".pdf")
 
-# In[79]:
-
-
-cmap = sns.color_palette("viridis", as_cmap=True)
-
-plt.figure(figsize=(8,30))
-# sns.heatmap(np.abs(covar_effects), annot=asterisks, fmt='', cmap=cmap);
-# sns.heatmap(covar_effects.drop(columns=['sex']), annot=asterisks.drop(columns=['sex']), fmt='', cmap=cmap);
-sns.heatmap(covar_effects, annot=asterisks, fmt='', cmap=cmap);
-plt.title("Standardized betas", fontweight='bold')
-plt.tight_layout()
-plt.savefig(PHENO_PATH+ID+"_correction_step_1_beta.pdf")
-
-
-# In[80]:
-
-
-# regression, check correction
-
-reg_covar = covar_z_nona[step1_covars].copy()
-# reg_covar = covar_z_nona[['age_center','cylindrical_power','spherical_power']].copy()
-# reg_covar = covar_z_nona.drop(['sex','age_center','cylindrical_power','spherical_power'], axis=1)
-
-reg_response = reg_corrected.copy()
-
-covar_pval = pd.DataFrame(columns = reg_response.columns, index=reg_covar.columns)
-covar_effects = pd.DataFrame(columns = reg_response.columns, index=reg_covar.columns)
-reg_corrected = reg_response.copy()
-
-for i in reg_response.columns:
-    notna = reg_response[i].notna()
-
-    regr = mlr2(reg_covar.loc[notna], reg_response[i].loc[notna])
-
-    covar_pval[i] = regr.pvalues[1:]
-    covar_effects[i] = regr.params[1:]
-
-
-# In[81]:
-
-
-# p-values to logscale, remove infinites
-covar_pval = -covar_pval.applymap(np.log10)
-covar_pval.replace(np.inf,np.max(covar_pval[covar_pval != np.inf]), inplace=True)
-covar_pval = covar_pval.transpose()
-# covar_pval = covar_pval.loc[sorted(covar_pval.index)]
-
-covar_effects = covar_effects.transpose()
-
-
-# In[82]:
-
-
-# significance df
-result_shape = covar_pval.shape
-significant = covar_pval > -np.log10(0.05 / len(covar.columns))
-
-asterisks = significant.applymap(str)
-asterisks = asterisks.replace('False', "")
-asterisks = asterisks.replace('True', "*")
-
-
-# In[84]:
-
-
-cmap = sns.color_palette("viridis", as_cmap=True)
-
-plt.figure(figsize=(12,30))
-sns.heatmap(covar_pval, annot=asterisks, fmt='', cmap=cmap, vmax=1.3);
-plt.title("P-values",fontweight='bold')
-plt.tight_layout()
-plt.savefig(PHENO_PATH+ID+"_correction_step_1_control.pdf")
-
-
-# In[85]:
-
-
-# plot corrected
-
-traits_hist = reg_corrected.copy()
-
-cols = []
-for idx,i in enumerate(traits_hist.columns):
-    cols.append(traits_hist.columns[idx] + " N=" + str(len(traits_hist) - traits_hist[i].isna().sum()))
-    
-traits_hist.columns = cols
-
-traits_hist.hist(figsize=(40,40), bins=100);
-plt.tight_layout()
-plt.savefig(PHENO_PATH+ID+"_"+CASE+"_corrected_distribution.pdf")
-
-
-# In[86]:
-
-
-# write corrected, plot corrected clustermap in case raw, not qqnorm
-
-tmp = pd.read_csv(traitsfile, index_col=0)
-out = pd.DataFrame(index=tmp.index, columns=tmp.columns)
-out.update(reg_corrected)
-out = out.astype(str)
-out = out.replace('nan', '-999')
-
-if CASE == 'qqnorm':
-    out.to_csv(PHENO_PATH+OUTID+"_qqnorm.csv", index=False, sep=" ")
 else:
-    reg_corrected.to_csv(PHENO_PATH+OUTID+"_z.csv")
-    
-    trait_correlations = pd.DataFrame(reg_corrected.corr())
-    trait_correlations.to_csv(PHENO_PATH+OUTID+"_z_corrs.csv")
-    h = sns.clustermap(data=reg_corrected.corr(), figsize=(40,40), cmap='viridis')
-    dgram=h.dendrogram_col.dendrogram
-    D = np.array(dgram['dcoord'])
-    I = np.array(dgram['icoord'])
-    plt.savefig(PHENO_PATH+OUTID+"_clustermap.pdf")
+    print("Skipped covariate effect heatmap")
+
+
+# In[21]:
+
+
+# significance df
+
+significant = covar_pval < 0.5
+
+asterisks = significant.applymap(str)
+asterisks = asterisks.replace('False', "")
+asterisks = asterisks.replace('True', "*")
+
+cmap = sns.color_palette("viridis", as_cmap=True)
+
+plt.figure(figsize=(14,10))
+sns.heatmap(covar_coefs.loc[MAIN_TRAITS], annot=asterisks.loc[MAIN_TRAITS], fmt='', cmap=cmap, yticklabels=MAIN_LABELS);
+plt.title("Better to remove than keep",fontweight='bold')
+plt.tight_layout()
+plt.savefig(PHENO_PATH+ID+"_"+CASE+"_covar_effects_larger_than_05.pdf")
 
 
 # In[ ]:
 
 
 
+
+
+# In[ ]:
+
+
+
+
+
+# In[22]:
+
+
+# Visualization model - check correction
+
+from statsmodels.formula.api import ols
+
+for i,trait in enumerate(MAIN_TRAITS):
+
+
+    regdf = covar_z_nona.copy()
+    regdf['response'] = viz_traits_corrected[trait]
+    
+    print(trait)
+    regdf['assessment_centre_both'].replace(11024.0, 0, inplace=True)
+    regdf.dropna(inplace=True)
+    # print(len(regdf))
+    
+    # potential two-step
+    # fit = ols('response ~ age_center_both', data=regdf).fit()
+    # regdf['response'] = regdf['response'] - fit.params[1] * regdf['age_center_both']
+
+    fit = ols('response ~ age_center_both + sex + sex_by_age + spherical_power_both + cylindrical_power_both + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20 + C(assessment_centre_both) + C(genotype_measurement_batch) + C(instance)', data=regdf).fit() 
+    # fit = ols('response ~ C(assessment_centre_both) + C(genotype_measurement_batch) + age_center_both + age_center_both_2 + sex + sex_by_age + sex_by_age_2 + spherical_power_both + spherical_power_both_2 + cylindrical_power_both + cylindrical_power_both_2 + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
+    # fit = ols('response ~ age_center_both + sex + sex_by_age + spherical_power_both + cylindrical_power_both + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
+
+    if i == 0:
+        covar_pval = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_coefs.loc[trait] = fit.params[1:].values
+    else:
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs.loc[trait] = fit.params[1:].values
+        
+covar_pval[covar_pval == 0] = 8.984227e-308
+
+
+# In[23]:
+
+
+# significance df
+
+significant = covar_pval < 0.05 #/ len(covar_pval)
+
+asterisks = significant.applymap(str)
+asterisks = asterisks.replace('False', "")
+asterisks = asterisks.replace('True', "*")
+
+cmap = sns.color_palette("viridis", as_cmap=True)
+
+plt.figure(figsize=(14,8))
+sns.heatmap(covar_coefs.loc[MAIN_TRAITS], annot=asterisks.loc[MAIN_TRAITS], fmt='', cmap=cmap, yticklabels=MAIN_LABELS, cbar_kws={"shrink": .5}, vmin=-0.1,vmax=0.1);
+plt.title("Covariate effects on main traits",fontweight='bold')
+plt.tight_layout()
+plt.xticks(rotation=45, ha='right')
+
+
+# In[24]:
+
+
+# Full model
+# * contains squared covariates
+
+from statsmodels.formula.api import ols
+
+traits_res = traits_nona.copy()
+
+for i,trait in enumerate(traits_res.columns):
+
+    regdf = covar_z_nona.copy()
+    regdf['response'] = traits_nona[trait]
+    
+    print(trait)
+    
+    regdf['assessment_centre_both'].replace(11024.0, 0, inplace=True)
+    regdf.dropna(inplace=True)
+    
+    fit = ols('response ~ C(assessment_centre_both) + C(genotype_measurement_batch) + C(instance) + age_center_both + age_center_both_2 + sex + sex_by_age + sex_by_age_2 + spherical_power_both + spherical_power_both_2 + cylindrical_power_both + cylindrical_power_both_2 + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
+    fit = ols('response ~ age_center_both + age_center_both_2 + sex + sex_by_age + sex_by_age_2 + spherical_power_both + spherical_power_both_2 + cylindrical_power_both + cylindrical_power_both_2 + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
+
+    
+    traits_res[trait] = fit.resid
+
+    if i == 0:
+        covar_pval = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_coefs.loc[trait] = fit.params[1:].values
+    else:
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs.loc[trait] = fit.params[1:].values
+        
+covar_pval[covar_pval == 0] = 8.984227e-308
+
+
+# In[25]:
+
+
+# Check residuals have no more associations
+
+from statsmodels.formula.api import ols
+
+
+for i,trait in enumerate(traits_res.columns):
+
+    regdf = covar_z_nona.copy()
+    regdf['response'] = traits_res[trait]
+    
+    print(trait)
+    
+    regdf['assessment_centre_both'].replace(11024.0, 0, inplace=True)
+    regdf.dropna(inplace=True)
+    
+    fit = ols('response ~ C(assessment_centre_both) + C(genotype_measurement_batch) + C(instance) + age_center_both + age_center_both_2 + sex + sex_by_age + sex_by_age_2 + spherical_power_both + spherical_power_both_2 + cylindrical_power_both + cylindrical_power_both_2 + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
+    fit = ols('response ~ age_center_both + age_center_both_2 + sex + sex_by_age + sex_by_age_2 + spherical_power_both + spherical_power_both_2 + cylindrical_power_both + cylindrical_power_both_2 + PC1 + PC2 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20', data=regdf).fit() 
+
+    
+    if i == 0:
+        covar_pval = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs = pd.DataFrame(index = MAIN_TRAITS, columns=fit.pvalues.index[1:], dtype=float)
+        covar_coefs.loc[trait] = fit.params[1:].values
+    else:
+        covar_pval.loc[trait] = fit.pvalues[1:].values
+        covar_coefs.loc[trait] = fit.params[1:].values
+        
+covar_pval[covar_pval == 0] = 8.984227e-308
+
+
+# In[26]:
+
+
+# significance df
+
+significant = covar_pval < 0.05 #/ len(covar_pval)
+
+asterisks = significant.applymap(str)
+asterisks = asterisks.replace('False', "")
+asterisks = asterisks.replace('True', "*")
+
+cmap = sns.color_palette("viridis", as_cmap=True)
+
+plt.figure(figsize=(14,40))
+sns.heatmap(covar_coefs, annot=asterisks, fmt='', cmap=cmap, cbar_kws={"shrink": .5}, vmin=-0.1,vmax=0.1);
+plt.title("Effects on residuals (control)", fontweight='bold')
+plt.tight_layout()
+plt.xticks(rotation=45, ha='right')
+
+plt.savefig(PHENO_PATH+ID+"_"+CASE+"_effects_on_residuals.pdf")
+
+
+# In[28]:
+
+
+# write corrected, plot corrected clustermap in case raw, not qqnorm
+
+if CASE == 'qqnorm':
+    tmp = pd.read_csv(traitsfile, index_col=0)
+    out = pd.DataFrame(index=tmp.index, columns=tmp.columns)
+    out.update(traits_res)
+    out = out.astype(str)
+    out = out.replace('nan', '-999')
+    out.to_csv(PHENO_PATH+ID+"_qqnorm.csv", index=False, sep=" ")
+    
+    # storing covars for GWAS
+    
+    # dummy coding of assessment center categorical varaibles for bgenie
+    covar_z_out = covar_z.copy()
+    covar_z_out['assessment_centre_both'].replace(11024.0, 0, inplace=True)
+    
+    for ac in ['11014.0','11016.0','11018.0', '11020.0', '11021.0', '11022.0']: #'11024.0' (most common one) set as reference
+        covar_z_out['11024.0-'+ac] = [1  if str(i)==ac else 0 for i in covar_z_out['assessment_centre_both']]    
+    
+    covar_z_out.drop('assessment_centre_both', axis=1, inplace=True)
+    
+    covar_z_out = covar_z_out.astype(str)
+    covar_z_out.replace('nan', '-999', inplace=True)
+    covar_z_out.to_csv(PHENO_PATH+ID+"_covar.csv", index=False, sep=" ")
+
+    
+else:
+    traits_res.to_csv(PHENO_PATH+OUTID+".csv")
+    
+    h = sns.clustermap(data=traits_res.corr(), figsize=(40,40), cmap='viridis')
+    dgram=h.dendrogram_col.dendrogram
+    D = np.array(dgram['dcoord'])
+    I = np.array(dgram['icoord'])
+    plt.savefig(PHENO_PATH+OUTID+"_clustermap.pdf")
 

@@ -125,7 +125,7 @@ max_QCthreshold_2=999999
 
 #### FUNDUS MEASUREMENTS
 
-PHENOTYPE_OF_INTEREST='taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins'
+PHENOTYPE_OF_INTEREST='taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,ratios_VD,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins'
 phenotypes_dir=$RUN_DIR/image_phenotype/
 
 ### PHENOTYPES PARAMETERS:
@@ -166,7 +166,7 @@ mask_radius=660 # works for UKBB, may be adapted in other datasets, though only 
 
 #VENTILE=4 # Vascular density threshold (every image with values below the treshold will be removed)
 
-PARTICIPANT_STAT_ID=2022_11_18_preprint_lwnet
+PARTICIPANT_STAT_ID=2022_11_23_covar_fix
 QC=$RUN_DIR/qc/zekavat_centercropped_percentile25.txt #ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes

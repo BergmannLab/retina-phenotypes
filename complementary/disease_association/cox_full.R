@@ -19,13 +19,15 @@ args=commandArgs(trailingOnly=TRUE)
 RUNDIR=args[1] #"/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT"
 PHENOTYPE_ID=args[2] #"2022_11_18_preprint_lwnet"
 filter_instance=args[3] # FALSE
+pheno_z_file=args[4]
+covar_file=args[5]
 
-RUNDIR="/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT"
-PHENOTYPE_ID="2022_11_18_preprint_lwnet"
-filter_instance=FALSE
+#RUNDIR="/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT"
+#PHENOTYPE_ID="2022_11_18_preprint_lwnet"
+#filter_instance=FALSE
 
-covarfile=paste0(RUNDIR,"/diseases_cov/",PHENOTYPE_ID,"_diseases_cov.csv")
-traitfile=paste0(RUNDIR,"/participant_phenotype/",PHENOTYPE_ID,"_corrected_z.csv")
+covarfile=paste0(RUNDIR,"/diseases_cov/",covar_file)
+traitfile=paste0(RUNDIR,"/participant_phenotype/",pheno_z_file)
 
 
 if (filter_instance == TRUE) {

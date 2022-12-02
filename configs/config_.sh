@@ -179,8 +179,8 @@ n_std=10 # all measurement>mean+n_std*std | measurement<mean-n_std*std are remov
 ukbb_files_dir='/NVME/decrypted/ukbb/labels/'
 diseases_pheno_cov_file="$RUN_DIR"/diseases_cov/
 name_phenofile="$PARTICIPANT_STAT_ID"_raw_with_instance.csv
-csv_name="$PARTICIPANT_STAT_ID"_diseases_cov.csv
-csv_z_name="$PARTICIPANT_STAT_ID"_corrected_z.csv
+csv_diseases_cov_name="$PARTICIPANT_STAT_ID"_diseases_cov.csv
+csv_z_name="$PARTICIPANT_STAT_ID"_z_corrected.csv
 describe_baselines_file="$PARTICIPANT_STAT_ID"_describe_baselines.csv
 
 #### GWAS
@@ -193,8 +193,8 @@ SUPPLEMENTARY_LABELS='tau1_all,tau1_artery,tau1_vein,ratio_AV_DF,tau2_all,tau2_a
 SUPPLEMENTARY_NAMES='tortuosity,A tortuosity,V tortuosity,ratio tortuosity,tortuosity2,A tortuosity2,V tortuosity2,tortuosity3,A tortuosity3,V tortuosity3,std diameter,A std diameter,V std diameter,CVMe diameter,A CVMe diameter,V CVMe diameter,std norm diameter,A num main,V num main,A arc length,V arc length,bifurcations,vascular density,A vascular density,V vascular density,ratio vascular density,fractal dimension,A fractal dimension,V fractal dimension,A temporal angle,V temporal angle,A central retinal eq,V central retinal eq,A main diameter,V main diameter,A central retinal eq2,V central retinal eq2,ratio central retinal eq,ratio main diameter,ratio central retinal eq2,median diameter,A median diameter,V median diameter,ratio median diameter'
 
 ##### MAIN PHENOTYPES
-MAIN_LABELS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_orig_artery,VD_orig_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
-MAIN_NAMES='A tortuosity,V tortuosity,ratio tortuosity,A std diameter,V std diameter,bifurcations,A vascular density,V vascular density,ratio vascular density,A temporal angle,V temporal angle,A central retinal eq,V central retinal eq,ratio central retinal eq,A median diameter,V median diameter,ratio median diameter'
+MAIN_LABELS='mean_angle_taa,mean_angle_tva,tau1_vein,tau1_artery,ratio_AV_DF,eq_CRAE,ratio_CRAE_CRVE,D_A_std,D_V_std,eq_CRVE,ratio_VD,VD_orig_artery,bifurcations,VD_orig_vein,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
+MAIN_NAMES='A temporal angle,V temporal angle,V tortuosity,A tortuosity,ratio tortuosity,A central retinal eq,ratio central retinal eq,A std diameter,V std diameter,V central retinal eq,ratio vascular density,A vascular density,bifurcations,V vascular density,A median diameter,V median diameter,ratio median diameter'
 
 ##### FIGURES
 FIGURES_DIR=$RUN_DIR//figures/

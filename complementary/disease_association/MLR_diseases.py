@@ -200,69 +200,74 @@ for out in list_diseases:
         betas.loc[reg, out] = results.params[reg]
         log10p.loc[reg, out] = -np.log10(results.pvalues[reg])
 
-betas.to_csv(output_dir+'reg_betas_.csv')
-log10p.to_csv(output_dir+'reg_log10p_.csv')
+if What_type_phenotype == 'main':
+    betas.to_csv(output_dir+'reg_betas_.csv')
+    log10p.to_csv(output_dir+'reg_log10p_.csv')
+
+else:
+    betas.to_csv(output_dir+'reg_betas_sup.csv')
+    log10p.to_csv(output_dir+'reg_log10p_sup.csv')
 
 # Regression heatmaps
 ## NB: infinite -log10(p) are arbitrarily replaced by a fixed value ('inf_val') for visualisation
 #inf_val = 310
 
-betas = betas.astype('float64') # in case betas was coded as object type
+# betas = betas.astype('float64') # in case betas was coded as object type
 
 
-##Change the name of the columns and index in beta and log10:
-def rename_col_index(df_, l_diseases_old, l_diseases_new, l_pehos_old, l_phenos_new):
-    #df_.columns = l_diseases_new
-    df_.rename(columns=dict(zip(l_diseases_old, l_diseases_new)), inplace=True)
-    df_.rename(index=dict(zip(l_pehos_old, l_phenos_new)), inplace=True)
-    return df_
+# ##Change the name of the columns and index in beta and log10:
+# def rename_col_index(df_, l_diseases_old, l_diseases_new, l_pehos_old, l_phenos_new):
+#     #df_.columns = l_diseases_new
+#     df_.rename(columns=dict(zip(l_diseases_old, l_diseases_new)), inplace=True)
+#     df_.rename(index=dict(zip(l_pehos_old, l_phenos_new)), inplace=True)
+#     return df_
 
-print(list(inf['name']))
-print(list(inf['final_name']))
-betas = rename_col_index(betas, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
-log10p = rename_col_index(log10p, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
-
-
-## This colours by beta and annotates Bonferroni-significant models with an asterisk
-Bonf_thresh = -np.log10(0.05 / (log10p.shape[0] * log10p.shape[1]))
-Bonf_thresh2 = -np.log10(0.001 / (log10p.shape[0] * log10p.shape[1]))
-
-log10p_copy = log10p.copy()
-log10p_copy2 = log10p.copy()
-log10p_copy3 = log10p.copy()
-
-log10p_copy= (log10p_copy>Bonf_thresh).replace({True:'*', False:''})
-log10p_copy2= (log10p_copy2>Bonf_thresh2).replace({True:'*', False:''})
-log10p_copy3 =log10p_copy+log10p_copy2
+# print(list(inf['name']))
+# print(list(inf['final_name']))
+# betas = rename_col_index(betas, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
+# log10p = rename_col_index(log10p, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
 
 
-if file_info_name=='pheno_info_sup.csv':
-    fig = plt.figure(figsize=(13, 10))
-    ax2 = plt.axes()
-    ax2.yaxis.set_ticks_position('right')
-    ax=sns.heatmap(betas, 
-                annot=log10p_copy3, #(log10p>Bonf_thresh).replace({True:'*', False:''}), 
-                cbar=False,
-                fmt="", annot_kws={'weight': 'bold'}, 
-                vmin=-abs(betas).max().max(), 
-                vmax=abs(betas).max().max(), 
-                cmap='seismic', cbar_kws={'label': 'Standardised \u03B2'})
-    ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)  
-    plt.savefig(output_dir+ str(DATE)+'_MLR_sup.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
+# ## This colours by beta and annotates Bonferroni-significant models with an asterisk
+# Bonf_thresh = -np.log10(0.05 / (log10p.shape[0] * log10p.shape[1]))
+# Bonf_thresh2 = -np.log10(0.001 / (log10p.shape[0] * log10p.shape[1]))
 
-else:
-    fig = plt.figure(figsize=(7, 6))
-    ax2 = plt.axes()
-    ax2.yaxis.set_ticks_position('right')
-    ax=sns.heatmap(betas, 
-                annot=log10p_copy3, #(log10p>Bonf_thresh).replace({True:'*', False:''}), 
-                cbar=False,
-                fmt="", annot_kws={'weight': 'bold'}, 
-                vmin=-abs(betas).max().max(), 
-                vmax=abs(betas).max().max(), 
-                cmap='seismic', cbar_kws={'label': 'Standardised \u03B2'})
-    ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
-    plt.savefig(output_dir+ str(DATE)+'_MLR_.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
+# log10p_copy = log10p.copy()
+# log10p_copy2 = log10p.copy()
+# log10p_copy3 = log10p.copy()
+
+# log10p_copy= (log10p_copy>Bonf_thresh).replace({True:'*', False:''})
+# log10p_copy2= (log10p_copy2>Bonf_thresh2).replace({True:'*', False:''})
+# log10p_copy3 =log10p_copy+log10p_copy2
+
+
+# if file_info_name=='pheno_info_sup.csv':
+#     fig = plt.figure(figsize=(13, 10))
+#     ax2 = plt.axes()
+#     ax2.yaxis.set_ticks_position('right')
+#     ax=sns.heatmap(betas, 
+#                 annot=log10p_copy3, #(log10p>Bonf_thresh).replace({True:'*', False:''}), 
+#                 cbar=False,
+#                 fmt="", annot_kws={'weight': 'bold'}, 
+#                 vmin=-abs(betas).max().max(), 
+#                 vmax=abs(betas).max().max(), 
+#                 cmap='viridis', cbar_kws={'label': 'Standardised \u03B2'})
+#     ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)  
+#     plt.savefig(output_dir+ str(DATE)+'_MLR_sup.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
+
+# else:
+#     fig = plt.figure(figsize=(7, 6))
+#     ax2 = plt.axes()
+#     ax2.yaxis.set_ticks_position('right')
+#     ax=sns.heatmap(betas, 
+#                 annot=log10p_copy3, #(log10p>Bonf_thresh).replace({True:'*', False:''}), 
+#                 cbar=False,
+#                 fmt="", annot_kws={'weight': 'bold'}, 
+#                 vmin=-abs(betas).max().max(), 
+#                 vmax=abs(betas).max().max(), 
+#                 cmap='viridis', cbar_kws={'label': 'Standardised \u03B2'})
+#     ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+#     plt.savefig(output_dir+ str(DATE)+'_MLR_.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
 
 
 

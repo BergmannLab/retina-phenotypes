@@ -6,21 +6,36 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sb
+import seaborn as sns
+import sys
 import glob, os
 from os import listdir
 from os.path import isfile, join
 from datetime import datetime
 DATE = datetime.now().strftime("%Y-%m-%d")
 
-ventile_num= sys.argv[1]
-save_dir= sys.argv[2] 
-traits_phenos = list(sys.argv[3].split(","))
-traits_phenos_new = list(sys.argv[4].split(",")) #list(sys.argv[4].split(","))
-path = sys.argv[5] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gcorr_diseases/2022_08_03_ventile5/'
+ventile_num= 'Zekavat'
+save_dir= sys.argv[1] 
 
+path = '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT/gwas/gcorr_diseases/' #sys.argv[4] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/gcorr_diseases/2022_08_03_ventile5/'
+phenotypes_type = sys.argv[5]
+print(phenotypes_type)
 high_med_conf= True #To select the diseases that have good confidence
 
+if phenotypes_type=='suplementary':
+    traits_phenos = list(sys.argv[6].split(","))
+    traits_phenos_new = list(sys.argv[7].split(",")) #list(sys.argv[4].split(","))
+    #size_a=40
+    #size_b=40
+elif phenotypes_type=='main':
+    traits_phenos = list(sys.argv[2].split(","))
+    traits_phenos_new = list(sys.argv[3].split(",")) #list(sys.argv[4].split(","))
+    #size_a=15
+    #size_b=15
+
+
+l_diseases_all=[]
+l_diseases_aux=[]
 
 
 if high_med_conf:
@@ -31,7 +46,7 @@ if high_med_conf:
         '30760':'HDL cholesterol',
         '1558':'Alcohol intake freq',
         '21021':'Pulse wave ASI',
-        '30780':'LDL direct',
+        '30780':'LDL direct' ,
         '30870':'Triglycerides'
         }
 
@@ -81,25 +96,27 @@ else:
         }
 
 
-traits_all = list(diseases_traits.keys())
-traits_phenos_new = list(diseases_traits.values())
+#traits_all = list(diseases_traits.keys())
+#traits_phenos_new = list(diseases_traits.values())
 
+traits_diseases = list(diseases_traits.keys())
+traits_diseases_new = list(diseases_traits.values())
 
 # path This we can read from config
-def try_to_compute_all(traits_all, traits_phenos, path):
+def try_to_compute_all(traits_diseases, traits_phenos, path):
     #save_path = path
-    l_diseases_all=[]
-    for trait in traits_all:
+    for trait in traits_diseases:
         #print(trait)
         for file in os.listdir(path):
-            #print(file, '\n')
+            print(file, '\n')
+            #if file.contains(trait):
             if file.startswith(trait):
                 if file.endswith('.tsv'):
                     #print('PHENO', trait)
-                    #print(file, '\n')
-                    df_ss = pd.read_csv(path + file,  nrows=1, sep='\t')
+                    print(file, '\n')
+                    #df_ss = pd.read_csv(path + file,  nrows=1, sep='\t')
                     #print(df_ss['N'].iloc[0])
-                    print(file)
+                    #print(file)
                     data={
                         'pheno':  trait,
                         'file':  file
@@ -109,32 +126,37 @@ def try_to_compute_all(traits_all, traits_phenos, path):
 
     df_diseases_all =pd.DataFrame(l_diseases_all)
     #file_name_end = '_irnt.gwas.imputed_v3.both_sexes.tsv'
-
+    print('estooo que pinta ', df_diseases_all)
     l_traits_file=[]
     for trait in traits_phenos:
+        #print(traits_phenos)
+
         file_pheno= trait + '__munged.sumstats.gz'
         l_traits_file.append(file_pheno)
 
     traits_files = l_traits_file + list(df_diseases_all['file'])
     #traits_names = traits_phenos + list(df_diseases_all['pheno'])
+    print('len(traits_files), len(l_traits_file), len(list(df_diseases_all[file]))')
     print(len(traits_files), len(l_traits_file), len(list(df_diseases_all['file'])))
     return df_diseases_all
 
 
-
-traits_reduced = list(diseases_traits.keys())
-
-
-df_diseases_all = try_to_compute_all(traits_all, traits_phenos, path)
-
-#datafields_irnt = [ dat + "_irnt.gwas.imputed_v3.both_sexes.tsv.sumstats.gz" for dat in traits_reduced]
+df_diseases_all = try_to_compute_all(traits_diseases, traits_phenos, path)
+#datafields_irnt = [ dat + "_irnt.gwas.imputed_v3.both_sexes.tsv.sumstats.gz" for dat in traits_diseases]
 datafields_irnt = [ dat for dat in df_diseases_all['file']]
+datafields_irnt = pd.unique(datafields_irnt).tolist()
 datafields_pheno = [ dat + "__munged.sumstats.gz" for dat in traits_phenos]
+datafields_pheno = pd.unique(datafields_pheno).tolist()
 diseasess_tra_aux = [ dat for dat in df_diseases_all['pheno']]
+diseasess_tra_aux = pd.unique(diseasess_tra_aux).tolist()
 
-traits_col_index = traits_phenos + diseasess_tra_aux
+#print('diseasess_tra_aux', diseasess_tra_aux)
+traits_col_index = traits_phenos + diseasess_tra_aux  
+print(traits_col_index)
+#traits_col_index = traits_col_index #+ ['30760', '30780', '30870']
 traits_names = datafields_pheno + datafields_irnt
-
+print('traits_phenos', traits_phenos)
+print('datafields_irnt', datafields_irnt)
 
 # filter the files names containing 2 traits
 def read_ldsr(traits_files, traits_col_index, path):
@@ -147,52 +169,68 @@ def read_ldsr(traits_files, traits_col_index, path):
     for i  in range(len(traits_files)):
         for j in range(len(traits_files)):
             h2 = []
-            file_both_name = traits_files[i]+'_'+ traits_files[j]+'.log'
+            file_both_name = traits_files[i]+'_'+ traits_files[j] +'.log'
+            #file_both_name = file_both_name.replace('.log.log','.log')
             dir_traitsfile = path+file_both_name
+
+            #print('AVANZAAAA file_both_name  ', file_both_name)
             #print(dir_traitsfile)
             with open(dir_traitsfile) as fp:
                 #print(fp)
-                #print(traits_files[i],traits_files[j])
+                #print('traits_files[i],traits_files[j] ',traits_files[i],traits_files[j])
                 Lines = fp.readlines()
                 for line in Lines:
                     #print(line)
                     split = line.split()
                     if('gencov:' in split):
-                        df_cov.iloc[i][j] = round(float(split[ split.index('gencov:') +1 ]),3)
-                        df_cov.iloc[j][i] = round(float(split[ split.index('gencov:') +1 ]),3)
-                        #print(split)
+                        df_cov.iloc[i][j] = round(float(split[ split.index('gencov:') +1 ]),2)
+                        df_cov.iloc[j][i] = round(float(split[ split.index('gencov:') +1 ]),2)
                     if('Correlation:' in split):
                         #print(line)
-                        #print(split)
-                        df_corr.iloc[i][j] = round(float(split[ split.index('Correlation:') +1 ]),3)
-                        df_corr.iloc[j][i] = round(float(split[ split.index('Correlation:') +1 ]),3)
+                        print((split[ split.index('Correlation:') +1 ]))
+                        # if (split[ split.index('Correlation:') +1 ])=='nan':
+                        #     df_corr.iloc[i][j] = 0
+                        #     df_corr.iloc[j][i] = 0
+                        #     df_std.iloc[i][j] = '(0)'
+                        #     df_std.iloc[j][i] = '(0)'
+                        #     #df_corr_simpl= df_corr_simpl.replace('NaN', 0)
+                        #     #df_corr_simpl_aux = df_corr_simpl_aux.replace('NaN', 0)
+                        # else:
+                        df_corr.iloc[i][j] = round(float(split[ split.index('Correlation:') +1 ]),2)
+                        df_corr.iloc[j][i] = round(float(split[ split.index('Correlation:') +1 ]),2)
                         #print(array2)
                         #print(split )
                         #print( df_corr.iloc[i][j], float(split[ split.index('Correlation:') +1 ]) )
                         #print( df_corr.iloc[j][i], float(split[ split.index('Correlation:') +1 ]))
                         df_std.iloc[i][j] = split[3]
                         df_std.iloc[j][i] = split[3]
+
+                        #print(df_std.iloc[j][i])
     return df_cov, df_corr, df_std
 
 df_cov, df_corr, df_std2 = read_ldsr(traits_names, traits_col_index, path)     
 
 
 def rename_col_index(df, l_diseases_old, l_diseases_new, l_phenos_old, l_phenos_new):
+    print(df)
+    print(df.columns, df.index)
+    print(l_diseases_old, l_diseases_new)
+    print(l_phenos_old, l_phenos_new)
     df.rename(columns=dict(zip(l_diseases_old, l_diseases_new)), inplace=True)
-    df.rename(index=dict(zip(l_diseases_old, l_diseases_new)), inplace=True)
+    df.rename(index=dict(zip(l_phenos_old, l_phenos_new)), inplace=True)
+    print(df)
     return df
 
 def detele_col_index(df, l_cols_delete, l_rows_delete, l_diseases_new, l_phenos_old, l_phenos_new):
     df=df.drop(columns=l_cols_delete)
     df=df.drop(index=l_rows_delete)
     df= rename_col_index(df, l_rows_delete, l_diseases_new, l_phenos_old, l_phenos_new)
-    
+
     return df
 
 
-df_corr_simpl= detele_col_index(df_corr, traits_phenos, traits_reduced, list(diseases_traits.values()),traits_phenos, traits_phenos_new)
-df_std_simpl = detele_col_index(df_std2,  traits_phenos, traits_reduced, list(diseases_traits.values()), traits_phenos, traits_phenos_new)
-df_corr_simpl
+df_corr_simpl= detele_col_index(df_corr, traits_phenos, traits_diseases, traits_diseases_new,traits_phenos, traits_phenos_new)
+df_std_simpl = detele_col_index(df_std2,  traits_phenos, traits_diseases, traits_diseases_new, traits_phenos, traits_phenos_new)
 
 
 ### Round the std values
@@ -201,7 +239,7 @@ for col in df_std_simpl.columns:
     df_std_simpl[col] = df_std_simpl[col].str.replace(")", "", regex=True)
 
 df_std_simpl = df_std_simpl.astype(float)
-df_std_simpl = df_std_simpl.round(3)
+df_std_simpl = df_std_simpl.round(2)
 df_std_simpl
 
 
@@ -210,6 +248,10 @@ df = df_corr_simpl.astype(str) + ' (' + df_std_simpl.astype(str)+ ')'
 
 df_corr_simpl_aux = df_corr_simpl.copy()
 df_corr_simpl_aux = df_corr_simpl_aux.astype(float)
+
+#df = df.replace('NaN', 0)
+#df_corr_simpl= df_corr_simpl.replace('NaN', 0)
+#df_corr_simpl_aux = df_corr_simpl_aux.replace('NaN', 0)
 
 rcolors = plt.cm.Greys(np.full(len(df.index), 0.15))
 ccolors = plt.cm.Greys(np.full(len(df.columns), 0.15))
@@ -234,7 +276,32 @@ table.auto_set_font_size(False)
 table.set_fontsize(16)
 table.scale(3.7, 3.5) # make table a little bit larger
 fig.tight_layout()
-#plt.show()
-fig.savefig(path+str(DATE)+'_'+'ventile'+str(ventile_num)+'_diseases_gcorr.pdf', bbox_inches='tight',dpi=250)
+#
+if phenotypes_type=='suplementary':
+    fig.savefig(path+str(DATE)+'_'+'ventile'+str(ventile_num)+'_diseases_gcorr_supl.pdf', bbox_inches='tight',dpi=250)
+elif phenotypes_type=='main':
+    fig.savefig(path+str(DATE)+'_'+'ventile'+str(ventile_num)+'_diseases_gcorr.pdf', bbox_inches='tight',dpi=250)
+plt.show()
+
+
+df_corr_minus_std=abs(df_corr_simpl) - (df_std_simpl)
+
+df = df_corr_simpl.astype(str) + '\n (' + df_std_simpl.astype(str)+ ')'
+
+df_corr_simpl_aux = df_corr_simpl.astype(float)
+
+plt.rcParams['font.size'] = '10'
+figsize_val_2=(10, 8)
+fig, ax = plt.subplots(figsize=figsize_val_2)
+fig1 = sns.heatmap(df_corr_simpl_aux, 
+            annot=df.values, #(log10p>Bonf_thresh).replace({True:'*', False:''}), 
+            cbar=True, #If not False
+            fmt="", annot_kws={'weight': 'bold'}, 
+            vmin=-abs(df_corr_simpl_aux).max().max(), 
+            vmax=abs(df_corr_simpl_aux).max().max(), 
+            cmap='viridis',alpha=1.0, cbar_kws={'label': 'min genetic correlation'},
+            ax=ax)
+
+fig.savefig(path+str(DATE)+'_heatmap_'+'ventile'+str(ventile_num)+'_diseases_gcorr.pdf', bbox_inches='tight',dpi=250)
 
 print('todo ok')

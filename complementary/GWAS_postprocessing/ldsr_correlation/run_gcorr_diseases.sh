@@ -7,7 +7,7 @@ begin=$(date +%s)
  
 #cp $diseases_ss_raw * $diseases_gwas_dir
 
-nice python3.8 gcorr_diseases_ldsr.py $VENTILE $FIGURES_DIR $MAIN_LABELS $MAIN_LABELS $diseases_gwas_dir
+nice python3.8 gcorr_diseases_ldsr.py $FIGURES_DIR $MAIN_LABELS "$MAIN_NAMES" $diseases_gwas_dir $What_type_phenotype $SUPPLEMENTARY_LABELS "$SUPPLEMENTARY_NAMES"
 
 
 echo FINISHED

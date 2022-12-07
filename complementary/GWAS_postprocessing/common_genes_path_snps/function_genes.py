@@ -11,17 +11,50 @@ import scipy.spatial as sp, scipy.cluster.hierarchy as hc
 
 
 
-def plot(save_results, csv_name, DATE, num_ventile, size_a, size_b):
+def plot(save_results, csv_name, DATE, num_ventile, size_a, size_b, phenotypes_type, filenames, filenames_new):
     df_pintar = pd.read_csv(save_results + csv_name + '.csv')
     #df_pintar= df_pintar.drop(columns=['Unnamed: 0'])
     df_pintar= df_pintar.set_index('Unnamed: 0')
     #df_pintar.index= df_pintar.columns
-    df_pintar=df_pintar.astype(int)
+    #df_pintar=df_pintar.astype(int)
+    #df_pintar=df_pintar.round(0) #.astype(int)
+    df_pintar.rename(columns=dict(zip(filenames, filenames_new)), inplace=True)
+    df_pintar.rename(index=dict(zip(filenames, filenames_new)), inplace=True)
+    #sns.set(style="white")
     #print(df_pintar.columns)
     plt.subplots(figsize=(size_a,size_b))
-    sns.heatmap(df_pintar, annot=True, cmap="YlGnBu")
+
+    sns.heatmap(df_pintar, annot=df_pintar, fmt='', square=True, cmap="YlGnBu", cbar_kws={'label': 'Number of significan genes'})
     plt.savefig(save_results+'/'+str(DATE)+'_ventile'+str(num_ventile)+
-                '_heatmap_genes_intersection.pdf', edgecolor='none')
+                '_heatmap_genes_intersection_'+ str(phenotypes_type)+'.pdf', edgecolor='none')
+    plt.show()
+
+    sns.set(style="white")
+    plt.subplots(figsize=(size_a,size_b))
+    np_upper = np.triu(df_pintar, k=+1)
+
+    #df = df1.fillna(df2)
+
+    mask = np.zeros_like(np_upper)
+    mask[np.triu_indices_from(mask, k=+1)] = True
+
+    sns.heatmap(df_pintar, annot=df_pintar, fmt='', square=True, cmap="YlGnBu",  mask=mask, cbar_kws={'label': 'Number of significan genes'}) 
+    
+    plt.savefig(save_results+'/'+str(DATE)+'_half1_ventile'+str(num_ventile)+
+                '_heatmap_genes_intersection_'+ str(phenotypes_type)+'.pdf', edgecolor='none')
+    plt.show()
+
+    sns.set(style="white")
+    plt.subplots(figsize=(size_a,size_b))
+    np_lower = np.tril(df_pintar, k=-1)
+    mask = np.zeros_like(np_lower)
+    mask[np.tril_indices_from(mask, k=-1)] = True
+
+    sns.heatmap(df_pintar, annot=df_pintar, fmt='', square=True, cmap="YlGnBu", mask=mask)
+    plt.savefig(save_results+'/'+str(DATE)+'_half2_ventile'+str(num_ventile)+
+                '_heatmap_genes_intersection_'+ str(phenotypes_type)+'.pdf', edgecolor='none')
+
+            
     
 
 def compute_intersections_csv(p_value_min, filenames, input_dir, save_results, csv_name_all, csv_name_count, csv_name_diagonal, csv_name, csv_genes_name):
@@ -111,7 +144,7 @@ def table_names_numbers(save_results, csv_name, csv_genes_name, csv_both):
     np_lower = np.tril(df_names, k=-1) #k=-1 to not take the diagonal
     df_lower=pd.DataFrame(np_lower)
     
-    i_upper = np.triu_indices(16)
+    i_upper = np.triu_indices(17)
     np_final = np_lower
     np_final[i_upper] = np_upper[i_upper]
     df_c_magic = pd.DataFrame(np_lower)

@@ -1,10 +1,12 @@
 
 
-# CODE - FROM RETINA IMAGES TO TRAITS (only needed the folders: 'configs', 'input' and 'preprocessing'): 
+# FROM RETINA IMAGES TO TRAITS  
+(only needs the folders: 'configs', 'input' and 'preprocessing'): 
 
 ## Requirements:
-* You will need to download WNET 
-* Matlab licence (if you have not acess there are still some traits you can measure)
+* L-WNET (https://github.com/agaldran/lwnet)
+* Matlab licence  
+(not needed for traits that are based purely on pixel-wise segmentation)
 * TO DO: Create a file with all the packages needed
 
 
@@ -12,15 +14,15 @@
 
 ```mermaid
 flowchart TD
-    M(Modified config_.sh) -->A
-    M(Modified config_.sh) -->B
-    M(Modified config_.sh) -->C
-    M(Modified config_.sh) -->D
+    M(Modify config_.sh) -->A
+    M(Modify config_.sh) -->B
+    M(Modify config_.sh) -->C
+    M(Modify config_.sh) -->D
     I(Input: raw images)-->A
-    A[`bash ClassifyAVLwnet.sh`] -- vessel type --> B[`bash MeasureVessels.sh`]
-    B -- vessel measures --> D[`bash run_measurePhenotype.sh`]
+    A[`bash ClassifyAVLwnet.sh`] -- pixel-wise artery/vein segmentation --> B[`bash MeasureVessels.sh`]
+    B -- center lines, diameters, tortuosity --> D[`bash run_measurePhenotype.sh`]
     I(Input: raw images)-->C
-    C[`bash predict_optic_disc.sh`] -- OD measures --> D
+    C[`bash predict_optic_disc.sh`] -- optic disc position and size --> D
     D --> E(Output: phenotypes/per image files)
 ```
 

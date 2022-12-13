@@ -36,7 +36,7 @@ def removeMultipleTimes(participant_imgs): # to adequately correct for age, we c
 
 def getParticipantImages(participant):
 
-        participant_imgs = [img for img in imgs if participant in img] # imgs is global variable
+        participant_imgs = [img for img in imgs if participant in img] # imgs is global variable of images passing QC
         
         participant_imgs, instance = removeMultipleTimes(participant_imgs)
         
@@ -294,14 +294,29 @@ if __name__ == '__main__':
                         stats = stats.join(tmp)
 
         # replacing potential infinites with nan
-        stats.replace([np.inf, -np.inf], np.nan, inplace=True)
-        
+        stats.replace([np.inf, -np.inf], np.nan, inplace=True) 
+
+        #QC
+
+        imgs = pd.read_csv(qcFile, header=None) # images that pass QC of choice
+        imgs = imgs[0].values
+        imgs = [i for i in imgs if i in stats.index]
+        participants = sorted(list(set([i.split("_")[0] for i in imgs]))) # participants with at least one img passing QC
+
+        stats = stats.loc[imgs] # keeping only images that pass QC in the phenotype file
+
         # Outlier removal
 
         # outliers could be defined in multiple ways
         # 1) as being further from the mean as 1/count quantile, assuming normality
         # 2) as a fix number of stds away from the mean
         # # we currently use 2)
+        
+        # ratio_VD has exteme outliers, even for imgs that pass QC
+        # we therefore remove those manually
+        if 'ratio_VD' in stats.columns:
+            stats.loc[stats['ratio_VD']>10, 'ratio_VD'] = np.nan
+
         for i in stats.columns:
             mean=stats[i].mean()
             std=stats[i].std()
@@ -316,17 +331,9 @@ if __name__ == '__main__':
 
             stats[i].loc[(stats[i]>mean+n_std*std) | (stats[i]<mean-n_std*std)] = np.nan
 
-
-
-        #QC
-        imgs = pd.read_csv(qcFile, header=None) # images that pass QC of choice
-        imgs = imgs[0].values
-        imgs = [i for i in imgs if i in stats.index]
-        participants = sorted(list(set([i.split("_")[0] for i in imgs]))) # participants with at least one img passing QC
-        
         #testing
         nTest = len(participants) # len(participants) for production
-        print(nTest)
+        print('N participants passing QC:', nTest)
         #imgs_per_participant is a participant list: each element contains list of segment stat files belonging to a participant's QCd images
         print('Start of getParticipantImages pool')
         pool1 = Pool()

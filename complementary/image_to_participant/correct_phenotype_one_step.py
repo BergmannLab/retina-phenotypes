@@ -20,17 +20,19 @@ from matplotlib import pyplot as plt
 # RUN_PATH = "/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT/"
 # PHENO_PATH = RUN_PATH+"participant_phenotype/"
 # ID = "2022_11_23_covar_fix"
-# CASE='qqnorm' #qqnorm or z
+# CASE='z' #qqnorm or z
 # MAIN_TRAITS='tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_orig_artery,VD_orig_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'.split(',')
 # MAIN_LABELS='A tortuosity,V tortuosity,ratio tortuosity,A std diameter,V std diameter,bifurcations,A vascular density,V vascular density,ratio vascular density,A temporal angle,V temporal angle,A central retinal eq,V central retinal eq,ratio central retinal eq,A median diameter,V median diameter,ratio median diameter'.split(',')
 
 RUN_PATH = sys.argv[1]
 PHENO_PATH = RUN_PATH+"participant_phenotype/"
 ID = sys.argv[2]
-OUTID = ID+"_corrected"
-CASE=sys.argv[3] #qqnorm or z
+CASE = sys.argv[3]
 MAIN_TRAITS=sys.argv[4].split(',')
 MAIN_LABELS=sys.argv[5].split(',')
+
+print(MAIN_TRAITS)
+print(MAIN_LABELS)
 
 OUTID = ID+"_"+CASE+"_corrected"
 
@@ -557,7 +559,7 @@ for i,trait in enumerate(traits_res.columns):
 covar_pval[covar_pval == 0] = 8.984227e-308
 
 
-# In[25]:
+# In[ ]:
 
 
 # Check residuals have no more associations
@@ -591,7 +593,7 @@ for i,trait in enumerate(traits_res.columns):
 covar_pval[covar_pval == 0] = 8.984227e-308
 
 
-# In[26]:
+# In[ ]:
 
 
 # significance df
@@ -613,7 +615,7 @@ plt.xticks(rotation=45, ha='right')
 plt.savefig(PHENO_PATH+ID+"_"+CASE+"_effects_on_residuals.pdf")
 
 
-# In[28]:
+# In[ ]:
 
 
 # write corrected, plot corrected clustermap in case raw, not qqnorm

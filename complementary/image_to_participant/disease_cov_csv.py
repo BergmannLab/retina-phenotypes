@@ -8,7 +8,7 @@ df_diseases_cov=pd.read_csv(dir_diseases_cov+file_diseases_cov)
 list_diseases_cov = list(df_diseases_cov.columns)
 
 
-list_interest= ['age_center', 'assessment_centre', 'ethnic_background', 'date_center', 'DBP', 'SBP',  'PR', 'age_current_smoker', 'alcohol_intake_frequency',
+list_interest= ['age_center', 'assessment_centre', 'ethnic_background', 'date_center', 'DBP', 'SBP', 'age_high_BP', 'PR', 'age_current_smoker', 'alcohol_intake_frequency',
                 'pulse_wave_arterial_stiffness_index', 'BMI', 'N_cigarettes_curr_daily', 'Pack_year_smok',  'HDL_cholesterol', 'LDL_direct', 'Triglycerides',
                 'HbA1c', 'age_diabetes', 'age_angina', 'age_heartattack', 'age_DVT', 'age_stroke', 'age_glaucoma', 'age_cataract',
                  'eye_amblyopia', 'eye_presbyopia', 'eye_hypermetropia', 'eye_myopia', 'eye_astigmatism' ,'eye_diabetes', 'age_other_serious_eye_condition',

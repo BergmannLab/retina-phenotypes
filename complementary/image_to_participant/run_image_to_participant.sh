@@ -8,10 +8,11 @@ nice -n 1 python3.8 image_to_participant.py $QC $IMAGE_PHENO_DIR/ $PARTICIPANT_P
 
 #### 2) Create disease & covar df
 
+
 begin=$(date +%s)
 
-nice -n 1 Rscript  $config_dir/../complementary/image_to_participant/main_create_csv_diseases_covariants.R $ukbb_files_dir $PARTICIPANT_PHENO_DIR $diseases_pheno_cov_file $name_phenofile $csv_name
-nice -n 1 python3.8  $config_dir/../complementary/image_to_participant/disease_cov_csv.py $diseases_pheno_cov_file $csv_name
+nice -n 1 Rscript  $config_dir/../complementary/image_to_participant/main_create_csv_diseases_covariants.R $ukbb_files_dir $PARTICIPANT_PHENO_DIR $diseases_pheno_cov_file $name_phenofile $csv_diseases_cov_name
+nice -n 1 python3.8  $config_dir/../complementary/image_to_participant/disease_cov_csv.py $diseases_pheno_cov_file $csv_diseases_cov_name
 
 #### 3) Correct phenotypes for covariates
 

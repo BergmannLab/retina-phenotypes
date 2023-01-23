@@ -189,6 +189,11 @@ for out in list_diseases:
         ### checking the min and max values
         #print(df_pheno_dise[out].min(), df_pheno_dise[out].max())
         
+        ## Logistic: to calculate odds ratios it would be simply e^beta (or np.exp(beta)),
+        #beta being the estimate found in the logistic regression. 
+        #And the SE would be odds-ratio times the found SE (np.exp(beta)*se)
+        #(you can get the SE with results.bse the same you get betas with results.params)
+        
         # OLS regression for categorical/ordinal and continuous outcomes
         if (inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='cat') | (inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='con'):
             model = ols(formula=out+'~'+reg, data=df_pheno_dise)

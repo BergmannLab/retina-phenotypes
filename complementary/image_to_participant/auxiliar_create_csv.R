@@ -110,8 +110,28 @@ read_disease_data <- function(ukbb_files_dir)
   # names(data_1) <- c('age_diabetes', 'age_angina', 'age_heartattack', 'age_DVT', 'age_stroke', 'DBP', 'SBP', 'date_death',  'eid')
   
   data_2 <- read.csv(file= paste(ukbb_files_dir, "/2_data_extraction_BMI_height_IMT/ukb42432.csv", sep=""), header = TRUE, sep=",",check.names=FALSE)
-  data_2 <- data_2[, c('21001-0.0','21001-1.0', '3456-0.0', '3456-1.0', '20161-0.0', '20161-1.0', '5084-0.0', 
-                '5085-0.0', '5086-0.0', '5087-0.0', '5084-1.0', '5085-1.0', '5086-1.0', '5087-1.0', 'eid')]
+  data_2 <- data_2[, c('21001-0.0','21001-1.0', '3456-0.0', '3456-1.0', '20161-0.0', '20161-1.0', 
+                '5084-0.0', '5084-0.1','5084-0.2',  #spherical right take the 3 first
+                '5085-0.0', '5085-0.1','5085-0.2', #spherical left the 3 first
+                '5086-0.0', '5086-0.1','5086-0.2',  #cylindrical left take the 3 first
+                '5087-0.0', '5087-0.1','5087-0.2', #cylindrical rigt take the 3 first
+                '5084-1.0', '5084-1.1','5084-1.2', 
+                '5085-1.0', '5085-1.1','5085-1.2',
+                '5086-1.0', '5086-1.1','5086-1.2', 
+                '5087-1.0', '5087-1.1','5087-1.2', 
+                'eid')]
+
+  #data_2$sph_r_0 <- apply(select(data_2, '5084-0.0', '5084-0.1','5084-0.2'),1,function(x) median(na.omit(x)))
+  #data_2$sph_l_0 <- apply(select(data_2, '5085-0.0', '5085-0.1','5085-0.2'),1,function(x) median(na.omit(x)))
+  #data_2$cyl_r_0 <- apply(select(data_2, '5087-0.0', '5087-0.1','5087-0.2'),1,function(x) median(na.omit(x)))
+  #data_2$cyl_l_0 <- apply(select(data_2, '5086-0.0', '5086-0.1','5086-0.2'),1,function(x) median(na.omit(x)))
+
+  #data_2$sph_r_1 <- apply(select(data_2, '5084-1.0', '5084-1.1','5084-1.2'),1,function(x) median(na.omit(x)))
+  #data_2$sph_l_1 <- apply(select(data_2, '5085-1.0', '5085-1.1','5085-1.2'),1,function(x) median(na.omit(x)))
+  #data_2$cyl_r_1 <- apply(select(data_2, '5087-1.0', '5087-1.1','5087-1.2'),1,function(x) median(na.omit(x)))
+  #data_2$cyl_l_1 <- apply(select(data_2, '5086-1.0', '5086-1.1','5086-1.2'),1,function(x) median(na.omit(x)))
+  #print(data_2$sph_r_0)
+
   data_2 <- data_2 %>% 
     rename('BMI_00'='21001-0.0',
           'BMI_10'='21001-1.0',
@@ -119,14 +139,14 @@ read_disease_data <- function(ukbb_files_dir)
           'N_cigarettes_curr_daily_10'= '3456-1.0',
           'Pack_year_smok_00'='20161-0.0',
           'Pack_year_smok_10'='20161-1.0',
-          'spherical_power_R_00'='5084-0.0', 
-          'spherical_power_L_00'='5085-0.0', 
-          'cylindrical_power_L_00'='5086-0.0', 
-          'cylindrical_power_R_00'='5087-0.0',
-          'spherical_power_R_10'='5084-1.0', 
-          'spherical_power_L_10'='5085-1.0', 
-          'cylindrical_power_L_10'='5086-1.0', 
-          'cylindrical_power_R_10'='5087-1.0'
+          'spherical_power_R_00'= '5084-0.0', #'sph_r_0',
+          'spherical_power_L_00'= '5085-0.0', #'sph_l_0',
+          'cylindrical_power_L_00'='5086-0.0', #'cyl_l_0', #, 
+          'cylindrical_power_R_00'='5087-0.0', #'cyl_r_0', #'5087-0.0',
+          'spherical_power_R_10'='5084-1.0', #'sph_r_1', #'5084-1.0', 
+          'spherical_power_L_10'='5085-1.0', #'sph_l_1', #'5085-1.0', 
+          'cylindrical_power_L_10'='5086-1.0', #'cyl_l_1', #'5086-1.0', 
+          'cylindrical_power_R_10'='5087-1.0' #cyl_r_1' #'5087-1.0'
           )
     
   #data_3 <- read.csv(file=paste(ukbb_files_dir, "/3_data_extraction_tinnitus/ukb42625.csv", sep=""), header = TRUE, sep=",",check.names=FALSE)

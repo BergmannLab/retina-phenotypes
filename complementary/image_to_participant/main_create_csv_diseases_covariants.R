@@ -27,7 +27,7 @@ data_all = create_dataset_both_eyes(data_aux, phenofiles_dir_both, name_phenofil
 
 colnames(data_all)
 
-## Average columns:
+## Average columns: 
 data_all$SBP_00 <- apply(select(data_all, SBP_00, SBP_01),1,function(x) mean(na.omit(x)))
 data_all$DBP_00 <- apply(select(data_all, DBP_00, DBP_01),1,function(x) mean(na.omit(x)))
 data_all$PR_00 <- apply(select(data_all, PR_00, PR_01),1,function(x) mean(na.omit(x)))
@@ -35,7 +35,8 @@ data_all$PR_00 <- apply(select(data_all, PR_00, PR_01),1,function(x) mean(na.omi
 data_all$SBP_10 <- apply(select(data_all, SBP_10, SBP_11),1,function(x) mean(na.omit(x)))
 data_all$DBP_10 <- apply(select(data_all, DBP_10, DBP_11),1,function(x) mean(na.omit(x)))
 data_all$PR_10 <- apply(select(data_all, PR_10, PR_11),1,function(x) mean(na.omit(x)))
-         
+
+## not included yet, but, BASED ON FLORENCE RECOMENDATION: TAKE THE MEDIAN OF THE 3 FIRST FOR SPHERICAL AND CYLINDRICAL 
 data_all$spherical_power_00 <- apply(select(data_all, spherical_power_R_00, spherical_power_L_00),1,function(x) mean(na.omit(x)))
 data_all$spherical_power_10 <- apply(select(data_all, spherical_power_R_10, spherical_power_L_10),1,function(x) mean(na.omit(x)))
 data_all$cylindrical_power_00 <- apply(select(data_all, cylindrical_power_R_00, cylindrical_power_L_00),1,function(x) mean(na.omit(x)))
@@ -81,8 +82,10 @@ print(sum(is.na(data_all$PC2)))
 print(sum(is.na(data_all$PC5)))
 print(sum(is.na(data_all$sex)))
 #print(sum(is.na(data_all$age_center)))
-print(sum(is.na(data_all$spherical_power)))
-print(sum(is.na(data_all$cylindrical_power)))
+print(sum(is.na(data_all$spherical_power_10)))
+print(sum(is.na(data_all$spherical_power_00)))
+print(sum(is.na(data_all$cylindrical_power_00)))
+print(sum(is.na(data_all$cylindrical_power_10)))
                                        
 write.csv(data_all, paste(diseases_pheno_cov_file, csv_name, sep="") , row.names = FALSE)
 #write.csv(data_all, paste('/SSD/home/sofia/retina-phenotypes/complementary/image_to_participant/', csv_name, sep="") , row.names = FALSE)

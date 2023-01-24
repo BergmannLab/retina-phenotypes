@@ -17,12 +17,15 @@ DATE = datetime.now().strftime("%Y-%m-%d")
 #### Analize subjects with images at different instances
 dir_ukb_csv_1 = '/NVME/decrypted/ukbb/labels/1_data_extraction/ukb34181.csv'
 
-phenofiles_dir = '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/image_phenotype/current/' #sys.argv[1] #IMAGE_PHENO_DIR 
-dir_save_results = '/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/different_time_points/' #sys.argv[2] # #config ADD
-MAIN_LABELS = 'tau1_artery,tau1_vein,ratio_AV_DF,D_A_std,D_V_std,bifurcations,VD_orig_artery,VD_orig_vein,ratio_VD,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,ratio_CRAE_CRVE,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter' #MAIN_LABELS config
-ventile_num = 5 #sys.argv[4] #5 #config
+phenofiles_dir =  sys.argv[1] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/'
+phenofiles_dir = phenofiles_dir +'/'
+dir_save_results = sys.argv[2] #'/SSD/home/sofia/retina-phenotypes/complementary/traits_main_characterization/results/' 
 
-l_pheno_name = MAIN_LABELS.split(",")
+l_pheno_name = list(sys.argv[3].split(",")) 
+
+temp=sys.argv[4]
+l_pheno_name_new = list(temp.split(","))
+print(l_pheno_name_new)
 
 df_right_intersection, df_left_intersection = f_t.right_left(dir_ukb_csv_1)
 
@@ -107,8 +110,8 @@ for pheno_name in l_pheno_name:
     #f_t.plt_RL_00_menis_10(df_right_intersection_all, df_left_intersection_all, pheno_name, ' QC')
 
     ## Save file:
-    df_right_intersection_all.to_csv(dir_save_results + pheno_name +'_ventile_'+str(ventile_num)+ '_right.csv') 
-    df_left_intersection_all.to_csv(dir_save_results + pheno_name +'_ventile_'+str(ventile_num)+ '_left.csv')
+    df_right_intersection_all.to_csv(dir_save_results + pheno_name +'_eye_right.csv') 
+    df_left_intersection_all.to_csv(dir_save_results + pheno_name +'_eye_left.csv')
 
 
 
@@ -116,11 +119,12 @@ pheno_list=[]
 
 csv_time_files = os.listdir(dir_save_results)
 
-for i in range(len(csv_time_files)):
-    phenotype_name=csv_time_files[i].split('_ventile_')[0]
-    pheno_list.append(phenotype_name)
-pheno_list = list(dict.fromkeys(pheno_list))
 
+for file in csv_time_files:
+    if (file.endswith('_left.csv')) or (file.endswith('_right.csv')):
+        phenotype_name=file.split('_eye_')[0]
+        pheno_list.append(phenotype_name)
+pheno_list = list(dict.fromkeys(pheno_list))
 
 
 pheno_1of3, pheno_23of3 = f_t.split_list(pheno_list)

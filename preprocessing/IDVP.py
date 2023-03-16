@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.image as mpimg
 import csv
+import pylab as pl
 import PIL
 import math
 import cv2
@@ -44,6 +45,20 @@ class Measure_IDVP():
         self.plot_phenotypes = plot_phenotypes
 
     ##### Trait input data main functions:
+
+    def rgb2gray(self,rgb):
+        r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
+        gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
+        return gray
+    
+    def count_pixels(self, img): # counting non-zero pixels of grayscale img
+        pixels=[]
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                if img[i,j]>0:
+                    pixels.append((i,j))
+
+        return pixels
 
     def get_data_unpivot(self, path):
         """
@@ -340,6 +355,78 @@ class Measure_IDVP():
 
 
     def main_fractal_dimension(self, imgname: str) -> dict:
+        """
+        A new implementation of fractal dimension that is less correlated with vascular density. 
+        :param imgname:
+        :return:
+        """
+        #start=datetime.now()
+        imageID = imgname.split(".")[0]
+        try:
+            img = plt.imread(imageID + ".png")
+            print(img.shape)
+            artery = img[:,:,0]
+            vein = img[:,:,2]
+            img = self.rgb2gray(img) # grayscale of original, for full FD
+            #print("Images ready after", (datetime.now()-start).total_seconds())
+            
+            # new, fast pixel counting
+            pixels=cv2.findNonZero(img)
+            pixels = sorted([(i[0][1],i[0][0]) for i in pixels])
+            pixels_a=cv2.findNonZero(artery)
+            pixels_a = sorted([(i[0][1],i[0][0]) for i in pixels_a])
+            pixels_v=cv2.findNonZero(vein)
+            pixels_v = sorted([(i[0][1],i[0][0]) for i in pixels_v])
+
+            # old, slow pixel counting
+            #pixels = sorted(self.count_pixels(img))
+            #print(pixels[0:10])
+            #print(p2[0:10])
+            #print(len(pixels),len(p2))
+            #pixels_a = self.count_pixels(artery)
+            #pixels_v = self.count_pixels(vein)
+            #print("Pixels counted after", (datetime.now()-start).total_seconds())
+
+            w = img.shape[1]
+            h = img.shape[0]
+            
+            pixels = pl.array(pixels)
+            pixels_a = pl.array(pixels_a)
+            pixels_v = pl.array(pixels_v)
+
+            scales = np.logspace(0.01, 5, num=10, endpoint=False, base=2) # sampling box sizes from 2^0.1 to 2^5 in 10 steps with equal distance in log space
+
+            N, Na, Nv = [], [], []
+            for scale in scales:
+                # print("## Scale:", scale)
+
+                H, edges = np.histogramdd(pixels, bins=(np.arange(0,w,scale),np.arange(0,h,scale)))
+                N.append(np.sum(H>0))
+                H, edges = np.histogramdd(pixels_a, bins=(np.arange(0,w,scale),np.arange(0,h,scale)))
+                Na.append(np.sum(H>0))
+                H, edges = np.histogramdd(pixels_v, bins=(np.arange(0,w,scale),np.arange(0,h,scale)))
+                Nv.append(np.sum(H>0))
+            #print("Boxes counted after", (datetime.now()-start).total_seconds())
+
+            coeffs = np.polyfit(np.log(scales), np.log(N), 1)
+            coeffs_a = np.polyfit(np.log(scales), np.log(Na), 1)
+            coeffs_v = np.polyfit(np.log(scales), np.log(Nv), 1)
+
+            #plt.figure()
+            #pl.plot(np.log(scales),np.log(N), 'o', mfc='none')
+            #pl.plot(np.log(scales), np.polyval(coeffs,np.log(scales)))
+            #pl.xlabel('log $\epsilon$')
+            #pl.ylabel('log N')
+            #pl.savefig('/scratch/'+imgname)
+
+            return {'FD_all':-coeffs[0], 'FD_artery':-coeffs_a[0], 'FD_vein':-coeffs_v[0]}
+        
+        except Exception as e:
+            print(e)
+            return {'FD_all':np.nan,'FD_artery':np.nan,'FD_vein':np.nan}
+
+    
+    def main_fractal_dimension_legacy(self, imgname: str) -> dict:
         """
         :param imgname:
         :return:

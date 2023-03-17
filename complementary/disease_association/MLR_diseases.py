@@ -59,6 +59,7 @@ print(list_diseases_bin)
 print(len(list_diseases_bin))
 print(inf.loc[inf['dtype']=='bin_con', 'name_LR'].values) # binary phenotypes
 
+
 list_diseases_con = inf.loc[inf['dtype']=='con', 'name_LR'].values # continuous phenotypes
 list_diseases_cat = inf.loc[inf['dtype']=='cat', 'name_LR'].values # categorical phenotypes
 
@@ -188,6 +189,11 @@ for out in list_diseases:
         print(out, reg)
         ### checking the min and max values
         #print(df_pheno_dise[out].min(), df_pheno_dise[out].max())
+        
+        ## Logistic: to calculate odds ratios it would be simply e^beta (or np.exp(beta)),
+        #beta being the estimate found in the logistic regression. 
+        #And the SE would be odds-ratio times the found SE (np.exp(beta)*se)
+        #(you can get the SE with results.bse the same you get betas with results.params)
         
         # OLS regression for categorical/ordinal and continuous outcomes
         if (inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='cat') | (inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='con'):

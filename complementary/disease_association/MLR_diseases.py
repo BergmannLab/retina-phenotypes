@@ -59,6 +59,7 @@ print(list_diseases_bin)
 print(len(list_diseases_bin))
 print(inf.loc[inf['dtype']=='bin_con', 'name_LR'].values) # binary phenotypes
 
+
 list_diseases_con = inf.loc[inf['dtype']=='con', 'name_LR'].values # continuous phenotypes
 list_diseases_cat = inf.loc[inf['dtype']=='cat', 'name_LR'].values # categorical phenotypes
 

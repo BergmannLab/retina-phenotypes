@@ -117,6 +117,7 @@ max_QCthreshold_2=999999
 #### FUNDUS MEASUREMENTS
 
 PHENOTYPE_OF_INTEREST='taa,tva,CRAE,CRVE,ratios_CRAE_CRVE,ratios_VD,bifurcations,diameter_variability,aria_phenotypes,ratios,fractal_dimension,vascular_density,baseline,neo_vascularization,N_main_arteires,N_main_veins'
+PHENOTYPE_OF_INTEREST='fractal_dimension'
 phenotypes_dir=$RUN_DIR/image_phenotype/
 
 ### PHENOTYPES PARAMETERS:

@@ -48,6 +48,7 @@ if __name__ == '__main__':
     qcFile = sys.argv[1]
     traits = sys.argv[6].split(',')
     lwnet_dir = sys.argv[4] 
+    n_cpu=int(sys.argv[17])
 
     # all the images
     imgfiles = pd.read_csv(qcFile, header=None)
@@ -69,7 +70,7 @@ if __name__ == '__main__':
 
         # computing the phenotype as a parallel process
         os.chdir(lwnet_dir)
-        pool = Pool()
+        pool = Pool(n_cpu)
 
         if function_to_execute in {'taa', 'tva'}:
             filter_tva_taa = 1 if function_to_execute == 'taa' else (-1 if function_to_execute == 'tva' else None)

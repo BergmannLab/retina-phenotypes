@@ -17,21 +17,6 @@ from PIL import Image
 from matplotlib import cm
 
 
-## Parameters for temporal angle
-delta = 10
-R_0 = 240
-radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
-min_ta = 75
-max_ta = 200
-lower_accept = 15 
-upper_accept = 2
-
-## Parameters for bifurcations
-norm_acceptance=7.5
-cte = 3.5
-
-## N main vessels
-limit_diameter_main = 10 # Select it better 
 
 aria_measurements_dir = sys.argv[3] #'/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/ARIA_MEASUREMENTS_DIR' 
 qcFile = sys.argv[1] # '/Users/sortinve/PycharmProjects/pythonProject/sofia_dev/data/noQC.txt'  # qcFile used is noQCi, as we measure for all images
@@ -39,7 +24,21 @@ phenotype_dir = sys.argv[2]
 lwnet_dir = sys.argv[4] 
 OD_output_dir = sys.argv[5]
 
-mask_radius=660 # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
+## Parameters for temporal angle
+delta = sys.argv[7] 
+R_0 = sys.argv[8] 
+radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta, R_0+5*delta]
+min_ta = sys.argv[9] 
+max_ta = sys.argv[10] 
+lower_accept = sys.argv[11] 
+upper_accept = sys.argv[12] 
+## Parameters for bifurcations
+norm_acceptance = sys.argv[13] 
+neighborhood_cte = sys.argv[14] 
+## Parameter for N main vessels
+limit_diameter_main = sys.argv[15] 
+## Parameter for Vascular Density
+mask_radius=sys.argv[16]  # works for UKBB, may be adapted in other datasets, though only used for PBV (percent annotated as blood vessels) phenotype
 
 def main_bifurcations(imgname: str) -> dict:
     """
@@ -162,8 +161,6 @@ def get_intersections_N_main_v(df_pintar, OD_position, filter_type, imageID):
     aux = []
     df_pintar['X'] = df_pintar['X'].round(0)
     df_pintar['Y'] = df_pintar['Y'].round(0)
-    delta = 10
-    R_0 = 240
     radius = [R_0, R_0+delta, R_0+2*delta, R_0+3*delta, R_0+4*delta]
     for p in radius: 
         new_df_2 = circular_df_filter(p, angle, OD_position, df_pintar)
@@ -252,12 +249,12 @@ def get_intersections(df_pintar, OD_position, filter_type, imageID):
         #limit_diameter = 2 # Select it better 
         #df_veins_arter = df_veins_arter[df_veins_arter['Diameter']>limit_diameter]
         if filter_type==-1: 
-            cte=0.95
+            factor_cte=0.95
             X ='V'
         else: 
-            cte=0.88
+            factor_cte=0.88
             X ='A'
-        equation_CRA = cte*((df_veins_arter['Diameter'].iloc[0])**2 + (df_veins_arter['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
+        equation_CRA = factor_cte*((df_veins_arter['Diameter'].iloc[0])**2 + (df_veins_arter['Diameter'].iloc[num_segments_selected-1])**2)**(1/2)
         data_eq = {'CRE': equation_CRA}
         aux_eq.append(data_eq)
 
@@ -652,13 +649,13 @@ def bifurcation_counter(df_results, imageID):
     for s in range(number_rows):
         for j in range(number_rows - s):
             j = j + s
-            # For X and Y: X[s] - cte <= X[j] <= X[s]
+            # For X and Y: X[s] - neighborhood_cte <= X[j] <= X[s]
             # Both arteries or both veins and != type 0
             if (
-                (x[j] >= x[s] - cte)
-                and (x[j] <= x[s] + cte)
-                and (y[j] >= y[s] - cte)
-                and (y[j] <= y[s] + cte)
+                (x[j] >= x[s] - neighborhood_cte)
+                and (x[j] <= x[s] + neighborhood_cte)
+                and (y[j] >= y[s] - neighborhood_cte)
+                and (y[j] <= y[s] + neighborhood_cte)
                 and index_v[j] != index_v[s]
                 and (dis_type[j] == dis_type[s])
                 and (dis_type[j] != 0 and dis_type[s] != 0)

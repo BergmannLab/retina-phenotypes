@@ -3,7 +3,7 @@
 
 ########### Diseases MLR and corr with phenotypes 
 
-# Last modification: 09/08/2022
+# Last modification: 22/11/2022
 
 import pandas as pd
 import numpy as np
@@ -12,14 +12,15 @@ import matplotlib.image as mpimg
 from statsmodels.formula.api import ols, logit
 from datetime import datetime
 import sys
+import seaborn as sns
+
 
 DATE = datetime.now().strftime("%Y-%m-%d")
 
-ventile='ventile'+str(sys.argv[1])
-What_type_phenotype=sys.argv[2]
-output_dir = sys.argv[3]
-diseases_file = sys.argv[3] + sys.argv[4]+'.csv' 
-pheno_file =  sys.argv[5] + sys.argv[6]
+What_type_phenotype=sys.argv[1]
+output_dir = sys.argv[2]
+diseases_file = sys.argv[2] + sys.argv[3] 
+pheno_file =  sys.argv[4] + sys.argv[5]
 
 if What_type_phenotype == 'main':
     file_info_name='pheno_info_main.csv'
@@ -29,24 +30,23 @@ elif What_type_phenotype == 'suplementary':
 
 else:
     print('Error, should be main or suplementary!')
-    sys.stop()
+    #sys.stop()
     
 pheno_info_file = '~/retina-phenotypes/complementary/disease_association/'+str(file_info_name)
 
 display_info=True
 
-
-
 if file_info_name=='pheno_info_sup.csv':
-    list_phenotypes=list(sys.argv[7].split(","))
+    list_phenotypes=list(sys.argv[6].split(","))
+    list_phenotypes_new=list(sys.argv[8].split(","))
     
 if file_info_name=='pheno_info_main.csv':
-    list_phenotypes=list(sys.argv[8].split(","))
+    list_phenotypes=list(sys.argv[7].split(","))
+    list_phenotypes_new=list(sys.argv[9].split(","))
 
-
+#print(list_phenotypes, list_phenotypes_new)
 ####################### 1 - Read diseases:
 df_diseases=pd.read_csv(diseases_file, sep=',')
-
 
 # #### Read diseases info
 
@@ -61,7 +61,7 @@ list_diseases_bin = inf.loc[inf['dtype']=='bin', 'name'].values # binary phenoty
 list_diseases_con = inf.loc[inf['dtype']=='con', 'name'].values # continuous phenotypes
 list_diseases_cat = inf.loc[inf['dtype']=='cat', 'name'].values # categorical phenotypes
 
-
+print(list_diseases_con)
 # ##### Number of cases and controls per disease
 
 
@@ -83,7 +83,7 @@ df_diseases_red = df_diseases[list_diseases]
 fig = plt.figure(figsize = (12,10))
 ax = fig.gca()
 df_diseases_red.hist(ax = ax) 
-plt.savefig(output_dir + str(DATE)+'_'+ ventile +'_MLRdiseases_hist.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
+plt.savefig(output_dir + str(DATE)+'_MLRdiseases_hist.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
 
 
 ####################### 2 - Phenotypes:
@@ -117,9 +117,6 @@ df_pheno_dise=df_pheno_dise[list_phenos_diseases]
 
 
 ####################### 4 - Correlation
-
-
-import seaborn as sns
 
 def corr(x, y, **kwargs):
     # Calculate the value
@@ -169,12 +166,14 @@ for var in list_diseases_con:
 # ##### Check the type of variables and convert objects to numeric:
 
 ### convert to type numeric the columns that are not
+df_pheno_dise['date_reported_atherosclerosis'] = pd.to_numeric(df_pheno_dise['date_reported_atherosclerosis'])
+df_pheno_dise['date_disorders_arteries_arterioles'] = pd.to_numeric(df_pheno_dise['date_disorders_arteries_arterioles'])
+
 if file_info_name=='pheno_info_sup.csv':
-    df_pheno_dise['date_reported_atherosclerosis'] = pd.to_numeric(df_pheno_dise['date_reported_atherosclerosis'])
-    df_pheno_dise['date_disorders_arteries_arterioles'] = pd.to_numeric(df_pheno_dise['date_disorders_arteries_arterioles'])
+
     df_pheno_dise['date_AD'] = pd.to_numeric(df_pheno_dise['date_AD']) 
-    df_pheno_dise['date_death'] = pd.to_numeric(df_pheno_dise['date_death']) 
-    #print(df_pheno_dise.info())
+    #df_pheno_dise['date_death'] = pd.to_numeric(df_pheno_dise['date_death']) 
+    print(df_pheno_dise.info())
 
 
 #########  Linear/logistic regression
@@ -186,7 +185,7 @@ log10p = pd.DataFrame(columns=list_diseases, index=list_phenotypes)
 
 for out in list_diseases:
     for reg in list_phenotypes:
-        #print(out, reg)
+        print(out, reg)
         ### checking the min and max values
         #print(df_pheno_dise[out].min(), df_pheno_dise[out].max())
         
@@ -201,47 +200,88 @@ for out in list_diseases:
         betas.loc[reg, out] = results.params[reg]
         log10p.loc[reg, out] = -np.log10(results.pvalues[reg])
 
+if What_type_phenotype == 'main':
+    betas.to_csv(output_dir+'reg_betas_.csv')
+    log10p.to_csv(output_dir+'reg_log10p_.csv')
 
-betas.to_csv(output_dir+'reg_betas_'+ventile+'.csv')
-log10p.to_csv(output_dir+'reg_log10p_'+ventile+'.csv')
-
-
-
+else:
+    betas.to_csv(output_dir+'reg_betas_sup.csv')
+    log10p.to_csv(output_dir+'reg_log10p_sup.csv')
 
 # Regression heatmaps
 ## NB: infinite -log10(p) are arbitrarily replaced by a fixed value ('inf_val') for visualisation
 #inf_val = 310
 
-betas = betas.astype('float64') # in case betas was coded as object type
-
-## This colours by -log10(p) and annotates betas
-## NOT VERY READABLE: DELETE??
-#fig = plt.figure(figsize=(20, 16))
-#sns.heatmap(log10p.replace(np.inf, inf_val), annot=betas.round(2), cmap='Blues', vmin=0, cbar_kws={'label': '-log10(p)'})
-#plt.close()
+# betas = betas.astype('float64') # in case betas was coded as object type
 
 
-## This colours by beta and annotates Bonferroni-significant models with an asterisk
-Bonf_thresh = -np.log10(0.05 / (log10p.shape[0] * log10p.shape[1]))
+# ##Change the name of the columns and index in beta and log10:
+# def rename_col_index(df_, l_diseases_old, l_diseases_new, l_pehos_old, l_phenos_new):
+#     #df_.columns = l_diseases_new
+#     df_.rename(columns=dict(zip(l_diseases_old, l_diseases_new)), inplace=True)
+#     df_.rename(index=dict(zip(l_pehos_old, l_phenos_new)), inplace=True)
+#     return df_
+
+# print(list(inf['name']))
+# print(list(inf['final_name']))
+# betas = rename_col_index(betas, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
+# log10p = rename_col_index(log10p, list(inf['name']), list(inf['final_name']), list_phenotypes, list_phenotypes_new)
 
 
-if file_info_name=='pheno_info_sup.csv':
-    fig = plt.figure(figsize=(10, 10))
-    imagen=sns.heatmap(betas, annot=(log10p>Bonf_thresh).replace({True:'*', False:''}), fmt="", annot_kws={'weight': 'bold'}, vmin=-abs(betas).max().max(), vmax=abs(betas).max().max(), cmap='seismic', cbar_kws={'label': 'Standardised \u03B2'})
-    plt.savefig(output_dir+ str(DATE)+'_MLR_'+ventile+'_sup.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
+# ## This colours by beta and annotates Bonferroni-significant models with an asterisk
+# Bonf_thresh = -np.log10(0.05 / (log10p.shape[0] * log10p.shape[1]))
+# Bonf_thresh2 = -np.log10(0.001 / (log10p.shape[0] * log10p.shape[1]))
 
-else:
-    fig = plt.figure(figsize=(7, 5))
-    imagen=sns.heatmap(betas, annot=(log10p>Bonf_thresh).replace({True:'*', False:''}), fmt="", annot_kws={'weight': 'bold'}, vmin=-abs(betas).max().max(), vmax=abs(betas).max().max(), cmap='seismic', cbar_kws={'label': 'Standardised \u03B2'})
-    plt.savefig(output_dir+ str(DATE)+'_MLR_'+ventile+'.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
-#plt.close()
+# log10p_copy = log10p.copy()
+# log10p_copy2 = log10p.copy()
+# log10p_copy3 = log10p.copy()
+
+# log10p_copy= (log10p_copy>Bonf_thresh).replace({True:'*', False:''})
+# log10p_copy2= (log10p_copy2>Bonf_thresh2).replace({True:'*', False:''})
+# log10p_copy3 =log10p_copy+log10p_copy2
+
+
+# if file_info_name=='pheno_info_sup.csv':
+#     fig = plt.figure(figsize=(13, 10))
+#     ax2 = plt.axes()
+#     ax2.yaxis.set_ticks_position('right')
+#     ax=sns.heatmap(betas, 
+#                 annot=log10p_copy3, #(log10p>Bonf_thresh).replace({True:'*', False:''}), 
+#                 cbar=False,
+#                 fmt="", annot_kws={'weight': 'bold'}, 
+#                 vmin=-abs(betas).max().max(), 
+#                 vmax=abs(betas).max().max(), 
+#                 cmap='viridis', cbar_kws={'label': 'Standardised \u03B2'})
+#     ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)  
+#     plt.savefig(output_dir+ str(DATE)+'_MLR_sup.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
+
+# else:
+#     fig = plt.figure(figsize=(7, 6))
+#     ax2 = plt.axes()
+#     ax2.yaxis.set_ticks_position('right')
+#     ax=sns.heatmap(betas, 
+#                 annot=log10p_copy3, #(log10p>Bonf_thresh).replace({True:'*', False:''}), 
+#                 cbar=False,
+#                 fmt="", annot_kws={'weight': 'bold'}, 
+#                 vmin=-abs(betas).max().max(), 
+#                 vmax=abs(betas).max().max(), 
+#                 cmap='viridis', cbar_kws={'label': 'Standardised \u03B2'})
+#     ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+#     plt.savefig(output_dir+ str(DATE)+'_MLR_.jpg', facecolor='white', bbox_inches='tight', pad_inches=0.1, dpi=150)
+
 
 
 #### cases and controls
 
-#for i in list_diseases:
-#    print(i, df_pheno_dise[i].value_counts())
-     
-
-
+# list_value=[]
+# for i in log10p_copy3.columns:
+#     #print(i, df_pheno_dise[i].value_counts())
+#     data={
+#         'i': i,
+#         'value_counts': df_pheno_dise[i].value_counts()
+#     }
+#     list_value.append(data)
+# df_count_val = pd.DataFrame(list_value)
+# print(df_count_val)
+# df_count_val.to_csv(output_dir+ str(DATE)+'_N_CASES_MLR_.csv', sep=',', index=False)
 

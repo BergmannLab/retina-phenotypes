@@ -1,3 +1,5 @@
+### Change the format of the images (.png) and avoid spaces in names 
+
 from PIL import Image
 import os
 import sys

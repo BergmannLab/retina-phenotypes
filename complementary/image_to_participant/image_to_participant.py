@@ -36,9 +36,29 @@ def removeMultipleTimes(participant_imgs): # to adequately correct for age, we c
 
 def getParticipantImages(participant):
 
-        participant_imgs = [img for img in imgs if participant in img] # imgs is global variable
+        participant_imgs = [img for img in imgs if participant in img] # imgs is global variable of images passing QC
         
-        return removeMultipleTimes(participant_imgs) # returning only images of first time point in case multiple time points present
+        participant_imgs, instance = removeMultipleTimes(participant_imgs)
+        
+
+        # counting left vs right
+        n_left=0
+        n_right=0
+        n_first=0
+        n_second=0
+        for i in participant_imgs:
+            split=i.split('_')
+            if split[1] == '21015':
+                n_left+=1
+            else:
+                n_right+=1
+            if '0' in split[3]:
+                n_first+=1
+            else:
+                n_second+=1
+
+
+        return participant_imgs, instance, (split[0], n_left,n_right,n_first,n_second) # returning only images of first time point in case multiple time points present
 
 def imgToParticipant(imgs_of_participant):
         return stats.loc[imgs_of_participant].mean()
@@ -249,6 +269,7 @@ if __name__ == '__main__':
         output_dir = sys.argv[3]
         sample_file = sys.argv[4]
         EXPERIMENT_ID = sys.argv[5] 
+        n_std = int(sys.argv[6])
 
         os.chdir(input_dir)
 
@@ -273,17 +294,46 @@ if __name__ == '__main__':
                         stats = stats.join(tmp)
 
         # replacing potential infinites with nan
-        stats.replace([np.inf, -np.inf], np.nan, inplace=True)
+        stats.replace([np.inf, -np.inf], np.nan, inplace=True) 
 
         #QC
+
         imgs = pd.read_csv(qcFile, header=None) # images that pass QC of choice
         imgs = imgs[0].values
         imgs = [i for i in imgs if i in stats.index]
         participants = sorted(list(set([i.split("_")[0] for i in imgs]))) # participants with at least one img passing QC
+
+        stats = stats.loc[imgs] # keeping only images that pass QC in the phenotype file
+
+        # Outlier removal
+
+        # outliers could be defined in multiple ways
+        # 1) as being further from the mean as 1/count quantile, assuming normality
+        # 2) as a fix number of stds away from the mean
+        # # we currently use 2)
         
+        # ratio_VD has exteme outliers, even for imgs that pass QC
+        # we therefore remove those manually
+        if 'ratio_VD' in stats.columns:
+            stats.loc[stats['ratio_VD']>10, 'ratio_VD'] = np.nan
+
+        for i in stats.columns:
+            mean=stats[i].mean()
+            std=stats[i].std()
+            count=stats[i].count() # number of non-nan images
+
+            #quantile = ss.norm.ppf(1-1/count, loc=mean,scale=std)
+
+            print(mean,std,count,'n_std:',n_std)
+
+            n_removed = len(stats[i].loc[(stats[i]>mean+n_std*std) | (stats[i]<mean-n_std*std)])
+            print(f"Number of outliers removed for phenotype {i}: {n_removed}")
+
+            stats[i].loc[(stats[i]>mean+n_std*std) | (stats[i]<mean-n_std*std)] = np.nan
+
         #testing
         nTest = len(participants) # len(participants) for production
-        print(nTest)
+        print('N participants passing QC:', nTest)
         #imgs_per_participant is a participant list: each element contains list of segment stat files belonging to a participant's QCd images
         print('Start of getParticipantImages pool')
         pool1 = Pool()
@@ -291,6 +341,9 @@ if __name__ == '__main__':
         pool1.close()
         imgs_per_participant = [i[0] for i in out]
         instance_per_participant = [ i[1] for i in out ]
+        which_imgs_of_participant = pd.DataFrame([i[2] for i in out], columns=['eid','n_left','n_right','n_first_shot','n_second_shot'])
+        which_imgs_of_participant.to_csv(output_dir+EXPERIMENT_ID+"_left_right_and_shot_counts.csv")
+        
         instance_df = pd.DataFrame(columns=['instance'], index=participants[0:nTest], data=instance_per_participant)
 
         #computing participant-wise stats

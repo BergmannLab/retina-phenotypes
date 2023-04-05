@@ -16,16 +16,18 @@ diseases = c("age_diabetes", "age_angina", "age_heartattack", "age_DVT", "age_st
 # Covariates are sex, age, age2, eye geometry, and PC1-20
 
 args=commandArgs(trailingOnly=TRUE)
-RUNDIR=args[1] #"/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO"
-PHENOTYPE_ID=args[2] #"2022_07_08_ventile5"
+RUNDIR=args[1] #"/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT"
+PHENOTYPE_ID=args[2] #"2022_11_18_preprint_lwnet"
 filter_instance=args[3] # FALSE
+pheno_z_file=args[4]
+covar_file=args[5]
 
-#RUNDIR="/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO"
-#PHENOTYPE_ID="2022_07_08_ventile2"
+#RUNDIR="/NVME/decrypted/scratch/multitrait/UK_BIOBANK_PREPRINT"
+#PHENOTYPE_ID="2022_11_18_preprint_lwnet"
 #filter_instance=FALSE
 
-covarfile=paste0(RUNDIR,"/diseases_cov/",PHENOTYPE_ID,"_diseases_cov.csv")
-traitfile=paste0(RUNDIR,"/participant_phenotype/",PHENOTYPE_ID,"_corrected_z.csv")
+covarfile=paste0(RUNDIR,"/diseases_cov/",covar_file)
+traitfile=paste0(RUNDIR,"/participant_phenotype/",pheno_z_file)
 
 
 if (filter_instance == TRUE) {
@@ -104,13 +106,14 @@ df[df == -Inf] <- NaN
 df[df == Inf] <- NaN
 
 df$sex = as.factor(df$sex)
-df$age = df$age_center
-df$age2 = df$age_center_2
+df$age = df$age_center_both
+df$age2 = df$age_center_both^2
 
-
-# squared eye geometry terms
-df$spherical_power_2 = df$spherical_power^2
-df$cylindrical_power_2 = df$cylindrical_power^2
+# modifications after Sofia took care of instance adaptations:
+df$spherical_power = df$spherical_power_both
+df$cylindrical_power = df$cylindrical_power_both
+df$spherical_power_2 = df$spherical_power_both_2
+df$cylindrical_power_2 = df$cylindrical_power_both_2
 
 
 #####
@@ -181,7 +184,7 @@ for(i in diseases) {
 i='age_death'
 df$age_disease = df$age_death
 
-df$years_to_event = df$age_disease - df$age_center # 0 at date of measurement
+df$years_to_event = df$age_disease - df$age # 0 at date of measurement, df$age := age at center
 
 # needed by coxph
 end_time = max(df$years_to_event, na.rm=T) + 0.01 # approximation define censor time as largest observed years_to_event interval

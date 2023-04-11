@@ -12,8 +12,14 @@
 # PROGRAMMING LANGUAGES USED: Matlab
 ######################################################################################################
 
+set -a # as described below, will export all config variables to the environment, thus making them available to aria_batch.sh
+: '
+# When this option is on, the export attribute shall be set for each variable to which an assignment is performed; [...] If the assignment precedes a utility name in a command, the export attribute shall not persist in the current execution environment after the utility completes, with the exception that preceding one of the special built-in utilities causes the export attribute to persist after the built-in has completed. If the assignment does not precede a utility name in the command, or if the assignment is a result of the operation of the getopts or read utilities, the export attribute shall persist until the variable is unset.
+'
+
 source ../configs/config_.sh
 begin=$(date +%s)
+
 
 ### Create a folder to save the results
 mkdir -p $dir_ARIA_output

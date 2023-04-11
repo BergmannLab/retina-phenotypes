@@ -3,7 +3,7 @@
 # created because Matlab was causing problems when setting a Matlab command to run in background
 # now MeasureVessels invokes this script, which is set to run in background
 
-source ../configs/config_.sh
+# source ../configs/config_.sh # was causing problems when run simultaneously from multiple batches
 
 ### Set up the directories
 base_dir=$PWD

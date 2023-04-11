@@ -12,26 +12,21 @@ config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) 
 
 #### DATASET OF CHOICE
 
-data_set=UK_BIOBANK #options: DRIVE, IOSTAR, CHASEDB1, UK_BIOBANK
+data_set=UK_BIOBANK
 
-#image_type options: *.jpg, *.tif, *.png, ...
-if [[ $data_set = UK_BIOBANK ]]; then
-	image_type=*.png
-elif [[ $data_set = DRIVE ]]; then
-	image_type=*.tif
+# Check in case using new data
+if [[ $data_set = DRIVE ]]; then
+    image_type=*.tif
 else
-	image_type=*.png
+    image_type=*.png
 fi
 
 echo Data set: $data_set
 echo Image type: $image_type
 
 
-if [[ $data_set == UK_BIOBANK ]]; then
-        aria_processor=CLRIS
-else
-        aria_processor=$data_set
-fi
+# ARIA options: DRIVE, IOSTAR, CHASEDB1
+aria_processor=CLRIS # Works best for UK Biobank fundus images
 
 #### PROJECT DATA
 
@@ -48,18 +43,18 @@ dir_input=$RUN_DIR/input
 dir_images=$dir_input/$aria_processor
 
 folders=(
-	AV_maps
-	diseases_cov
-	figures
-	image_phenotype
-	image_phenotype/current
-	input
-	gwas
-	optic_disc
-	participant_phenotype
-	gwas/"$PARTICIPANT_STAT_ID"/gcorr_diseases
-	skeletons_etc
-	qc
+    AV_maps
+    diseases_cov
+    figures
+    image_phenotype
+    image_phenotype/current
+    input
+    gwas
+    optic_disc
+    participant_phenotype
+    gwas/"$PARTICIPANT_STAT_ID"/gcorr_diseases
+    skeletons_etc
+    qc
 )
 
 for i in "${folders[@]}"; do mkdir -p -m u=rwx,g=rwx,o=rx $RUN_DIR/$i; done # create folders if do not exist, exceptionally allow group write permissions, as this is a collaborative project
@@ -67,29 +62,25 @@ for i in "${folders[@]}"; do mkdir -p -m u=rwx,g=rwx,o=rx $RUN_DIR/$i; done # cr
 # One additional folder, required for ARIA
 # If raw images are already in PNG format, dir_images is a symbolic link pointing to the raw images
 if [[ "$image_type" = *.png ]]; then
-        rm $dir_input/$aria_processor # clean if pipeline was run before
-	ln -s $dir_images2 $dir_input/$aria_processor
-#else
-        # clean, and regenerate directory
-        #rm -rf $dir_input/$aria_processor
-        #mkdir -p $dir_input/$aria_processor
+    rm -f $dir_input/$aria_processor # remove symbolic link if it exists
+    ln -s $dir_images2 $dir_input/$aria_processor # (re-) create symbolic link
 fi
+# Else, basic_preprocessing.sh will convert raw images to PNG format and store them in dir_images
 
-#### COUNT RAW IMAGES, STORE LABELS
+#### COUNT RAW IMAGES, CREATE IMAGE LABELS FILE
 
-if [ ! -f "$dir_input"/all_raw_images.txt ]; then
-	for i in $(ls $dir_images2 | cut -f1 -d.); do
-		echo $i.png > "$dir_input"/all_raw_images.txt
-	done
-else
-	echo "all_raw_images.txt" already exists
+# If file already exists, move to all_raw_images.txt.prev
+if [ -f "$dir_input"/all_raw_images.txt ]; then
+    mv "$dir_input"/all_raw_images.txt "$dir_input"/all_raw_images.txt.prev
+    echo Moved all_raw_images.txt to all_raw_images.txt.prev
 fi
+for i in $(ls $dir_images2 | cut -f1 -d.); do
+    echo $i.png >> "$dir_input"/all_raw_images.txt
+done
 
 ALL_IMAGES=$dir_input/all_raw_images.txt
 n_img=$(cat $ALL_IMAGES | wc -l)
-echo Number of raw fundus images to be processed: $n_img
-
-
+echo Number of raw images: $n_img
 
 #### PIXEL-WISE, ARTERY-VEIN SPECIFIC VESSEL SEGMENTATION
 
@@ -203,7 +194,7 @@ What_type_phenotype='main' #suplementary # fror MLR, Violin, Histogram, Genes
 #### PARALLEL COMPUTING 
 
 #to run one by one, set n_cpu=1
-n_cpu=50
+n_cpu=10
 step_size=$((n_img/n_cpu))
 batch_max=$((n_cpu * step_size))
 remainder=$(( n_img - step_size * n_cpu ))

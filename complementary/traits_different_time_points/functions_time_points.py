@@ -170,7 +170,7 @@ def right_left(dir_ukb_csv_1):
     return df_right_intersection, df_left_intersection
 
 def prepare_data_for_plot(dir_input, pheno_name, RorL,type):
-    df = pd.read_csv(dir_input+pheno_name+'_ventile_5_'+RorL+'.csv')
+    df = pd.read_csv(dir_input+pheno_name+'_eye_'+RorL+'.csv')
     y1 = df[type]
     return y1
 
@@ -201,7 +201,7 @@ def plot_density_time_dif(dir_input, type, pheno_list):
     plt.title('Left eye')
     plt.xlabel(xlabel_name)
     plt.tight_layout()
-    plt.savefig(dir_output+'/Different_time_points_' + str(pheno_list)+'_density.pdf',
+    plt.savefig(dir_input+'/Different_time_points_' + str(pheno_list)+'_density.pdf',
                facecolor=fig.get_facecolor(), edgecolor='none')
     plt.show()
     plt.close()
@@ -215,7 +215,7 @@ def split_list_half(a_list):
     return a_list[:half], a_list[half:]
 
 def prepare_data_for_plot(dir_input, pheno_name, RorL,type):
-    df = pd.read_csv(dir_input+pheno_name+'_ventile_5_'+RorL+'.csv')
+    df = pd.read_csv(dir_input+pheno_name+'_eye_'+RorL+'.csv')
     y1 = df[type]
     return y1
 

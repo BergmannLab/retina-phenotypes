@@ -22,27 +22,23 @@ output_dir = sys.argv[2]
 diseases_file = sys.argv[2] + sys.argv[3] 
 pheno_file =  sys.argv[4] + sys.argv[5]
 
+file_info_name='pheno_diseases_info.csv'
+pheno_info_file = '~/retina-phenotypes/complementary/'+str(file_info_name)
+
+display_info=True
+
 if What_type_phenotype == 'main':
-    file_info_name='pheno_info_main.csv'
+    list_phenotypes=list(sys.argv[6].split(","))
+    list_phenotypes_new=list(sys.argv[8].split(","))
     
 elif What_type_phenotype == 'suplementary':
-    file_info_name='pheno_info_sup.csv'
+    list_phenotypes=list(sys.argv[7].split(","))
+    list_phenotypes_new=list(sys.argv[9].split(","))
 
 else:
     print('Error, should be main or suplementary!')
     #sys.stop()
-    
-pheno_info_file = '~/retina-phenotypes/complementary/disease_association/'+str(file_info_name)
 
-display_info=True
-
-if file_info_name=='pheno_info_sup.csv':
-    list_phenotypes=list(sys.argv[6].split(","))
-    list_phenotypes_new=list(sys.argv[8].split(","))
-    
-if file_info_name=='pheno_info_main.csv':
-    list_phenotypes=list(sys.argv[7].split(","))
-    list_phenotypes_new=list(sys.argv[9].split(","))
 
 #print(list_phenotypes, list_phenotypes_new)
 ####################### 1 - Read diseases:
@@ -55,11 +51,17 @@ inf = pd.read_csv(pheno_info_file)
 
 
 # Lists of phenotypes
-list_diseases = inf['name'].values
+inf = inf[inf['name_LR'].notnull()]
+list_diseases = inf['name_LR'].values
 
-list_diseases_bin = inf.loc[inf['dtype']=='bin', 'name'].values # binary phenotypes
-list_diseases_con = inf.loc[inf['dtype']=='con', 'name'].values # continuous phenotypes
-list_diseases_cat = inf.loc[inf['dtype']=='cat', 'name'].values # categorical phenotypes
+list_diseases_bin = inf.loc[inf['dtype']=='bin', 'name_LR'].values 
+print(list_diseases_bin)
+print(len(list_diseases_bin))
+print(inf.loc[inf['dtype']=='bin_con', 'name_LR'].values) # binary phenotypes
+
+
+list_diseases_con = inf.loc[inf['dtype']=='con', 'name_LR'].values # continuous phenotypes
+list_diseases_cat = inf.loc[inf['dtype']=='cat', 'name_LR'].values # categorical phenotypes
 
 print(list_diseases_con)
 # ##### Number of cases and controls per disease
@@ -169,11 +171,10 @@ for var in list_diseases_con:
 df_pheno_dise['date_reported_atherosclerosis'] = pd.to_numeric(df_pheno_dise['date_reported_atherosclerosis'])
 df_pheno_dise['date_disorders_arteries_arterioles'] = pd.to_numeric(df_pheno_dise['date_disorders_arteries_arterioles'])
 
-if file_info_name=='pheno_info_sup.csv':
-
-    df_pheno_dise['date_AD'] = pd.to_numeric(df_pheno_dise['date_AD']) 
-    #df_pheno_dise['date_death'] = pd.to_numeric(df_pheno_dise['date_death']) 
-    print(df_pheno_dise.info())
+#if file_info_name=='pheno_info_sup.csv':
+df_pheno_dise['date_AD'] = pd.to_numeric(df_pheno_dise['date_AD']) 
+#df_pheno_dise['date_death'] = pd.to_numeric(df_pheno_dise['date_death']) 
+print(df_pheno_dise.info())
 
 
 #########  Linear/logistic regression
@@ -189,13 +190,20 @@ for out in list_diseases:
         ### checking the min and max values
         #print(df_pheno_dise[out].min(), df_pheno_dise[out].max())
         
+        ## Logistic: to calculate odds ratios it would be simply e^beta (or np.exp(beta)),
+        #beta being the estimate found in the logistic regression. 
+        #And the SE would be odds-ratio times the found SE (np.exp(beta)*se)
+        #(you can get the SE with results.bse the same you get betas with results.params)
+        
         # OLS regression for categorical/ordinal and continuous outcomes
-        if (inf.loc[inf['name']==out, 'dtype'].values[0]=='cat') | (inf.loc[inf['name']==out, 'dtype'].values[0]=='con'):
+        if (inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='cat') | (inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='con'):
             model = ols(formula=out+'~'+reg, data=df_pheno_dise)
         # Logistic regression for binary outcomes
-        elif inf.loc[inf['name']==out, 'dtype'].values[0]=='bin':
+        elif inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='bin':
             model = logit(formula=out+'~'+reg, data=df_pheno_dise)
             # results = model.fit(method='bfgs')
+        elif inf.loc[inf['name_LR']==out, 'dtype'].values[0]=='bin_con':
+            model = logit(formula=out+'~'+reg, data=df_pheno_dise)
         results = model.fit()
         betas.loc[reg, out] = results.params[reg]
         log10p.loc[reg, out] = -np.log10(results.pvalues[reg])

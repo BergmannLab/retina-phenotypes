@@ -7,7 +7,7 @@ begin=$(date +%s)
 nice python3.8 main_phenotypes_plots.py $PARTICIPANT_PHENO_DIR $name_phenofile $FIGURES_DIR $MAIN_LABELS "$MAIN_NAMES" #$What_type_phenotype $SUPPLEMENTARY_LABELS $SUPPLEMENTARY_NAMES 
 
 #### 2) Baselines (table)
-nice python3.8 baselines.py $diseases_pheno_cov_file $csv_name $describe_baselines_file
+nice python3.8 baselines.py $diseases_pheno_cov_file $csv_diseases_cov_name $describe_baselines_file
 
 
 #### 3) PCA

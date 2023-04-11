@@ -11,7 +11,7 @@ library(parallel)
 # Uses traits that have previously been linearly corrected for covariate effects
 
 # predicts mortality as well as the following diseases:
-diseases = c("age_diabetes", "age_angina", "age_heartattack", "age_DVT", "age_stroke", "age_glaucoma", "age_cataract", "age_other_serious_eye_condition", "age_pulmonary_embolism")
+diseases = c("age_diabetes", "age_angina", "age_heartattack", "age_DVT", "age_stroke", "age_glaucoma", "age_cataract", "age_other_serious_eye_condition", "age_pulmonary_embolism", "age_alzheimers")
 
 # Covariates are sex, age, age2, eye geometry, and PC1-20
 

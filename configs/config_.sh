@@ -7,30 +7,28 @@ PROJECT_DIR=/NVME/decrypted/scratch/multitrait
 #### CONFIGURATIONS DIRECTORY
 
 config_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # returns parent directory of this file
+code_root_dir="$(dirname "$config_dir")"
 
 ############################# FROM IMAGES TO PHENOTYPES ##############################
 
 #### DATASET OF CHOICE
 
-data_set=UK_BIOBANK
+data_set=DRIVE
 
 # Check in case using new data
 if [[ $data_set = DRIVE ]]; then
     image_type=*.tif
+    dir_images2="$code_root_dir"/input/DRIVE/raw/
 else
     image_type=*.png
+    dir_images2=/NVME/decrypted/ukbb/fundus/raw/CLRIS/ # folder containing raw fundus images
 fi
 
 echo Data set: $data_set
 echo Image type: $image_type
 
-
 # ARIA options: DRIVE, IOSTAR, CHASEDB1
 aria_processor=CLRIS # Works best for UK Biobank fundus images
-
-#### PROJECT DATA
-
-dir_images2=/NVME/decrypted/ukbb/fundus/raw/CLRIS/ # folder containing raw fundus images
 
 #### UNIQUE RUN LABEL
 

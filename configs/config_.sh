@@ -13,7 +13,7 @@ code_root_dir="$(dirname "$config_dir")"
 
 #### DATASET OF CHOICE
 
-data_set=DRIVE
+data_set=UK_BIOBANK
 
 # Check in case using new data
 if [[ $data_set = DRIVE ]]; then

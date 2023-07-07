@@ -228,16 +228,24 @@ def column_startwith_replace_nan_by_0(df_pheno_dise):
         _type_: _description_
     """
     for col in df_pheno_dise.columns:
+        print(col)
         # Make variables that start with "age_" binary (0 in NaN, 1 if not NaN)
         if col.startswith('age_'):
-            df_pheno_dise.loc[df_pheno_dise[col].notna(), col] = 1
-            df_pheno_dise.loc[df_pheno_dise[col].isna(), col] = 0
+            df_pheno_dise.loc[df_pheno_dise[col].notna() & (df_pheno_dise[col] > 0), col] = 1
+            df_pheno_dise.loc[df_pheno_dise[col].isna() | (df_pheno_dise[col] <= 0), col] = 0
+
+            if col =='age_high_BP_both':
+                file_path = '/SSD/home/sofia/retina-phenotypes/complementary/disease_association/age_high_BP_both_summary.txt'
+                count_1 = (df_pheno_dise['age_high_BP_both'] == 1).sum()
+                count_0 = (df_pheno_dise['age_high_BP_both'] == 0).sum()
+                with open(file_path, 'w') as file:
+                    file.write("Count of 1's: {}\n".format(count_1))
+                    file.write(f"Count of 0's: {count_0}")
 
         elif col.startswith('date_'):
             df_pheno_dise.loc[df_pheno_dise[col].notna(), col] = 1
             df_pheno_dise.loc[df_pheno_dise[col].isna(), col] = 0
 
-        # Same for variables starting with "eye_" 
         elif col.startswith('eye_'):
             df_pheno_dise.loc[df_pheno_dise[col].notna(), col] = 1
             df_pheno_dise.loc[df_pheno_dise[col].isna(), col] = 0

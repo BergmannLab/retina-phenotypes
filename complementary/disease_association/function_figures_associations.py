@@ -128,7 +128,7 @@ def figure_betas_pval_linear_log(betas_linear, linear_log10p_copy3, betas_logist
                 cmap='seismic', alpha=1.0, cbar_kws={'label': 'Standardised \u03B2'},
                 ax=ax2)
     ax2.set_xticklabels(ax2.get_xticklabels(), rotation=45, ha='right')
-    fig.tight_layout()  # Adjust subplot spacing
+    #fig.tight_layout()  # Adjust subplot spacing
 
     return fig, (ax1, ax2)
 
@@ -236,7 +236,7 @@ def figure_betas_pval_cox_linear_log(betas_linear, linear_log10p_copy3, betas_lo
                 vmax=abs(betas_logistic).max().max(), 
                 cmap='seismic', alpha=1.0, cbar_kws={'label': 'Standardised \u03B2'},
                     ax=ax2)
-    fig2.set_xticklabels(ax1.get_xticklabels(), rotation = 45, ha='right', visible=False)
+    fig2.set_xticklabels(ax2.get_xticklabels(), rotation = 45, ha='right', visible=False)
     plt.ylabel('Logistic regresion')
 
     #ax2.yaxis.set_ticks_position('right')

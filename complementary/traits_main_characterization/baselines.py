@@ -12,42 +12,53 @@ df_diseases_cov=pd.read_csv(dir_diseases_cov+file_diseases_cov)
 list_diseases_cov = list(df_diseases_cov.columns)
 print(list_diseases_cov)
 
-desc3 = df_diseases_cov.describe()
-desc3 = desc3.round(3)
-print(desc3)
-desc3.to_csv(dir_diseases_cov + describe_file)
+### Merge to filter by QC:
+phenofiles_dir =  sys.argv[4] #'/NVME/decrypted/scratch/multitrait/UK_BIOBANK_ZERO/participant_phenotype/'
+phenofile_used_for_dist_plots = sys.argv[5]
+
+df_data = pd.read_csv(phenofiles_dir + phenofile_used_for_dist_plots, sep=',')
+df_data = df_data.rename(columns={'0': 'eid'})
+print(len(df_data))
 
 
-list_main = ['age_center', 'sex', 'ethnic_background', 'DBP', 'SBP', 'PR','age_current_smoker', 
-'alcohol_intake_frequency', 'alcohol_intake_frequency', 'pulse_wave_arterial_stiffness_index',
-'N_cigarettes_curr_daily', 'Pack_year_smok', 'HDL_cholesterol', 'LDL_direct', 'Triglycerides', 'HbA1c']
+### Split in lsits
+old_list_baselines =['eid', 'age_recruitment', 'age_center_00', 'age_center_10','sex', 'ethnic_background_00', 'ethnic_background_10', 'DBP_00','SBP_00','DBP_01','SBP_01','PR_00','PR_01','DBP_10','SBP_10','DBP_11','SBP_11','PR_10','PR_11', 'age_current_smoker_00', 'age_current_smoker_both', 'age_current_smoker_10', 'BMI_00','BMI_10', 'BMI_both'] 
 
-list_vascular_diseases = ['age_diabetes', 'age_angina', 'age_heartattack', 'age_DVT',
-'age_stroke']
-list_severe_ocular_diseases = ['age_glaucoma', 'age_cataract']
+list_baselines =['eid', 'age_recruitment', 'sex', 'age_current_smoker_both', 'BMI_both'] 
 
-list_eyesight_ocular_diseases = ['eye_amblyopia', 'eye_presbyopia', 'eye_hypermetropia', 
-'eye_myopia', 'eye_astigmatism', 'eye_diabetes', 'eye_myopia', 'age_other_serious_eye_condition']
+list_diseases =['age_diabetes_both','age_angina_both','age_heartattack_both','age_DVT_both','age_stroke_both','age_pulmonary_embolism_both','age_death']
+list_ocular = ['age_glaucoma_both','age_cataract_both','eye_diabetes_both','age_other_serious_eye_condition_both']
 
-list_all = list_main + list_vascular_diseases + list_severe_ocular_diseases + list_eyesight_ocular_diseases
+MAIN_LABELS='mean_angle_taa,mean_angle_tva,tau1_vein,tau1_artery,ratio_AV_DF,eq_CRAE,ratio_CRAE_CRVE,D_A_std,D_V_std,eq_CRVE,ratio_VD,VD_orig_artery,bifurcations,VD_orig_vein,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
+#MAIN_LABELS='mean_angle_taa,mean_angle_tva'
+main_phenotypes_old_names = list(MAIN_LABELS.split(","))
 
-list_not_to_analzye = ['eid','date_center_00', 'date_center_10', 'date_center_20', 
-                        'date_death', 'date_AD', 'date_reported_atherosclerosis', 
-                        'date_disorders_arteries_arterioles']
+all_list = list_baselines +list_diseases+list_ocular
+df_diseases_cov = df_diseases_cov[all_list]
 
-def histogram(value, column_i):
-    plt.figure()
-    plt.title(column_i)
-    value.plot.hist(bins=100, rwidth=0.5)
-    plt.show()
-    #plt.ylabel('Frequency')
-    #mu = value.mean().round(decimals=2)
-    #std = value.std().round(decimals=2)
+# Create an empty DataFrame to store all the descriptions
+df_combined = pd.DataFrame()
 
-# for column_i in list_diseases_cov:
-#     if column_i in list_not_to_analzye:
-#         continue
-#     else:
-#         histogram(df_diseases_cov[column_i],column_i)
+#####
+for pheno in main_phenotypes_old_names:
+    df_data_completo = df_data.copy()
+    df_data_completo = df_data_completo[['eid', pheno]]
 
+    df_data_completo = df_data_completo.dropna()
+    print(len(df_data_completo))
 
+    # Merge data
+    df_merge = df_data_completo.merge(df_diseases_cov, how='inner', on='eid')
+    print(len(df_merge))
+
+    desc3 = df_merge.describe()
+    desc3 = desc3.round(2)
+    print(desc3)
+    if pheno=='mean_angle_taa':
+        df_combined = desc3.copy()
+        df_combined.drop('eid', axis=1, inplace=True)
+    else:
+        df_combined = pd.concat([df_combined, desc3], axis=1)
+        df_combined.drop('eid', axis=1, inplace=True)
+
+df_combined.T.to_csv(dir_diseases_cov + describe_file)

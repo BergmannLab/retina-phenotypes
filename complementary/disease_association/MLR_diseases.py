@@ -29,6 +29,7 @@ else:
 
 ####################### 1 - Read files:
 
+
 df_diseases, inf, list_diseases, list_diseases_bin, list_diseases_con, list_diseases_cat = fda.read_diseases_files(diseases_file, pheno_info_file)
 
 # Number of cases and controls per disease
@@ -78,3 +79,6 @@ betas, log10p = fda.compute_pval_betas_LR(df_pheno_dise, inf, list_diseases, lis
 
 fda.save_betas_pval(betas, log10p, output_dir, What_type_phenotype)
 
+print('diseases_file', diseases_file)
+print('pheno_file', pheno_file)
+print('output_dir', output_dir)

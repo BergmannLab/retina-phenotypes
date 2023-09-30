@@ -1,5 +1,3 @@
-
-
 # FROM RETINA IMAGES TO TRAITS  
 (only needs the folders: 'configs', 'input' and 'preprocessing'): 
 

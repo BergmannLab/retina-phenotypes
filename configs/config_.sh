@@ -1,8 +1,8 @@
-############################## CONFIG FILE for fundus multitrait project ##############################
+############################## CONFIG FILE for fundus multi phenotype project ##############################
 
 #### PROJECT COMPUTATION DIRECTORY
 
-PROJECT_DIR=/NVME/decrypted/scratch/multitrait
+PROJECT_DIR=/
 
 #### CONFIGURATIONS DIRECTORY
 
@@ -23,7 +23,7 @@ if [[ $data_set = DRIVE ]]; then
     dir_images2="$code_root_dir"/input/DRIVE/raw/
 else
     image_type=*.png
-    dir_images2=/NVME/decrypted/ukbb/fundus/raw/CLRIS/ # folder containing raw fundus images
+    dir_images2=/fundus/raw/CLRIS/ # folder containing raw fundus images
 fi
 
 echo Data set: $data_set
@@ -161,7 +161,7 @@ PARTICIPANT_STAT_ID=2022_11_23_covar_fix
 QC=$RUN_DIR/qc/zekavat_centercropped_percentile25.txt #ageCorrected_ventiles"$VENTILE".txt
 PARTICIPANT_PHENO_DIR=$RUN_DIR/participant_phenotype/ # participant-level phenotyoes
 IMAGE_PHENO_DIR=$phenotypes_dir/current # image-level phenotypes
-SAMPLE_FILE=/NVME/decrypted/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
+SAMPLE_FILE=/ukbb/fundus/ukb_imp_v3_subset_fundus.sample # file determining participant order for bgenie GWAS
 
 # OUTLIER REMOVAL
 n_std=10 # all measurement>mean+n_std*std | measurement<mean-n_std*std are removed from analysis
@@ -174,10 +174,6 @@ csv_diseases_cov_name="$PARTICIPANT_STAT_ID"_diseases_cov.csv
 csv_z_name="$PARTICIPANT_STAT_ID"_z_corrected.csv
 describe_baselines_file="$PARTICIPANT_STAT_ID"_describe_baselines.csv
 
-#### GWAS
-gwas_dir="$RUN_DIR"/gwas/"$PARTICIPANT_STAT_ID"/
-diseases_ss_raw="/HDD/data/ukbb/disease_sumstats/files_modified/"
-diseases_gwas_dir="$gwas_dir"/gcorr_diseases/
 
 #### SUPPLEMENTARY PHENOTYPES
 SUPPLEMENTARY_LABELS='tau1_all,tau1_artery,tau1_vein,ratio_AV_DF,tau2_all,tau2_artery,tau2_vein,tau4_all,tau4_artery,tau4_vein,D_std,D_A_std,D_V_std,D_CVMe,D_CVMe_A,D_CVMe_V,bifurcations,VD_orig_all,VD_orig_artery,VD_orig_vein,ratio_VD,FD_all,FD_artery,FD_vein,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,CRAE,CRVE,ratio_CRAE_CRVE,ratio_standard_CRE,medianDiameter_all,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'

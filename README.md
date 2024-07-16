@@ -1,12 +1,9 @@
-# FROM RETINA IMAGES TO TRAITS  
-(only needs the folders: 'configs', 'input' and 'preprocessing'): 
+# FROM RETINA IMAGES TO PHENOTYPES  
 
 ## Requirements:
-* L-WNET (https://github.com/agaldran/lwnet)
-* Matlab licence  
-(not needed for traits that are based purely on pixel-wise segmentation)
-* TO DO: Create a file with all the packages needed
-
+* L-WNET (https://github.com/agaldran/lwnet) for the Artery/Vein segmentation
+* Matlab license to use ARIA (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0032435, you do not need to download them, a modified version of it is included on this code) to measure the centerline, diameters, and segments of the vessels (This is not needed if you only want to measure phenotypes that are based purely on pixel-wise segmentation)
+* Packages needed: 
 
 ## Pipeline:
 
@@ -25,7 +22,7 @@ flowchart TD
 ```
 
 1- Modify `configs/config_local.sh` and `configs/config_.sh`
-Particularly: Define path of the research repository, and name the RUN.
+Particularly: Define the path of the research repository, and name the RUN.
 
 2 - Run `preprocessing/ClassifyAVLwnet.sh`. 
 Output: AV maps for your images.  By default in the folder: `*RUN*/AV_maps`
@@ -43,25 +40,27 @@ Code: `bash MeasureVessels.sh`
 Output: Trait measurements. By default in the folder: `*RUN*/image_phenotype`
 Code: `bash run_measurePhenotype.sh'
 
-
-# PHENOTYPES (TRAITS) MEASURED 
-## Main traits measured:
-* Median diameter of: all the vessels, only arteries, only veins (' ')
-* Median tortuosity (DF) of: all the vessels, only arteries, only veins (' ')
-* Ratio between the diameters of the arteies and the diameters of the veins (' ')
-* Ratio between the tortuosity of the arteies and the tortuosity of the veins (' ')
+Additionally, you can run `example/example_plot_phenotypes.ipynb'. In this Jupiter notebook the vessel we provide all the steps computed until 5 (run_measurePhenotype.py) for some DRIVE examples, so you can see how the measured phenotypes look like.
+ 
+# PHENOTYPES MEASURED 
+## Main phenotypes measured:
+* Median diameter of all the vessels, only arteries, and only veins ('medianDiameter_all, medianDiameter_artery, medianDiameter_vein')
+* Median tortuosity (measured as the Distance Factor) of all the vessels, only arteries, and only veins ('tau1_all, tau1_artery, tau1_vein')
+* Central retinal equivalent for arteries and veins ('eq_CRAE, eq_CRVE')
+* Ratio between the diameters of the arteries and the diameters of the veins ('ratio_AV_medianDiameter')
+* Ratio between the tortuosity of the arteries and the tortuosity of the veins ('ratio_CRAE_CRVE')
+* Ratio between the central retinal equivalent of the arteries and the tortuosity of the veins ('ratio_AV_DF')
+* Diameter variability of the arteries and veins ('D_A_std, D_V_std)
 * Number of bifurcations and branching ('bifurcations')
-* Main Temporal Venular Angle ('tva') and Main Temporal Arteriolar Angle ('taa') 
-* CRAE and CRVE 
-* Variability on the diameter and on the tortuosity
-* Fractal Dimensionality ()
-* Vascular Density () 
-* Vascular Density () 
+* Main temporal venular angle and main temporal arteriolar angle ('mean_angle_tva, mean_angle_taa') 
+* Vascular density of all the vessels, only arteries, and only veins ('VD_orig_all, VD_orig_artery, VD_orig_vein')
+* Ratio between the vascular density of the arteries and the diameters of the veins ('ratio_VD')
+* Fractal dimensionality of all the vessels, only arteries, and only veins ('FD_all, FD_artery, FD_vein')
 
-## Baseline traits measured:
-* Intensity variability
-* others?
-* The follow are probably to delete:  N_green_pixels, N_green_segments, OD_segments, etc
+## A more complete list of possible phenotypes can be measured under the following names:
+*SUPPLEMENTARY_LABELS= 'tau1_all,tau1_artery,tau1_vein,ratio_AV_DF,tau2_all,tau2_artery,tau2_vein,tau4_all,tau4_artery,tau4_vein, D_std,D_A_std,D_V_std,D_CVMe,D_CVMe_A,D_CVMe_V,bifurcations,VD_orig_all,VD_orig_artery,VD_orig_vein,ratio_VD, FD_all,FD_artery,FD_vein,mean_angle_taa,mean_angle_tva,eq_CRAE,eq_CRVE,CRAE,CRVE,ratio_CRAE_CRVE,ratio_standard_CRE,
+medianDiameter_all,medianDiameter_artery,medianDiameter_vein,ratio_AV_medianDiameter'
+*SUPPLEMENTARY_NAMES= 'tortuosity,A tortuosity,V tortuosity,ratio tortuosity,tortuosity2,A tortuosity2,V tortuosity2,tortuosity4,A tortuosity4,V tortuosity4, std diameter,A std diameter,V std diameter,CVMe diameter,A CVMe diameter,V CVMe diameter,bifurcations,vascular density,A vascular density,V vascular density,ratio vascular density, fractal dimension,A fractal dimension,V fractal dimension,A temporal angle,V temporal angle,A central retinal eq,V central retinal eq,A central retinal eq2,V central retinal eq2,ratio central retinal eq,ratio central retinal eq2, median diameter,A median diameter,V median diameter,ratio median diameter'
 
 
 ### Some possible errors and reminders:
@@ -69,73 +68,6 @@ Code: `bash run_measurePhenotype.sh'
 
 * python3 -m pip install --upgrade Pillow
 
-* If you are not familiar with bash scripts and you want to change the code, the spaces are very imports!(Avoid when define variables, and use then for conditions)
-
-# CODE - COMPLEMENTARY ANALYSIS (only needed the folder: 'complementary'):  
-
-## Disease association  
-
-Run `./run_disease_association.sh >> log 2&>1 &`  
-
-Script directory: `*RUN_DIR*/complementary/disease_association`  
-
-Output** directory: `*RUN*/diseases_cov`:Cox hazard ratio and corresponding p-values for all trait-disease combinations.  
-
-**Description**  
-Performs two distinct disease associations in one go:  
-1 - Cox  
-2 - Logistic regression (not yet added, but Olga's scripts could be added here to automate)  
-
-## GWAS postprocessing:
-This folder include code to plot the Manhattan and QQplots and to prepare: PascalX, LDSCR and LD prune input.
-HOW to run it?:
-
-
-Besides, in the subfolders:
-
-* `ldsr_correlation` you can find code to compute the h^2 and the genetic correlation (you will need additionality to have ldsr code!)
-
-HOW to run it?:
-
-* `common_genes_path_snps` you can find code to explore the SNPs, genes, and set of genes that several phenotypes have in common (using PascalX results as input)
-
-HOW to run it?:
-
-
-## Traits association with diseases:
-
-## Traits different time points:
-For some subjects we have different retina images at differen time points. In this folder we included code to analyse how the different traits (phenotypes) for these subjects vary depending on the time point. 
-Also, you can find code to see how different are the traits for this subjects between the right and the left eye. (This is to see how much natural variation we can expect and analyse better the differetn time points)
-
-HOW to run it?:
-
-## Traits main characterization:
-In here you can find code to obtain histograms and pairplots of your phenotypes.
-
-HOW to run it?:
-
-
-
+* If you are not familiar with bash scripts and you want to change the code, the spaces are very important!(Avoid when defining variables, and use them for conditions)
 
 ##################################################################################################################################################################
-
-
-# Bryhnild directories (to avoid duplications):
-Sensitive data (i.e. with eid) is going to be located on '/NVME/decrypted/' and not sensitive is going to be located on '/HDD/data/':
-
-* All the coordinates values (with centerlines) and the ARIA diameters for different QC can be found in: '/NVME/decrypted/ukbb/fundus/2021_10_rawMeasurements/'
-* All the QC files can be found in: '/NVME/decrypted/ukbb/fundus/qc/'
-
-* All the files with the phenotypes measurement (with images names) can be found in: '/NVME/decrypted/ukbb/fundus/phenotypes/'
-* All the phenofiles and the phenofiles_qqnorm can be found in: '/HDD/data/UKBiob/phenofiles/'
-
-* All the GWAS results can be found in: '/HDD/data/UKBiob/GWAS/' 
-* * All the Manhatan, and qqplots an results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/Manhattan_QQplots/'
-* * All the PascalX results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/PascalX/'
-* * All the ldsr results can be found in: '/HDD/data/UKBiob/GWAS/*YourGWAS*/ldscr/'
-
-* All the UKBB data can be found in: '/NVME/decrypted/ukbb/labels/'
-* A merge file between the diseases and the phenotypes of interest for the MLR can be also found in: '/NVME/decrypted/ukbb/labels/'
-
-* Drive Ground Truth for bifurcations, crossings, and end points can be found in: '/HDD/data/Other_datasets/DRIVE/RetinalFeatures_bif_cross'

@@ -1,0 +1,8 @@
+.DS_Store
+.swp
+.pydevproject
+.project
+.pyc
+preprocessing/**/ARIA_run_tests
+*~
+preprocessing/helpers/MeasureVessels/batch*

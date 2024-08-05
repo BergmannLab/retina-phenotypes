@@ -1,21 +1,21 @@
 import itertools
-import os, sys
+import os #, sys
 import pandas as pd
 import numpy as np
-import matplotlib.image as mpimg
+#import matplotlib.image as mpimg
 import csv
 import pylab as pl
 import PIL
 import math
 import cv2
-from skimage import data, io, filters
+#from skimage import data, io, filters
 from datetime import datetime
 from scipy.spatial import distance_matrix
 from matplotlib import pyplot as plt
 from scipy import stats
-from multiprocessing import Pool
+#from multiprocessing import Pool
 from PIL import Image
-from matplotlib import cm
+#from matplotlib import cm
 
 DATE = datetime.now().strftime("%Y-%m-%d")
 

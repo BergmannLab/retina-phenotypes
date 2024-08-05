@@ -36,7 +36,7 @@ Code: `./predict_optic_disc.sh`
 Output: Centerlines output.  By default in the folder: `*RUN*/skeletons_etc`
 Code: `bash MeasureVessels.sh`
 
-5 - Run `preprocessing/run_measurePhenotype.sh`. 
+5 - Run `preprocessing/run_measurePhenotype.sh`. (Python3.8 used, the required packages are available in `preprocessing/requirements_measurePhenotype.txt`)
 Output: Trait measurements. By default in the folder: `*RUN*/image_phenotype`
 Code: `bash run_measurePhenotype.sh'
 
